@@ -1,0 +1,17 @@
+
+# 定义 hajime_scraper 作为 Python 库
+py_library(
+    name = "hajime_scraper_lib",
+    srcs = glob(["hajime_scraper/**/*.py"]),  # 确保路径正确
+    deps = [
+        "@pip_deps//:scrapy",  # 确保 pip_deps 中有此依赖
+        "@pip_deps//:requests",  # 确保 pip_deps 中有此依赖
+    ],
+)
+
+# 定义一个可执行的爬虫脚本
+py_binary(
+    name = "run_scraper",
+    srcs = ["hajime_scraper/run_scraper.py"],
+    deps = [":hajime_scraper_lib"],
+)
