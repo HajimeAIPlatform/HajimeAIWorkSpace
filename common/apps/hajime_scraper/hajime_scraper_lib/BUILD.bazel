@@ -1,0 +1,13 @@
+load("@python_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library")
+
+# 定义 hajime_scraper_lib 作为 Python 库
+py_library(
+    name = "hajime_scraper_lib",
+    srcs = glob(["**/*.py"]),
+    deps = [
+        requirement("scrapy"),
+        requirement("requests"),
+    ],
+    visibility = ["//visibility:public"],  # 允许所有包访问
+)

@@ -1,4 +1,4 @@
-# Scrapy settings for hajime_scraper project
+# Scrapy settings for hajime_scraper_lib project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,14 +7,14 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "hajime_scraper"
+BOT_NAME = "hajime_scraper_lib"
 
-SPIDER_MODULES = ["hajime_scraper.spiders"]
-NEWSPIDER_MODULE = "hajime_scraper.spiders"
+SPIDER_MODULES = ["hajime_scraper_lib.spiders"]
+NEWSPIDER_MODULE = "hajime_scraper_lib.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "hajime_scraper (+http://www.yourdomain.com)"
+#USER_AGENT = "hajime_scraper_lib (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -45,13 +45,13 @@ DOWNLOAD_DELAY = 2
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 SPIDER_MIDDLEWARES = {
-   "hajime_scraper.middlewares.HajimeScraperSpiderMiddleware": 350,
+   "hajime_scraper_lib.middlewares.HajimeScraperSpiderMiddleware": 350,
 }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   "hajime_scraper.middlewares.ProxyMiddleware": 110,
+   "hajime_scraper_lib.middlewares.ProxyMiddleware": 110,
    '__main__.ProxyMiddleware': 100,
 }
 
@@ -64,7 +64,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 #ITEM_PIPELINES = {
-#    "hajime_scraper.pipelines.HajimeScraperPipeline": 300,
+#    "hajime_scraper_lib.pipelines.HajimeScraperPipeline": 300,
 #}
 
 # Enable and configure the AutoThrottle extension (disabled by default)

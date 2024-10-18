@@ -1,6 +1,6 @@
 import requests
 from scrapy.crawler import CrawlerProcess
-from hajime_scraper.spiders.generic_spider import GenericSpider
+from hajime_scraper_lib.spiders.generic_spider import GenericSpider
 
 def get_qian_function(response):
     print(f"Processing page: {response.url}")
@@ -104,7 +104,7 @@ def run_generic_spider(url, parse_function, domain_filter=None, crawl_all=False)
         'LOG_LEVEL': 'DEBUG',
         'DOWNLOADER_MIDDLEWARES': {
             'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
-            'hajime_scraper.middlewares.ProxyMiddleware': 100,
+            'hajime_scraper_lib.middlewares.ProxyMiddleware': 100,
         },
     })
 
