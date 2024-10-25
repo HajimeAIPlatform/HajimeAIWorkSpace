@@ -1,0 +1,21 @@
+load("@python_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary")
+
+
+# 定义一个可执行的爬虫脚本
+py_binary(
+    name = "run_scraper",
+    srcs = ["run_scraper.py"],
+    deps = [
+        "//common/apps/hajime_scraper/hajime_scraper_lib:hajime_scraper_lib",
+        requirement("scrapy"),
+    ],
+    data = ["scrapy.cfg"]
+)
+
+py_binary(
+    name = "formate",
+    srcs = ["formate.py"],
+    deps = [],
+    data = ["scrapy.cfg"]
+)
