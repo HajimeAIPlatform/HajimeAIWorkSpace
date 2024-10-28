@@ -5,9 +5,9 @@ load("@rules_python//python:defs.bzl", "py_library")
 py_library(
     name = "hajime_scraper_lib",
     srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],  # 允许所有包访问
     deps = [
         requirement("scrapy"),
         requirement("requests"),
     ],
-    visibility = ["//visibility:public"],  # 允许所有包访问
 )

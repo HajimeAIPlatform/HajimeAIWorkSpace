@@ -1,0 +1,8 @@
+/app.env
+/openai-config.json
+/HajimeAIWorkSpace/common/apps/hajime_center
+
+/chat-config.json
+chat-config.json
+.history
+.idea

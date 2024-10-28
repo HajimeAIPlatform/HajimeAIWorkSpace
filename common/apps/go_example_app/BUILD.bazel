@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "example_lib",
+    srcs = ["main.go"],
+    importpath = "common/apps/go_example_app",
+    visibility = ["//visibility:private"],
+)
+
+go_binary(
+    name = "go_example_app",
+    embed = [":example_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "example_test",
+    srcs = ["main_test.go"],
+)
