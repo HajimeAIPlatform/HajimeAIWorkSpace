@@ -3,12 +3,20 @@ package main
 import (
 	"HajimeAIWorkSpace/common/apps/hajime_center/controllers"
 	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
+	"HajimeAIWorkSpace/common/apps/hajime_center/proxy"
 	"HajimeAIWorkSpace/common/apps/hajime_center/routes"
+	"context"
+	"errors"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
+	"time"
 )
 
 var (
@@ -28,7 +36,7 @@ var (
 	ConversationsController      controllers.ConversationsController
 	ConversationsRouteController routes.ConversationsRouteController
 
-	Channel chan struct{} // 定义 sem 变量
+	wg sync.WaitGroup
 )
 
 func init() {
@@ -38,7 +46,6 @@ func init() {
 	}
 
 	initializers.ConnectDB(&conf)
-	Channel = make(chan struct{}, conf.ThreadNumber)
 	//initializers.ConnectDBDify(&conf)
 
 	AuthController = controllers.NewAuthController(initializers.DB)
@@ -104,5 +111,43 @@ func main() {
 	ModelRouteController.ModelRoute(router)
 	ConversationsRouteController.ConversationsRoute(router)
 
-	log.Fatal(server.Run(":" + conf.ServerPort))
+	// Start the main server in a new goroutine
+	httpServer := &http.Server{
+		Addr:    ":" + conf.ServerPort,
+		Handler: server,
+	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		log.Printf("Starting server on port %s", httpServer.Addr)
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("HTTP server error: %v", err)
+		}
+	}()
+
+	//proxy serve
+	proxiedServer := proxy.CreateProxiedServer(&wg)
+
+	// Signal handling for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan // Wait for a signal
+
+	log.Println("Shutting down server...")
+
+	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownRelease()
+
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("HTTP server shutdown error: %v", err)
+	}
+
+	if err := proxiedServer.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("ProxiedServer shutdown error: %v", err)
+	}
+
+	wg.Wait()
+	log.Println("Server exited gracefully.")
 }
