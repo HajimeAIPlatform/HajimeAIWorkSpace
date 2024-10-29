@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"HajimeAIWorkSpace/common/apps/hajime_center/dify"
+	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"errors"
 	"log"
 	"net/http"
@@ -11,7 +13,14 @@ import (
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Add authentication header
-		r.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYmU2YmVhNzctOGIwYS00NGU5LTliY2QtZjFmYzI4OGVmNDUzIiwiZXhwIjoxNzMyMjYzMTU0LCJpc3MiOiJTRUxGX0hPU1RFRCIsInN1YiI6IkNvbnNvbGUgQVBJIFBhc3Nwb3J0In0.M8dW_vVL1DbHQRu01cPHR-Gok5bodnDK_l0uQRPzJQg")
+		difyCleint, err := dify.GetDifyClient()
+
+		if err != nil {
+			logger.Warning("Auth Failed: " + err.Error())
+		}
+
+		Token, _ := difyCleint.GetUserToken()
+		r.Header.Add("Authorization", "Bearer "+Token)
 
 		// Call the next handler
 		next.ServeHTTP(w, r)
