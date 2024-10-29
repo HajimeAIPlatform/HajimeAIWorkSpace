@@ -1,7 +1,7 @@
 package dify
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/chat-config"
+	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
 	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"crypto/tls"
 	"fmt"
@@ -33,7 +33,10 @@ type DifyClient struct {
 }
 
 func CreateDifyClient(config DifyClientConfig) (*DifyClient, error) {
-	cnf := chat_config.LoadChatConfig()
+	cnf, err := initializers.LoadEnv(".")
+	if err != nil {
+		return nil, err
+	}
 	key := cnf.DifyApiKey
 	if key == "" {
 		return nil, fmt.Errorf("dify API Key is required")

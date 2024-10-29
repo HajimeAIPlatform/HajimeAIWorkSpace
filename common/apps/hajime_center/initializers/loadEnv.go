@@ -57,6 +57,8 @@ type Config struct {
 	DifyConsoleEmail       string `mapstructure:"DIFY_CONSOLE_UMAIL"`
 	DifyConsolePassword    string `mapstructure:"DIFY_CONSOLE_PASSWORD"`
 	DifyConsoleStoragePath string `mapstructure:"DIFY_CONSOLE_STORAGE_PATH"`
+	DifyHost               string `mapstructure:"DIFY_HOST"`
+	DifyApiKey             string `mapstructure:"DIFY_API_KEY"`
 
 	AiServerHost string `mapstructure:"AI_SERVER_HOST"`
 	AiServerPort string `mapstructure:"AI_SERVER_PORT"`
@@ -73,6 +75,17 @@ type Config struct {
 
 	// thread number
 	ThreadNumber int `mapstructure:"THREAD_NUMBER"`
+
+	// chat config
+	ApiKey string `mapstructure:"API_KEY"`
+	// openai提供的接口 空字符串使用默认接口
+	ApiURL string `mapstructure:"API_URL"`
+	// 监听接口
+	Listen string `mapstructure:"LISTEN"`
+	// 代理
+	Proxy         string   `mapstructure:"PROXY"`
+	AdminEmail    []string `mapstructure:"ADMIN_EMAIL"`
+	AdminPassword string   `mapstructure:"ADMIN_PASSWORD"`
 }
 
 func LoadEnv(path string) (config Config, err error) {

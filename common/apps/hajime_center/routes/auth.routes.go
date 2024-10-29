@@ -2,8 +2,8 @@ package routes
 
 import (
 	"HajimeAIWorkSpace/common/apps/hajime_center/controllers"
-	"github.com/gin-gonic/gin"
 	"HajimeAIWorkSpace/common/apps/hajime_center/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 type AuthRouteController struct {
@@ -24,15 +24,14 @@ func (rc *AuthRouteController) AuthRoute(rg *gin.RouterGroup) {
 	router.GET("/verifyemail/:verificationCode", rc.authController.VerifyEmail)
 	router.POST("/forgotpassword", rc.authController.ForgotPassword)
 	router.PATCH("/resetpassword/:resetToken", rc.authController.ResetPassword)
-	router.POST("/password",middleware.DeserializeUser(), rc.authController.PasswordChange)
+	router.POST("/password", middleware.DeserializeUser(), rc.authController.PasswordChange)
 
 	// admin manager routes
-	router.POST("/add",  middleware.DeserializeUser(),rc.authController.AddUser)
+	router.POST("/add", middleware.DeserializeUser(), rc.authController.AddUser)
 	router.DELETE("/:userId", middleware.DeserializeUser(), rc.authController.DeleteUser)
 	router.GET("/users", middleware.DeserializeUser(), rc.authController.GetAllUsers)
 	router.PUT("/:userId", middleware.DeserializeUser(), rc.authController.UpdateUser)
 
 	// Only apply middleware.DeserializeUser() to specific routes
 	router.GET("/getme", middleware.DeserializeUser(), rc.authController.GetMe)
-	router.POST("/admin_update_balance", middleware.DeserializeUser(), rc.authController.AdminUpdateBalance)
 }

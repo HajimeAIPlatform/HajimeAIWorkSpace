@@ -1,7 +1,5 @@
 /app.env
 /openai-config.json
 
-/chat-config.json
-chat-config.json
 .history
 .idea

@@ -1,11 +1,9 @@
 package main
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/chat-config"
 	"HajimeAIWorkSpace/common/apps/hajime_center/controllers"
 	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
 	"HajimeAIWorkSpace/common/apps/hajime_center/routes"
-	"github.com/alecthomas/kong"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -18,12 +16,6 @@ var (
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
-	PostController      controllers.PostController
-	PostRouteController routes.PostRouteController
-
-	ChatController      controllers.ChatController
-	ChatRouteController routes.ChatRouteController
-
 	DocumentController      controllers.DocumentController
 	DocumentRouteController routes.DocumentRouteController
 
@@ -35,9 +27,6 @@ var (
 
 	ConversationsController      controllers.ConversationsController
 	ConversationsRouteController routes.ConversationsRouteController
-
-
-	CreditSystem *controllers.CreditSystem
 
 	Channel chan struct{} // 定义 sem 变量
 )
@@ -52,16 +41,8 @@ func init() {
 	Channel = make(chan struct{}, conf.ThreadNumber)
 	//initializers.ConnectDBDify(&conf)
 
-	CreditSystem = controllers.NewCreditSystem(initializers.DB)
-
-	AuthController = controllers.NewAuthController(initializers.DB, CreditSystem)
+	AuthController = controllers.NewAuthController(initializers.DB)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
-
-	PostController = controllers.NewPostController(initializers.DB)
-	PostRouteController = routes.NewRoutePostController(PostController)
-
-	ChatController = controllers.NewChatController(CreditSystem)
-	ChatRouteController = routes.NewChatRouteController(ChatController)
 
 	DocumentController = controllers.NewDocumentController(initializers.DB, initializers.DBDify)
 	DocumentRouteController = routes.NewDocumentRouteController(DocumentController)
@@ -72,17 +53,13 @@ func init() {
 	ModelController = controllers.NewModelController(initializers.DB)
 	ModelRouteController = routes.NewModelRouteController(ModelController)
 
-
 	ConversationsController = controllers.NewConversationsController(initializers.DB)
 	ConversationsRouteController = routes.NewConversationsRouteController(ConversationsController)
-
 
 	server = gin.Default()
 }
 
 func main() {
-	kong.Parse(&chat_config.CLI)
-
 	conf, err := initializers.LoadEnv(".")
 	if err != nil {
 		log.Fatal("🚀 Could not load environment variables", err)
@@ -115,26 +92,17 @@ func main() {
 
 	server.Use(cors.New(corsConfig))
 
-	router := server.Group("/api/v1")
-	routerV2 := server.Group("/api")
+	router := server.Group("/api")
 	router.GET("/healthcheck", func(ctx *gin.Context) {
 		message := "Welcome to ChatGPT!"
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 	})
 
-	routerV2.GET("/healthcheck", func(ctx *gin.Context) {
-		message := "Welcome to ChatGPT!"
-		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
-	})
-
 	AuthRouteController.AuthRoute(router)
-	PostRouteController.PostRoute(router)
-	ChatRouteController.ChatRoute(router)
 	DocumentRouteController.DocumentRoute(router)
 	AppsRouteController.AppsRoute(router)
 	ModelRouteController.ModelRoute(router)
 	ConversationsRouteController.ConversationsRoute(router)
-
 
 	log.Fatal(server.Run(":" + conf.ServerPort))
 }

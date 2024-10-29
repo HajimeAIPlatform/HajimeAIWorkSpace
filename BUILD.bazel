@@ -1,6 +1,7 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
-# gazelle:prefix github.com/HajimeAIWorkSpace
+
+# gazelle:prefix github.com/HajimeAIWorkSpace/common/apps/go_example_app
 gazelle(name = "gazelle")
 
 gazelle(
@@ -9,8 +10,6 @@ gazelle(
         "-from_file=go.mod",
         "-to_macro=deps.bzl%go_dependencies",
         "-prune",
-        "-build_file_proto_mode=disable_global",
     ],
     command = "update-repos",
 )
-

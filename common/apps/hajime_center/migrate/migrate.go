@@ -1,14 +1,12 @@
 package main
 
 import (
-	openai_config "HajimeAIWorkSpace/common/apps/hajime_center/chat-config"
 	"HajimeAIWorkSpace/common/apps/hajime_center/constants"
 	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
 	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"HajimeAIWorkSpace/common/apps/hajime_center/models"
 	"HajimeAIWorkSpace/common/apps/hajime_center/utils"
 	"fmt"
-	"github.com/alecthomas/kong"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -41,8 +39,13 @@ func removeAllAdmins(DB *gorm.DB) {
 }
 
 func SetupAdmin(DB *gorm.DB) {
-	kong.Parse(&openai_config.CLI)
-	OpenaiConfig := openai_config.LoadChatConfig()
+	OpenaiConfig, err := initializers.LoadEnv(".")
+	if err != nil {
+		logger.Danger("🚀 Could not load environment variables %s", err.Error())
+	}
+
+	fmt.Println("==", OpenaiConfig.AdminPassword, OpenaiConfig.AdminEmail, OpenaiConfig.ThreadNumber)
+
 	adminPassword := OpenaiConfig.AdminPassword
 
 	hashedPassword, err := utils.HashPassword(adminPassword)
@@ -97,11 +100,11 @@ func main() {
 		logger.Danger("🚀 Could not create uuid-ossp extension: %v", err)
 	}
 
-	err := initializers.DB.AutoMigrate(&models.User{}, &models.BillingHistory{}, &models.Post{},&models.Apps{},&models.Dataset{},&models.Document{},&models.UploadFile{},&models.Conversation{},&models.Message{},&models.MessageFile{})
-
-	if err != nil {
-		logger.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))
-	}
+	//err := initializers.DB.AutoMigrate(&models.User{}, &models.Apps{}, &models.Dataset{}, &models.Document{}, &models.UploadFile{}, &models.Conversation{}, &models.Message{}, &models.MessageFile{})
+	//
+	//if err != nil {
+	//	logger.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))
+	//}
 
 	SetupAdmin(initializers.DB)
 	fmt.Println("👍 Migration complete")

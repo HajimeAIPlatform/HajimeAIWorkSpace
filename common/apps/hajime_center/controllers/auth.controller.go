@@ -3,7 +3,6 @@ package controllers
 import (
 	"HajimeAIWorkSpace/common/apps/hajime_center/constants"
 	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"HajimeAIWorkSpace/common/apps/hajime_center/models"
 	"HajimeAIWorkSpace/common/apps/hajime_center/utils"
 	"fmt"
@@ -18,11 +17,10 @@ import (
 
 type AuthController struct {
 	DB *gorm.DB
-	cs *CreditSystem
 }
 
-func NewAuthController(DB *gorm.DB,creditSystem *CreditSystem) AuthController {
-	return AuthController{DB, creditSystem}
+func NewAuthController(DB *gorm.DB) AuthController {
+	return AuthController{DB}
 }
 
 // SignUpUser SignUp User
@@ -382,8 +380,8 @@ func (ac *AuthController) AddUser(ctx *gin.Context) {
 		Name:      payload.Name,
 		Email:     strings.ToLower(payload.Email),
 		Password:  hashedPassword,
-		Role:      payload.Role,  // 允许管理员设置用户角色
-		Verified:  true,  // 直接设置为已验证
+		Role:      payload.Role, // 允许管理员设置用户角色
+		Verified:  true,         // 直接设置为已验证
 		Photo:     "test",
 		Provider:  "local",
 		CreatedAt: now,
@@ -428,40 +426,40 @@ func (ac *AuthController) DeleteUser(ctx *gin.Context) {
 }
 
 func (ac *AuthController) UpdateUser(ctx *gin.Context) {
-    currentUser := ctx.MustGet("currentUser").(models.User)
+	currentUser := ctx.MustGet("currentUser").(models.User)
 
-    if currentUser.Role != constants.RoleAdmin {
-        ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Only Admin can update users"})
-        return
-    }
+	if currentUser.Role != constants.RoleAdmin {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Only Admin can update users"})
+		return
+	}
 
-    var payload *models.UpdateUserInput
-    if err := ctx.ShouldBindJSON(&payload); err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-        return
-    }
+	var payload *models.UpdateUserInput
+	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
 
-    userId := ctx.Param("userId")
-    var user models.User
-    result := ac.DB.First(&user, "id = ?", userId)
-    if result.Error != nil {
-        ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "User not found"})
-        return
-    }
+	userId := ctx.Param("userId")
+	var user models.User
+	result := ac.DB.First(&user, "id = ?", userId)
+	if result.Error != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "fail", "message": "User not found"})
+		return
+	}
 
-    if payload.Name != "" {
-        user.Name = payload.Name
-    }
-    if payload.Email != "" {
-        user.Email = strings.ToLower(payload.Email)
-    }
-    if payload.Role != "" {
-        user.Role = payload.Role
-    }
+	if payload.Name != "" {
+		user.Name = payload.Name
+	}
+	if payload.Email != "" {
+		user.Email = strings.ToLower(payload.Email)
+	}
+	if payload.Role != "" {
+		user.Role = payload.Role
+	}
 
-    ac.DB.Save(&user)
+	ac.DB.Save(&user)
 
-    ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "User updated successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "User updated successfully"})
 }
 
 // GetAllUsers 获取所有用户
@@ -518,64 +516,3 @@ func (ac *AuthController) GetMe(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"user": userResponse}})
 }
-
-func (ac *AuthController) AdminUpdateBalance(ctx *gin.Context) {
-	currentUser := ctx.MustGet("currentUser").(models.User)
-	if currentUser.Role != constants.RoleAdmin {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "Only Admin can update credits"})
-		return
-	}
-	var payload *models.UpdateBalanceInput
-
-	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
-		return
-	}
-
-	newBalance, err := ac.cs.UpdateBalanceByUserEmail(payload.Email, payload.Amount)
-	if err != nil {
-		logger.Warning(err.Error())
-		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": "Failed to update credits"})
-		return
-	}
-	now := time.Now()
-	bill := models.BillingHistory{
-		Operator:          currentUser.Email,
-		AccountEmail:      payload.Email,
-		Amount:            payload.Amount,
-		TransactionType:   constants.TransactionTypeAdmin,
-		TransactionDetail: "Admin updates balance",
-		TransactionTime:   now,
-	}
-	err = ac.DB.Create(&bill).Error
-	if err != nil {
-		logger.Warning("Failed to create billing history", err)
-	}
-	logger.Info("Create billing history", bill)
-
-	var user models.User
-	err = ac.DB.First(&user, "email = ?", payload.Email).Error
-	if err != nil {
-		logger.Warning(err.Error())
-	}
-	var firstName = user.Name
-
-	if strings.Contains(firstName, " ") {
-		firstName = strings.Split(firstName, " ")[1]
-	}
-
-	emailData := utils.EmailData{
-		FirstName: firstName,
-		Subject:   "Pointer.ai 充值提醒",
-		Amount:    payload.Amount,
-		Balance:   newBalance,
-	}
-	go func() {
-		utils.SendEmail(&user, &emailData, "chargeSucceed.html")
-
-	}()
-	logger.Info("Charge balance of user", payload.Email, "for amount", payload.Amount, "newBalance: ", newBalance)
-
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"updated_email": payload.Email, "new_balance": newBalance}})
-}
-

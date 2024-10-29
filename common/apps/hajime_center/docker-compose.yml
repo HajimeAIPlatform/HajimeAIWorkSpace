@@ -27,7 +27,6 @@ services:
       - "8000:8000"
     volumes:
       - ./app.env:/srv/HajimeCenter/app.env
-      - ./chat-config.json:/srv/HajimeCenter/chat-config.json
       - ./logs:/srv/HajimeCenter/logs
       - ./storage:/srv/storage
     networks:

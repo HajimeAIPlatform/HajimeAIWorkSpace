@@ -170,8 +170,6 @@ rules_pkg_dependencies()
 ######################
 # GOLANG SUPPORT
 ######################
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 http_archive(
     name = "io_bazel_rules_go",
     integrity = "sha256-M6zErg9wUC20uJPJ/B3Xqb+ZjCPn/yxFF3QdQEmpdvg=",
@@ -192,6 +190,10 @@ http_archive(
 
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+
+go_rules_dependencies()
+go_register_toolchains()
+
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
 ############################################################
@@ -200,8 +202,10 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 # The first declaration of an external repository "wins".
 ############################################################
 
-go_rules_dependencies()
-
-go_register_toolchains()
 
 gazelle_dependencies()
+
+#load("//:deps.bzl", "go_dependencies")
+#
+## gazelle:repository_macro deps.bzl%go_dependencies
+#go_dependencies()
