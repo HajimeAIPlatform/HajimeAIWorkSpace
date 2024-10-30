@@ -1,10 +1,10 @@
 package dify
 
 import (
+	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
+	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"encoding/json"
 	"fmt"
-	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
 )
 
 type UserLoginParams struct {
@@ -13,9 +13,14 @@ type UserLoginParams struct {
 	RememberMe bool   `json:"remember_me"`
 }
 
+type Data struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 type UserLoginResponse struct {
 	Result string `json:"result"`
-	Data   string `json:"data"`
+	Data   Data   `json:"data"`
 }
 
 func (dc *DifyClient) UserLogin(email string, password string) (result UserLoginResponse, err error) {
@@ -58,6 +63,6 @@ func (dc *DifyClient) GetUserToken() (string, error) {
 	}
 
 	// 更新 ACCESS_TOKEN
-	dc.ConsoleToken = result.Data
-	return result.Data, nil
+	dc.ConsoleToken = result.Data.AccessToken
+	return result.Data.AccessToken, nil
 }

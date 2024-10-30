@@ -4,6 +4,7 @@ import (
 	"HajimeAIWorkSpace/common/apps/hajime_center/dify"
 	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -12,15 +13,25 @@ import (
 // AuthMiddleware adds authentication headers to the request
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Add authentication header
-		difyCleint, err := dify.GetDifyClient()
+		// Check if the path is /dify/console/api/setup
+		fmt.Println("r.URL.Path", r.URL.Path)
+		if r.URL.Path != "/dify/console/api/setup" {
+			difyClient, err := dify.GetDifyClient()
+			if err != nil {
+				logger.Warning("Auth Failed: " + err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 
-		if err != nil {
-			logger.Warning("Auth Failed: " + err.Error())
+			Token, err := difyClient.GetUserToken()
+			if err != nil {
+				logger.Warning("Token retrieval failed: " + err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			// Add the token to the request header
+			r.Header.Set("Authorization", "Bearer "+Token)
 		}
-
-		Token, _ := difyCleint.GetUserToken()
-		r.Header.Add("Authorization", "Bearer "+Token)
 
 		// Call the next handler
 		next.ServeHTTP(w, r)
@@ -52,3 +63,5 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
 	return server
 }
+
+// DifyHandler forwards requests after removing the "dify" prefix
