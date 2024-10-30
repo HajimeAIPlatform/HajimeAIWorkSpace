@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "hajime-evidence-center"
+version = "0.1.0"
+description = ""
+authors = ["samoslab <hanyh2004@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.110.0"
+uvicorn = "^0.29.0"
+apscheduler = "^3.10.4"
+python-dotenv = "^1.0.1"
+python-ulid = "^2.2.0"
+solana = "^0.32.0"
+pymongo = "^4.5.0"
+beanie = "^1.19.2"
+requests = "^2.31.0"
+email-validator = "^2.1.1"
+pymysql = "^1.1.0"
+pynacl = "^1.5.0"
+python-decouple = "^3.8"
+base58 = "^2.1.1"
+redis = "^5.0.3"
+passlib = "^1.7.4"
+python-multipart = "^0.0.16"
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

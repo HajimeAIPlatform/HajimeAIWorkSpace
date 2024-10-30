@@ -1,0 +1,31 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@python_deps//:requirements.bzl", "requirement")
+
+py_binary(
+    name = "hajime_web",
+    srcs = [
+        "hajime.py",  
+    ],
+    main = "hajime.py",
+    deps = [
+        "//common/apps/hajime_web/app:app_lib",
+        requirement("fastapi"),
+        requirement("uvicorn"),
+        requirement("apscheduler"),
+        requirement("python-dotenv"),
+        requirement("python-ulid"),
+        requirement("solana"),
+        requirement("pymongo"),
+        requirement("beanie"),
+        requirement("requests"),
+        requirement("email-validator"),
+        requirement("pymysql"),
+        requirement("pynacl"),
+        requirement("python-decouple"),
+        requirement("base58"),
+        requirement("redis"),
+        requirement("passlib"),
+        requirement("pydantic"),
+        requirement("python_multipart"),
+    ],
+)

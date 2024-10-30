@@ -1,0 +1,14 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "app_lib",
+    srcs = glob(["*.py"]),
+    deps = [
+        "//common/apps/hajime_web/app/service:service_lib",
+        "//common/apps/hajime_web/app/utils:utils_lib",
+        "//common/apps/hajime_web/app/db:db_lib",
+        "//common/apps/hajime_web/app/blog:blog_lib",
+        "//common/apps/hajime_web/app/routers:routers_lib",
+    ],
+    visibility = ["//visibility:public"]
+)

@@ -1,0 +1,11 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "routers_lib",
+    srcs = glob(["*.py"]),
+    deps = [
+        "//common/apps/hajime_web/app/utils:utils_lib",
+        "//common/apps/hajime_web/app/db:db_lib",
+    ],
+    visibility = ["//visibility:public"],
+)

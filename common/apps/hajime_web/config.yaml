@@ -1,0 +1,15 @@
+mixed-port: 7897
+socks-port: 7891
+port: 7892
+redir-port: 7893
+allow-lan: true
+external-controller: 127.0.0.1:59314
+proxies:
+  - name: aws_hk
+    type: socks5
+    server: 52.81.17.214
+    port: 6778
+    udp: true
+ipv6: true
+log-level: info
+
