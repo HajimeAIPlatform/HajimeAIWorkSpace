@@ -1,0 +1,11 @@
+version: "3"
+agent:
+    authtoken: 2nSQ5UUali779h6foNQ9dsbAy3w_rJqT7tMccSUJj4DhdHmU
+tunnels:
+  api:
+    proto: http
+    addr: 5000
+  web:
+    proto: http
+    addr: 5173
+
