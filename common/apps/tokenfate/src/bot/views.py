@@ -200,6 +200,14 @@ async def webhook():
                 # if not is_connected:
                 #     await update.callback_query.message.reply_text("You haven't connected the wallet")
                 #     return 'OK'
+                # await reveal_fate(update, token)
+                await risk_preference(update, token)
+                return 'OK'
+            
+            if update.callback_query.data.startswith("risk"):
+                data = update.callback_query.data
+                logging.info(f"data: {data}")
+                token = data.split(":")[1]
                 await reveal_fate(update, token)
                 return 'OK'
 
@@ -493,6 +501,28 @@ async def reveal_fate(update, token):
             reply_markup=reply_markup
         )
         return 'OK'
+    except Exception as e:
+        logging.error(f"Error in reveal_fate: {e}")
+        await update.callback_query.message.reply_text(
+            "Sorry, something went wrong while processing your request."
+        )
+        return
+    
+async def risk_preference(update, token):
+    try:
+        await update.callback_query.answer()
+        if not token:
+            await update.callback_query.message.reply_text("Please Enter Your Token.")
+            return 'OK'
+        dialog = i18n.get_dialog('risk')
+        reply_markup = keyboard_factory.create_keyboard("risk", token=token)
+        await update.callback_query.message.reply_text(
+            escape(dialog), 
+            parse_mode="MarkdownV2", 
+            reply_markup=reply_markup
+        )
+        return 'OK'
+
     except Exception as e:
         logging.error(f"Error in reveal_fate: {e}")
         await update.callback_query.message.reply_text(
