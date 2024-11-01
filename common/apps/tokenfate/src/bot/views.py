@@ -514,13 +514,23 @@ async def risk_preference(update, token):
         if not token:
             await update.callback_query.message.reply_text("Please Enter Your Token.")
             return 'OK'
+        
+        # 发送文本信息
         dialog = i18n.get_dialog('risk')
-        reply_markup = keyboard_factory.create_keyboard("risk", token=token)
         await update.callback_query.message.reply_text(
-            escape(dialog), 
-            parse_mode="MarkdownV2", 
-            reply_markup=reply_markup
+            text=dialog,
+            parse_mode="MarkdownV2"
         )
+
+        # 发送图片及选择项
+        reply_markup = keyboard_factory.create_keyboard("risk", token=token)
+        image_path = get_image_path('risk_preference_combined.png')
+        with open(image_path, 'rb') as image_file:
+            await update.callback_query.message.reply_photo(
+                photo=image_file,
+                parse_mode="MarkdownV2",
+                reply_markup=reply_markup
+            )
         return 'OK'
 
     except Exception as e:
