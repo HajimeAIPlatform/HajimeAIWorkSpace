@@ -17,7 +17,8 @@ BOT_TOKEN="7476000600:AAGDllamIKdoMKu8fluDq15qVy4sCdiGgak"   # TokenFateFortuneC
 curl -F "url=$WEBHOOK_URL" https://api.telegram.org/bot$BOT_TOKEN/setWebhook
 
 # bash utils/set_webhook.sh https://121b-27-38-230-5.ngrok-free.app/telebot/bot/webhook
-# bash utils/set_webhook.sh https://magic.pointer.ai/telebot/bot/webhook
+# Dev服务器:
+# bash utils/set_webhook.sh https://hajimedev.pointer.ai/telebot/bot/webhook
 
 
 # bash utils/set_webhook.sh https://af65-119-136-89-174.ngrok-free.app/telebot/bot2/webhook
