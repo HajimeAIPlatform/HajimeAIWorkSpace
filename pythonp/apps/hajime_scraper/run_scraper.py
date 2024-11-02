@@ -1,4 +1,3 @@
-import requests
 from scrapy.crawler import CrawlerProcess
 from hajime_scraper_lib.spiders.generic_spider import GenericSpider
 
