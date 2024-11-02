@@ -11,7 +11,6 @@ Clion also support python.
 
 You can try the demo c++ app / python app
 ```shell
-bazel run //pythonp/apps/example_app/main:hello-world
 
 bazel run //pythonp/apps/python_example_app:hello_hajime
 
@@ -21,10 +20,13 @@ Dependent Compilation
 
 pip-tools generates requirements.txt through requirements.in
 ```shell
-pip install pip-tools
-pip-compile requirements.in
+bazel run //:requirements.update
 
 ```
+
+The requirements_lock.txt will be updated. If you need to create a new version set of python
+packages, you need to create a separate requirements.in file.
+
 
 
 Coding style formatter for Python
