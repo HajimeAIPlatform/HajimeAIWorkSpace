@@ -53,7 +53,7 @@ WINDOWS_SOLUTIONS/pro_AI/model.data
 *.onnx
 *.ijwb*
 
-common/apps/jancsi_image_system/frontend/dist
+pythonp/apps/jancsi_image_system/frontend/dist
 
 *node_modules*
 

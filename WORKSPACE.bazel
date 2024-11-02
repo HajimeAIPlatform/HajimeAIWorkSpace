@@ -56,17 +56,6 @@ load("@python_deps//:requirements.bzl", "install_deps")
 # Call it to define repos for your requirements.
 install_deps()
 
-# Create a central external repo, @my_deps, that contains Bazel targets for all the
-# third-party packages specified in the requirements.txt file.
-
-load("//3rdparty/bazel-rules-openssl:repos.bzl", openssl_repos = "repos")
-
-openssl_repos()
-
-load("@com_github_3rdparty_bazel_rules_openssl//bazel:deps.bzl", openssl_deps = "deps")
-
-openssl_deps()
-
 http_archive(
     name = "com_google_absl",
     sha256 = "4208129b49006089ba1d6710845a45e31c59b0ab6bff9e5788a87f55c5abd602",
@@ -76,23 +65,6 @@ http_archive(
         "https://github.com/abseil/abseil-cpp/archive/20220623.0.tar.gz",
     ],
 )
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "rules_proto",
-    sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
-    strip_prefix = "rules_proto-5.3.0-21.7",
-    urls = [
-        "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
-    ],
-)
-
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
-
-rules_proto_dependencies()
-
-rules_proto_toolchains()
 
 http_archive(
     name = "com_github_gflags_gflags",
@@ -116,49 +88,30 @@ http_archive(
 )
 
 http_archive(
-    name = "com_github_grpc_grpc",
-    strip_prefix = "grpc-c2682c64a5f8599b5690a79b50f1c9c3ef5e2433",
+    name = "io_bazel_rules_go",
+    sha256 = "f4a9314518ca6acfa16cc4ab43b0b8ce1e4ea64b81c38d8a3772883f153346b8",
     urls = [
-        "https://github.com/grpc/grpc/archive/c2682c64a5f8599b5690a79b50f1c9c3ef5e2433.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.50.1/rules_go-v0.50.1.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.50.1/rules_go-v0.50.1.zip",
     ],
 )
 
-load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
-
-grpc_deps()
-
-load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
-
-grpc_extra_deps()
-
+# Download Gazelle.
 http_archive(
-    name = "rules_proto_grpc",
-    sha256 = "fb7fc7a3c19a92b2f15ed7c4ffb2983e956625c1436f57a3430b897ba9864059",
-    strip_prefix = "rules_proto_grpc-4.3.0",
-    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.3.0.tar.gz"],
-)
-
-load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
-
-rules_proto_grpc_toolchains()
-
-rules_proto_grpc_repos()
-
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
-
-rules_proto_dependencies()
-
-rules_proto_toolchains()
-
-http_archive(
-    name = "rules_pkg",
-    sha256 = "eea0f59c28a9241156a47d7a8e32db9122f3d50b505fae0f33de6ce4d9b61834",
+    name = "bazel_gazelle",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.8.0/rules_pkg-0.8.0.tar.gz",
-        "https://github.com/bazelbuild/rules_pkg/releases/download/0.8.0/rules_pkg-0.8.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.39.1/bazel-gazelle-v0.39.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.39.1/bazel-gazelle-v0.39.1.tar.gz",
     ],
 )
 
-load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+# Load macros and repository rules.
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
-rules_pkg_dependencies()
+go_rules_dependencies()
+
+go_register_toolchains(version = "1.23.2")
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+
+gazelle_dependencies()

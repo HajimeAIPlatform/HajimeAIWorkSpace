@@ -11,9 +11,9 @@ Clion also support python.
 
 You can try the demo c++ app / python app
 ```shell
-bazel run //common/apps/example_app/main:hello-world
+bazel run //pythonp/apps/example_app/main:hello-world
 
-bazel run //common/apps/python_example_app:hello_hajime
+bazel run //pythonp/apps/python_example_app:hello_hajime
 
 ```
 
@@ -36,7 +36,7 @@ https://github.com/google/yapf
 for auto-formatting:
 ```shell
 pip install yapf
-yapf -r -i ./common/apps/
+yapf -r -i ./pythonp/apps/
 ```
 -r represent recursive
 -i means inplace
