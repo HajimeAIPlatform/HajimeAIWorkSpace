@@ -5,5 +5,8 @@ go_binary(
     srcs = ["demo_main.go"],
     importpath = "hajime/golangp/demo",
     visibility = ["//visibility:public"],
-    deps = ["//golangp/libs:utils"],
+    deps = [
+        "//golangp/libs:utils",
+        "@com_github_goccy_go_json//:go_default_library",  # 添加 go-json 依赖
+    ],
 )

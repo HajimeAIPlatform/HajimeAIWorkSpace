@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: hajime
+      POSTGRES_PASSWORD: hajime
+      POSTGRES_DB: hajime
+    restart: always
+    ports:
+      - "0.0.0.0:5432:5432"
+    volumes:
+      - ./docker-data/postgres_data:/var/lib/postgresql/data
+    networks:
+      - hajime
+
+  hajime:
+    image: hajime_center:v2.0
+    build:
+      context: .
+    container_name: hajime_center_container
+    privileged: true
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app.env:/srv/HajimeCenter/app.env
+      - ./logs:/srv/HajimeCenter/logs
+      - ./storage:/srv/storage
+    networks:
+      - hajime
+    depends_on:
+      - postgres
+
+networks:
+  hajime:
+    driver: bridge
