@@ -18,6 +18,8 @@ bazel run //pythonp/apps/python_example_app:hello_hajime
 
 Dependent Compilation
 
+- python
+
 pip-tools generates requirements.txt through requirements.in
 ```shell
 bazel run //:requirements.update
@@ -27,7 +29,14 @@ bazel run //:requirements.update
 The requirements_lock.txt will be updated. If you need to create a new version set of python
 packages, you need to create a separate requirements.in file.
 
+- golang
 
+Dependencies are defined in the `go.mod` file. To integrate these dependencies into the Bazel build system, execute the following command:
+```shell
+bazel run //:gazelle-update-repos
+
+```
+This command uses the Gazelle tool to read the go.mod file and update the deps.bzl file, which contains all the Go dependencies.
 
 Coding style formatter for Python
 
