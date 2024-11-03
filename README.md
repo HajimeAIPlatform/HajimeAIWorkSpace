@@ -18,7 +18,6 @@ bazel run //pythonp/apps/python_example_app:hello_hajime
 
 Dependent Compilation
 
-pip-tools generates requirements.txt through requirements.in
 ```shell
 bazel run //:requirements.update
 
