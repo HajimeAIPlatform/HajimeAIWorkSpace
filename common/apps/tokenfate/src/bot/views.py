@@ -195,11 +195,19 @@ async def webhook():
                 data = update.callback_query.data
                 logging.info(f"data: {data}")
                 token = data.split(":")[1]
-                is_connected = await ton_module.check_connected(update, telegram_app)
+                # is_connected = await ton_module.check_connected(update, telegram_app)
                 # 现在不强制检查钱包连接状态，直接揭示命运
                 # if not is_connected:
                 #     await update.callback_query.message.reply_text("You haven't connected the wallet")
                 #     return 'OK'
+                # await reveal_fate(update, token)
+                await risk_preference(update, token)
+                return 'OK'
+            
+            if update.callback_query.data.startswith("risk"):
+                data = update.callback_query.data
+                logging.info(f"data: {data}")
+                token = data.split(":")[1]
                 await reveal_fate(update, token)
                 return 'OK'
 
@@ -439,7 +447,7 @@ def create_token_keyboard(tokens):
         if token_name:
             button = InlineKeyboardButton(
                 text=f"${token_name}",
-                callback_data=f"select_token_{token_name}"
+                callback_data=f"reveal_fate:${token_name}"
             )
             row.append(button)
 
@@ -493,6 +501,38 @@ async def reveal_fate(update, token):
             reply_markup=reply_markup
         )
         return 'OK'
+    except Exception as e:
+        logging.error(f"Error in reveal_fate: {e}")
+        await update.callback_query.message.reply_text(
+            "Sorry, something went wrong while processing your request."
+        )
+        return
+    
+async def risk_preference(update, token):
+    try:
+        await update.callback_query.answer()
+        if not token:
+            await update.callback_query.message.reply_text("Please Enter Your Token.")
+            return 'OK'
+        
+        # 发送文本信息
+        dialog = i18n.get_dialog('risk')
+        await update.callback_query.message.reply_text(
+            text=dialog,
+            parse_mode="MarkdownV2"
+        )
+
+        # 发送图片及选择项
+        reply_markup = keyboard_factory.create_keyboard("risk", token=token)
+        image_path = get_image_path('risk_preference_combined.png')
+        with open(image_path, 'rb') as image_file:
+            await update.callback_query.message.reply_photo(
+                photo=image_file,
+                parse_mode="MarkdownV2",
+                reply_markup=reply_markup
+            )
+        return 'OK'
+
     except Exception as e:
         logging.error(f"Error in reveal_fate: {e}")
         await update.callback_query.message.reply_text(
