@@ -62,5 +62,3 @@ yapf -r -i ./pythonp/apps/
 
 We will enforce yapf check in CI/CD.
 
-
-
