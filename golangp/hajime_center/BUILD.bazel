@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_binary(
     name = "hajime_center",
     srcs = ["main.go"],
-    data = ["app.env"],
+    data = ["app.dev.env"],
     importpath = "hajime/golangp/hajime_center",
     visibility = ["//visibility:public"],
     deps = [

@@ -6,14 +6,14 @@ go_library(
     importpath = "hajime/golangp/hajime_center/controllers",
     visibility = ["//visibility:public"],
     deps = [
+        "//golangp/hajime_center/constants",
         "//golangp/hajime_center/dify",
-        "//golangp/hajime_center/models",
         "//golangp/hajime_center/initializers",
         "//golangp/hajime_center/logger",
-        "//golangp/hajime_center/constants",
+        "//golangp/hajime_center/models",
         "//golangp/hajime_center/utils",
-        "@com_github_gin_gonic_gin//:go_default_library", 
-        "@io_gorm_gorm//:go_default_library",
+        "@com_github_gin_gonic_gin//:go_default_library",
         "@com_github_thanhpk_randstr//:go_default_library",
+        "@io_gorm_gorm//:go_default_library",
     ],
 )

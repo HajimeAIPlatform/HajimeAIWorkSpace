@@ -1,14 +1,14 @@
 package main
 
 import (
-	"hajime/golangp/hajime_center/controllers"
-	"hajime/golangp/hajime_center/initializers"
-	"hajime/golangp/hajime_center/proxy"
-	"hajime/golangp/hajime_center/routes"
 	"context"
 	"errors"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"hajime/golangp/hajime_center/controllers"
+	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/proxy"
+	"hajime/golangp/hajime_center/routes"
 	"log"
 	"net/http"
 	"os"
