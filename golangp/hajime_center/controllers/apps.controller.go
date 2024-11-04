@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/dify"
-	"HajimeAIWorkSpace/common/apps/hajime_center/models"
+	"hajime/golangp/hajime_center/dify"
+	"hajime/golangp/hajime_center/models"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"

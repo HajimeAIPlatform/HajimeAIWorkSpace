@@ -89,6 +89,11 @@ type Config struct {
 }
 
 func LoadEnv(path string) (config Config, err error) {
+	// 如果路径是当前目录，则修改为指定路径
+	if path == "." {
+		path = "golangp/hajime_center"
+	}
+
 	viper.AddConfigPath(path)
 	viper.SetConfigType("env")
 	viper.SetConfigName("app")

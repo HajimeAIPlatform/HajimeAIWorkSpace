@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
+	"hajime/golangp/hajime_center/logger"
 
 	"golang.org/x/crypto/bcrypt"
 )

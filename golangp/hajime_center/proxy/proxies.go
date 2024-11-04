@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
+	"hajime/golangp/hajime_center/initializers"
 	"net/http"
 	"net/http/httputil"
 	"net/url"

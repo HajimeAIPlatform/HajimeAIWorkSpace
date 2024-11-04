@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/controllers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/middleware"
 	"github.com/gin-gonic/gin"
+	"hajime/golangp/hajime_center/controllers"
+	"hajime/golangp/hajime_center/middleware"
 )
 
 type AuthRouteController struct {

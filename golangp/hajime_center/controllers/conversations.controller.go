@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/dify"
+	"hajime/golangp/hajime_center/dify"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"

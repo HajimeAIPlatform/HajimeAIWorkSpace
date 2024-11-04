@@ -1,14 +1,14 @@
 package controllers
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/constants"
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/models"
-	"HajimeAIWorkSpace/common/apps/hajime_center/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/thanhpk/randstr"
 	"gorm.io/gorm"
+	"hajime/golangp/hajime_center/constants"
+	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/models"
+	"hajime/golangp/hajime_center/utils"
 	"log"
 	"net/http"
 	"strings"

@@ -8,10 +8,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/models"
 	"github.com/k3a/html2text"
 	"gopkg.in/gomail.v2"
+	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/models"
 )
 
 type EmailData struct {

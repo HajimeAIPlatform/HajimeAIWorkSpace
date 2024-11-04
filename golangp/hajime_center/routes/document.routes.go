@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/controllers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/middleware"
 	"github.com/gin-gonic/gin"
+	"hajime/golangp/hajime_center/controllers"
+	"hajime/golangp/hajime_center/middleware"
 )
 
 type DocumentRouteController struct {
@@ -26,7 +26,7 @@ func (dc *DocumentRouteController) DocumentRoute(rg *gin.RouterGroup) {
 	fileRouter.POST("/upload", dc.documentController.HandleFileUploadWithDatasets)
 	fileRouter.POST("/upload/chat", dc.documentController.HandleFileUploadForChat)
 	fileRouter.GET("/supportType", dc.documentController.GetFilesSupportType)
-	
+
 	fileRouter.GET("/datasets/:dataset_id", dc.documentController.GetDatasetFileList)
 	fileRouter.GET("/datasets/:dataset_id/indexing_status", dc.documentController.GetDatasetIndexingStatus)
 	fileRouter.GET("/datasets/:dataset_id/:document_id/indexing_status", dc.documentController.GetDocumentIndexingStatus)

@@ -1,10 +1,10 @@
 package proxy
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/dify"
-	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"errors"
 	"fmt"
+	"hajime/golangp/hajime_center/dify"
+	"hajime/golangp/hajime_center/logger"
 	"log"
 	"net/http"
 	"sync"

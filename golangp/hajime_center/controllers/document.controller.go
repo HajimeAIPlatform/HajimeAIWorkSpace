@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/dify"
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
-	"HajimeAIWorkSpace/common/apps/hajime_center/models"
+	"hajime/golangp/hajime_center/dify"
+	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/logger"
+	"hajime/golangp/hajime_center/models"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

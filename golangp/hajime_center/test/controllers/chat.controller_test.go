@@ -1,9 +1,9 @@
-package controllers
+package test
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/controllers"
 	"github.com/magiconair/properties/assert"
 	"github.com/sashabaranov/go-openai"
+	"hajime/golangp/hajime_center/controllers"
 	"testing"
 )
 

@@ -1,10 +1,10 @@
 package initializers
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"hajime/golangp/hajime_center/logger"
 )
 
 var DB *gorm.DB

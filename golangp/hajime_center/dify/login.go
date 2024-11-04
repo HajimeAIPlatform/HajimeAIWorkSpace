@@ -1,8 +1,8 @@
 package dify
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
+	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/logger"
 	"encoding/json"
 	"fmt"
 )

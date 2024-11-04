@@ -1,11 +1,11 @@
 package xminio
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
 	"bytes"
 	"context"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"hajime/golangp/hajime_center/initializers"
 	"io"
 	"log"
 	"net/http"

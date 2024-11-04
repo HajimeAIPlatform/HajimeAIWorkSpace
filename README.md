@@ -31,6 +31,14 @@ packages, you need to create a separate requirements.in file.
 
 - golang
 
+Add a New Dependency:
+```shell
+go get example.com/package
+
+```
+go get example.com/package
+This will add example.com/package to your `go.mod` file.
+
 Dependencies are defined in the `go.mod` file. To integrate these dependencies into the Bazel build system, execute the following command:
 ```shell
 bazel run //:gazelle-update-repos

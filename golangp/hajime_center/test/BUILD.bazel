@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "test",
+    srcs = glob(["**/*.go"]),
+    importpath = "hajime/golangp/hajime_center/test",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//golangp/hajime_center/controllers",
+        "@com_github_magiconair_properties//:go_default_library",
+        "@com_github_sashabaranov_go_openai//:go_default_library",
+    ],
+)

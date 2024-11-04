@@ -1,10 +1,10 @@
 package dify
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/logger"
 	"crypto/tls"
 	"fmt"
+	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/logger"
 	"net/http"
 	"strings"
 	"time"

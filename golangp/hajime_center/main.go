@@ -1,10 +1,10 @@
 package main
 
 import (
-	"HajimeAIWorkSpace/common/apps/hajime_center/controllers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/initializers"
-	"HajimeAIWorkSpace/common/apps/hajime_center/proxy"
-	"HajimeAIWorkSpace/common/apps/hajime_center/routes"
+	"hajime/golangp/hajime_center/controllers"
+	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/proxy"
+	"hajime/golangp/hajime_center/routes"
 	"context"
 	"errors"
 	"github.com/gin-contrib/cors"

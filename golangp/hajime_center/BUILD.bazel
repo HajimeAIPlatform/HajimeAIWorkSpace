@@ -1,16 +1,17 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
-go_library(
-    name = "hajime_center_lib",
-    srcs = glob(["**/*.go"], exclude=["main.go"]),  # 递归匹配所有 Go 文件，排除 main.go
-    importpath = "hajime/golangp/hajime_center",
-    visibility = ["//visibility:public"],
-)
-
 go_binary(
     name = "hajime_center",
     srcs = ["main.go"],
+    data = ["app.env"],
     importpath = "hajime/golangp/hajime_center",
     visibility = ["//visibility:public"],
-    deps = [":hajime_center_lib"],
+    deps = [
+        "//golangp/hajime_center/controllers",
+        "//golangp/hajime_center/initializers",
+        "//golangp/hajime_center/proxy",
+        "//golangp/hajime_center/routes",
+        "@com_github_gin_contrib_cors//:go_default_library",
+        "@com_github_gin_gonic_gin//:go_default_library",
+    ],
 )
