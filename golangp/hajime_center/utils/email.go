@@ -3,15 +3,14 @@ package utils
 import (
 	"bytes"
 	"crypto/tls"
-	"html/template"
-	"log"
-	"os"
-	"path/filepath"
-
 	"github.com/k3a/html2text"
 	"gopkg.in/gomail.v2"
 	"hajime/golangp/hajime_center/initializers"
 	"hajime/golangp/hajime_center/models"
+	"html/template"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 type EmailData struct {

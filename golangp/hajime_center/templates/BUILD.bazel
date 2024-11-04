@@ -1,8 +1,8 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "templates",
-    srcs = glob(["**/*.html", "**/*.css"]),
-    importpath = "hajime/golangp/hajime_center/templates",
+filegroup(
+    name = "hajime_templates",
+    srcs = glob([
+        "**/*.html",
+        "**/*.css",
+    ]),
     visibility = ["//visibility:public"],
 )
