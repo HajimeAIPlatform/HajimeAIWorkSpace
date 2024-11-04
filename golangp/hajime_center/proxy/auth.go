@@ -3,8 +3,8 @@ package proxy
 import (
 	"errors"
 	"fmt"
+	"hajime/golangp/common/logging"
 	"hajime/golangp/hajime_center/dify"
-	"hajime/golangp/hajime_center/logger"
 	"log"
 	"net/http"
 	"sync"
@@ -18,14 +18,14 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if r.URL.Path != "/dify/console/api/setup" {
 			difyClient, err := dify.GetDifyClient()
 			if err != nil {
-				logger.Warning("Auth Failed: " + err.Error())
+				logging.Warning("Auth Failed: " + err.Error())
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
 			Token, err := difyClient.GetUserToken()
 			if err != nil {
-				logger.Warning("Token retrieval failed: " + err.Error())
+				logging.Warning("Token retrieval failed: " + err.Error())
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}

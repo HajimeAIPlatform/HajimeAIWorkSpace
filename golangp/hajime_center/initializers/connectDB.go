@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"hajime/golangp/hajime_center/logger"
+	"hajime/golangp/common/logging"
 )
 
 var DB *gorm.DB
@@ -16,7 +16,7 @@ func ConnectDB(config *Config) {
 
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logger.Danger("Failed to connect to the Database")
+		logging.Danger("Failed to connect to the Database")
 	}
 	fmt.Println("🚀 Connected Successfully to the Database")
 }
@@ -27,7 +27,7 @@ func ConnectDBDify(config *Config) {
 
 	DBDify, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logger.Danger("Failed to connect to the Dify Database")
+		logging.Danger("Failed to connect to the Dify Database")
 	}
 	fmt.Println("🚀 Connected Successfully to the Dify Database")
 }

@@ -3,9 +3,8 @@ package utils
 import (
 	"encoding/base64"
 	"fmt"
-	"time"
-
 	"github.com/golang-jwt/jwt"
+	"time"
 )
 
 func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (string, error) {

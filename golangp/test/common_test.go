@@ -2,12 +2,11 @@ package test
 
 import (
 	"github.com/magiconair/properties/assert"
-	"hajime/golangp/hajime_center/controllers"
+	"hajime/golangp/common/utils"
 	"testing"
 )
 
 func TestSmokeTest(t *testing.T) {
-	_ = controllers.NewModelController(nil)
-
-	assert.Equal(t, 0, 0)
+	genStr := utils.GenerateRandomString(10)
+	assert.Equal(t, 10, len(genStr))
 }

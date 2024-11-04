@@ -6,8 +6,8 @@ go_library(
     importpath = "hajime/golangp/hajime_center/proxy",
     visibility = ["//visibility:public"],
     deps = [
-        "//golangp/hajime_center/initializers",
+        "//golangp/common/logging",
         "//golangp/hajime_center/dify",
-        "//golangp/hajime_center/logger",
+        "//golangp/hajime_center/initializers",
     ],
 )

@@ -6,10 +6,9 @@ go_library(
     importpath = "hajime/golangp/hajime_center/middleware",
     visibility = ["//visibility:public"],
     deps = [
+        "//golangp/common/utils",
         "//golangp/hajime_center/initializers",
         "//golangp/hajime_center/models",
-        "//golangp/hajime_center/utils",
         "@com_github_gin_gonic_gin//:go_default_library",
     ],
 )
-

@@ -1,4 +1,4 @@
-package utils
+package mail_utils
 
 import (
 	"bytes"

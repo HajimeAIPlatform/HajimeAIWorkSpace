@@ -1,4 +1,4 @@
-package logger
+package logging
 
 import (
 	"fmt"
@@ -29,7 +29,6 @@ func init() {
 	})
 }
 
-// Info 详情
 func Info(format string, args ...interface{}) {
 	Logger.SetPrefix("[INFO]")
 	message := fmt.Sprintf(format, args...)
@@ -37,21 +36,18 @@ func Info(format string, args ...interface{}) {
 	Logger.Println(message)
 }
 
-// Danger 错误 为什么不命名为 error？避免和 error 类型重名
 func Danger(format string, args ...interface{}) {
 	Logger.SetPrefix("[ERROR]")
 	message := fmt.Sprintf(format, args...)
 	Logger.Fatal(message)
 }
 
-// Warning 警告
 func Warning(format string, args ...interface{}) {
 	Logger.SetPrefix("[WARNING]")
 	message := fmt.Sprintf(format, args...)
 	Logger.Println(message)
 }
 
-// DeBug debug
 func DeBug(format string, args ...interface{}) {
 	Logger.SetPrefix("[DeBug]")
 	message := fmt.Sprintf(format, args...)

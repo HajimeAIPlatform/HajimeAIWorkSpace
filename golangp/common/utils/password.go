@@ -4,9 +4,8 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
-	"hajime/golangp/hajime_center/logger"
-
 	"golang.org/x/crypto/bcrypt"
+	"hajime/golangp/common/logging"
 )
 
 func HashPassword(password string) (string, error) {
@@ -26,7 +25,7 @@ func GenerateRandomString(length int) string {
 	randomBytes := make([]byte, (length*5+7)/8) // Calculate the number of bytes required for the desired length
 	_, err := rand.Read(randomBytes)
 	if err != nil {
-		logger.Warning("Error while generating random bytes for prompt %s", err.Error())
+		logging.Warning("Error while generating random bytes for prompt %s", err.Error())
 		return ""
 	}
 

@@ -3,8 +3,8 @@ package dify
 import (
 	"crypto/tls"
 	"fmt"
+	"hajime/golangp/common/logging"
 	"hajime/golangp/hajime_center/initializers"
-	"hajime/golangp/hajime_center/logger"
 	"net/http"
 	"strings"
 	"time"
@@ -96,7 +96,7 @@ func CreateDifyClient(config DifyClientConfig) (*DifyClient, error) {
 func GetDifyClient() (*DifyClient, error) { // 修改返回类型为 (*DifyClient, error)
 	client, err := CreateDifyClient(DifyClientConfig{})
 	if err != nil {
-		logger.Warning("failed to create DifyClient: %v\n", err)
+		logging.Warning("failed to create DifyClient: %v\n", err)
 		return nil, err // 返回 nil 和 err
 	}
 

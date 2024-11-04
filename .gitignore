@@ -42,17 +42,11 @@ bazel-HajimeAIWorkSpace
 .vscode
 *.idea*
 *.vs*
-WINDOWS_SOLUTIONS/pro_AI/out
-WINDOWS_SOLUTIONS/pro_AI/algo_api_test_images/
-WINDOWS_SOLUTIONS/pro_AI/results/
-WINDOWS_SOLUTIONS/pro_AI/password.txt
-WINDOWS_SOLUTIONS/pro_AI/model.data
+
 
 *CMakeSettings.json
 *.onnx
 *.ijwb*
-
-pythonp/apps/jancsi_image_system/frontend/dist
 
 *node_modules*
 

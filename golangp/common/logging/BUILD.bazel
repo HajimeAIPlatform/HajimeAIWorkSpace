@@ -3,6 +3,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "logger",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/hajime_center/logger",
+    importpath = "hajime/golangp/common/logging",
     visibility = ["//visibility:public"],
 )

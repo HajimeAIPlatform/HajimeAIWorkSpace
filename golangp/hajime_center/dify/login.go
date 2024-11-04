@@ -1,10 +1,10 @@
 package dify
 
 import (
-	"hajime/golangp/hajime_center/initializers"
-	"hajime/golangp/hajime_center/logger"
 	"encoding/json"
 	"fmt"
+	"hajime/golangp/common/logging"
+	"hajime/golangp/hajime_center/initializers"
 )
 
 type UserLoginParams struct {
@@ -58,7 +58,7 @@ func (dc *DifyClient) GetUserToken() (string, error) {
 	// 不存在 ACCESS_TOKEN，进行登录操作
 	result, err := dc.UserLogin(config.DifyConsoleEmail, config.DifyConsolePassword)
 	if err != nil {
-		logger.Warning("failed to login: %v\n", err)
+		logging.Warning("failed to login: %v\n", err)
 		return "", err
 	}
 

@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"hajime/golangp/hajime_center/initializers"
 	"hajime/golangp/hajime_center/models"
-	"hajime/golangp/hajime_center/utils"
 )
 
 func DeserializeUser() gin.HandlerFunc {

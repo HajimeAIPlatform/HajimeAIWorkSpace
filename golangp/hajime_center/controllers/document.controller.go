@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"hajime/golangp/hajime_center/dify"
-	"hajime/golangp/hajime_center/initializers"
-	"hajime/golangp/hajime_center/logger"
-	"hajime/golangp/hajime_center/models"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"hajime/golangp/common/logging"
+	"hajime/golangp/hajime_center/dify"
+	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/models"
 	"net/http"
 	"os"
 	"strconv"
@@ -25,13 +25,13 @@ func NewDocumentController(DB *gorm.DB, DBDify *gorm.DB) DocumentController {
 func InitDifyClient() *dify.DifyClient {
 	client, err := dify.GetDifyClient()
 	if err != nil {
-		logger.Warning(err.Error())
+		logging.Warning(err.Error())
 		return nil // 返回 nil 以符合返回类型
 	}
 
 	_, err = client.GetUserToken()
 	if err != nil {
-		logger.Warning(err.Error())
+		logging.Warning(err.Error())
 		return nil // 返回 nil 以符合返回类型
 	}
 	return client
@@ -41,14 +41,14 @@ func (c *DocumentController) GetDidyAccessToken(ctx *gin.Context) {
 	client, err := dify.GetDifyClient()
 
 	if err != nil {
-		logger.Warning(err.Error())
+		logging.Warning(err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": "Failed to get client"})
 		return
 	}
 
 	accessToken, err := client.GetUserToken()
 	if err != nil {
-		logger.Warning(err.Error())
+		logging.Warning(err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": "Failed to get access token"})
 		return
 	}

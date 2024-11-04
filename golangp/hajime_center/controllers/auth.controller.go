@@ -5,11 +5,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/thanhpk/randstr"
 	"gorm.io/gorm"
+	"hajime/golangp/common/logging"
+	"hajime/golangp/common/utils"
 	"hajime/golangp/hajime_center/constants"
 	"hajime/golangp/hajime_center/initializers"
+	"hajime/golangp/hajime_center/mail_utils"
 	"hajime/golangp/hajime_center/models"
-	"hajime/golangp/hajime_center/utils"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -84,14 +85,14 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	}
 
 	// ? Send Email
-	emailData := utils.EmailData{
+	emailData := mail_utils.EmailData{
 		URL:              config.ClientOrigin + "/verifyemail/" + code,
 		VerificationCode: code,
 		FirstName:        firstName,
 		Subject:          "Your account verification code",
 	}
 
-	utils.SendEmail(&newUser, &emailData, "verificationCode.html")
+	mail_utils.SendEmail(&newUser, &emailData, "verificationCode.html")
 
 	message := "We sent an email with a verification code to " + newUser.Email
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
@@ -250,7 +251,7 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 
 	config, err := initializers.LoadEnv(".")
 	if err != nil {
-		log.Fatal("Could not load openai-config", err)
+		logging.Danger("Could not load openai-config", err)
 	}
 
 	// Generate Verification Code
@@ -268,14 +269,14 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 	}
 
 	// ? Send Email
-	emailData := utils.EmailData{
+	emailData := mail_utils.EmailData{
 		URL:              config.ClientOrigin + "/resetpassword/" + resetToken,
 		VerificationCode: resetToken,
 		FirstName:        firstName,
 		Subject:          "Your password reset token (valid for 10min)",
 	}
 
-	utils.SendEmail(&user, &emailData, "resetPassword.html")
+	mail_utils.SendEmail(&user, &emailData, "resetPassword.html")
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 }
