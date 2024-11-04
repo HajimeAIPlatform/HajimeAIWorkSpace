@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_binary(
+    name = "hajime_center",
+    srcs = ["main.go"],
+    data = ["app.dev.env"],
+    importpath = "hajime/golangp/apps/hajime_center",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//golangp/apps/hajime_center/controllers",
+        "//golangp/apps/hajime_center/initializers",
+        "//golangp/apps/hajime_center/proxy",
+        "//golangp/apps/hajime_center/routes",
+        "@com_github_gin_contrib_cors//:go_default_library",
+        "@com_github_gin_gonic_gin//:go_default_library",
+    ],
+)

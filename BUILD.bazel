@@ -9,7 +9,7 @@ compile_pip_requirements(
 )
 
 
-# gazelle:prefix hajime/golangp/hajime_center
+# gazelle:prefix hajime/golangp/apps/hajime_center
 gazelle(
     name = "gazelle-update-repos",
     args = [
