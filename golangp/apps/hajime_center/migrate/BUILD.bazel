@@ -6,11 +6,11 @@ go_library(
     importpath = "hajime/golangp/apps/hajime_center/migrate",
     visibility = ["//visibility:public"],
     deps = [
-        "//golangp/common/logging:logger",
         "//golangp/apps/hajime_center/constants",
         "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/models",
         "//golangp/common/utils",
+        "//golangp/common/logging:logger",
         "@io_gorm_gorm//:go_default_library",
     ],
 )

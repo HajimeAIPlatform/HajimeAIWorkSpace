@@ -3,22 +3,16 @@ load("@py_deps//:requirements.bzl", "requirement")
 py_library(
     name = "models",
     srcs = glob(["models/**/*.py"]),
+    visibility = ["//visibility:public"],
     deps = [
         "//pythonp/apps/tokenfate:common_deps",
     ],
 )
 
 py_library(
-    name = "logger",
-    srcs = glob(["logger/**/*.py"]),
-    deps = [
-        "//pythonp/apps/tokenfate:common_deps",
-    ],
-)
-
-py_library(
-    name = "diffy_client",
-    srcs = glob(["diffy_client/**/*.py"]),
+    name = "dify_client",
+    srcs = glob(["dify_client/**/*.py"]),
+    visibility = ["//visibility:public"],
     deps = [
         "//pythonp/apps/tokenfate:common_deps",
     ],
@@ -27,8 +21,9 @@ py_library(
 py_library(
     name = "src",
     srcs = glob(["src/**/*.py"]),
+    visibility = ["//visibility:public"],
     deps = [
-        ":diffy_client",
+        ":dify_client",
         "//pythonp/apps/tokenfate:common_deps",
     ],
 )
@@ -36,6 +31,7 @@ py_library(
 py_library(
     name = "mock_service",
     srcs = glob(["mock_service/**/*.py"]),
+    visibility = ["//visibility:public"],
     deps = [
         "//pythonp/apps/tokenfate:common_deps",
     ],
@@ -46,7 +42,7 @@ py_binary(
     srcs = glob(["**/*.py"]),
     main = "wsgi.py",
     deps = [
-        ":diffy_client",
+        ":dify_client",
         ":mock_service",
         ":models",
         ":src",
@@ -58,6 +54,7 @@ py_binary(
 py_library(
     name = "common_deps",
     srcs = [],
+    visibility = ["//visibility:public"],
     deps = [
         requirement("asgiref"),
         requirement("flask"),
