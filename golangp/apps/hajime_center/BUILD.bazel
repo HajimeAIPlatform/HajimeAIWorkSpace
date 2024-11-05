@@ -15,3 +15,4 @@ go_binary(
         "@com_github_gin_gonic_gin//:go_default_library",
     ],
 )
+

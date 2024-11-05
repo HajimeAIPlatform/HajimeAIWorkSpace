@@ -10,7 +10,7 @@ go_library(
         "//golangp/apps/hajime_center/constants",
         "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/models",
-        "//golangp/apps/hajime_center/utils",
+        "//golangp/common/utils",
         "@io_gorm_gorm//:go_default_library",
     ],
 )
