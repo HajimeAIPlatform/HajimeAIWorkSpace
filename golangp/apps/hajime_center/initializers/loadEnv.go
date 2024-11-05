@@ -56,6 +56,10 @@ type Config struct {
 
 	DifyConsoleEmail       string `mapstructure:"DIFY_CONSOLE_UMAIL"`
 	DifyConsolePassword    string `mapstructure:"DIFY_CONSOLE_PASSWORD"`
+	DifyEditorEmail        string `mapstructure:"DIFY_EDITOR_UMAIL"`
+	DifyEditorPassword     string `mapstructure:"DIFY_EDITOR_PASSWORD"`
+	DifyUserEmail          string `mapstructure:"DIFY_USER_UMAIL"`
+	DifyUserPassword       string `mapstructure:"DIFY_USER_PASSWORD"`
 	DifyConsoleStoragePath string `mapstructure:"DIFY_CONSOLE_STORAGE_PATH"`
 	DifyHost               string `mapstructure:"DIFY_HOST"`
 	DifyApiKey             string `mapstructure:"DIFY_API_KEY"`
