@@ -3,6 +3,7 @@ package dify
 import (
 	"encoding/json"
 	"fmt"
+	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/common/logging"
 )
@@ -47,19 +48,39 @@ func (dc *DifyClient) UserLogin(email string, password string) (result UserLogin
 	return result, nil
 }
 
-func (dc *DifyClient) GetUserToken() (string, error) {
+func (dc *DifyClient) GetUserToken(role string) (token string, err error) {
 	// 检查是否已经存在 ACCESS_TOKEN
 	if dc.ConsoleToken != "" {
 		return dc.ConsoleToken, nil
 	}
+	// 如果 role 为空，则设置默认值
+	if role == "" {
+		role = constants.RoleUser
+	}
 
 	config, _ := initializers.LoadEnv(".")
 
-	// 不存在 ACCESS_TOKEN，进行登录操作
-	result, err := dc.UserLogin(config.DifyConsoleEmail, config.DifyConsolePassword)
-	if err != nil {
-		logging.Warning("failed to login: %v\n", err)
-		return "", err
+	result := UserLoginResponse{}
+
+	if role == constants.RoleAdmin {
+		// 不存在 ACCESS_TOKEN，进行登录操作
+		result, err = dc.UserLogin(config.DifyConsoleEmail, config.DifyConsolePassword)
+		if err != nil {
+			logging.Warning("failed to login: %v\n", err)
+			return "", err
+		}
+	} else if role == constants.RoleDeveloper {
+		result, err = dc.UserLogin(config.DifyEditorEmail, config.DifyEditorPassword)
+		if err != nil {
+			logging.Warning("failed to login: %v\n", err)
+			return "", err
+		}
+	} else {
+		result, err = dc.UserLogin(config.DifyUserEmail, config.DifyUserPassword)
+		if err != nil {
+			logging.Warning("failed to login: %v\n", err)
+			return "", err
+		}
 	}
 
 	// 更新 ACCESS_TOKEN

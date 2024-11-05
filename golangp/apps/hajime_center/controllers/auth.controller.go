@@ -68,7 +68,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 	// Generate Verification Code
-	code := randstr.String(20)
+	code := randstr.String(6)
 
 	verificationCode := utils.Encode(code)
 
@@ -96,7 +96,6 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	message := "We sent an email with a verification code to " + newUser.Email
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
-
 }
 
 func (ac *AuthController) SignInUser(ctx *gin.Context) {

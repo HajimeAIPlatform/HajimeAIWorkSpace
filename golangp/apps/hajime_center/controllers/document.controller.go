@@ -29,7 +29,7 @@ func InitDifyClient() *dify.DifyClient {
 		return nil // 返回 nil 以符合返回类型
 	}
 
-	_, err = client.GetUserToken()
+	_, err = client.GetUserToken("")
 	if err != nil {
 		logging.Warning(err.Error())
 		return nil // 返回 nil 以符合返回类型
@@ -46,7 +46,7 @@ func (c *DocumentController) GetDidyAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := client.GetUserToken()
+	accessToken, err := client.GetUserToken("")
 	if err != nil {
 		logging.Warning(err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "fail", "message": "Failed to get access token"})
