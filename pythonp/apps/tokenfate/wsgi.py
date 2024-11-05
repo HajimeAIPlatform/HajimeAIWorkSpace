@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import uvicorn
 from flask import Flask
 from asgiref.wsgi import WsgiToAsgi
-from pythonp.apps.tokenfate.logger import setup_logging
+from pythonp.common.logging.logger import setup_logging
 import logging
 import nest_asyncio
 

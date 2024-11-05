@@ -47,11 +47,11 @@ py_binary(
     main = "wsgi.py",
     deps = [
         ":diffy_client",
-        ":logger",
         ":mock_service",
         ":models",
         ":src",
         "//pythonp/apps/tokenfate:common_deps",
+        "//pythonp/common/logging:logger",
     ],
 )
 
