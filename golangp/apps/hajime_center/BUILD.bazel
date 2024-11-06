@@ -16,3 +16,4 @@ go_binary(
     ],
 )
 
+exports_files(["app.dev.env"])
