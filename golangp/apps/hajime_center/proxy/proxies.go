@@ -22,13 +22,17 @@ func DifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retrieve user from context
-	user := r.Context().Value("user").(*models.User)
+	user := models.User{}
+
+	// 从上下文中检索用户信息
+	if u, ok := r.Context().Value("user").(*models.User); ok && u != nil {
+		user = *u
+	}
 
 	// Create a reverse proxy
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	proxy.ModifyResponse = func(resp *http.Response) error {
-		return ModifyResponse(resp, r, *user)
+		return ModifyResponse(resp, r, user)
 	}
 
 	// Serve the request using the proxy
