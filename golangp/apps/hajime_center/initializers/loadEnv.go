@@ -1,6 +1,7 @@
 package initializers
 
 import (
+	"hajime/golangp/common/logging"
 	"time"
 
 	"github.com/spf13/viper"
@@ -93,18 +94,25 @@ type Config struct {
 }
 
 func LoadEnv(path string) (config Config, err error) {
-	// 如果路径是当前目录，则修改为指定路径
-	if path == "." {
-		path = "golangp/apps/hajime_center"
-	}
 
 	viper.AddConfigPath(path)
-	viper.SetConfigType("env")
-	viper.SetConfigName("app")
+	viper.AddConfigPath("golangp/apps/hajime_center") // for bazel run
 
+	//Config file names search in order: app.env, app.dev.env
+	configNames := []string{"app", "app.dev"}
+
+	viper.SetConfigType("env")
 	viper.AutomaticEnv()
 
-	err = viper.ReadInConfig()
+	for _, configName := range configNames {
+		viper.SetConfigName(configName)
+		err = viper.ReadInConfig()
+		if err == nil {
+			logging.Info("Using config file: %s", viper.ConfigFileUsed())
+			break
+		}
+	}
+
 	if err != nil {
 		return
 	}

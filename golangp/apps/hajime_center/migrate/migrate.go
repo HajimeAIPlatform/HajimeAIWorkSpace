@@ -9,18 +9,18 @@ import (
 	"hajime/golangp/apps/hajime_center/models"
 	"hajime/golangp/common/logging"
 	"hajime/golangp/common/utils"
-	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
 
 func init() {
-	//config, err := initializers.LoadEnv(".")
-	//if err != nil {
-	//	logging.Danger("🚀 Could not load environment variables %s", err.Error())
-	//}
-	//
-	//initializers.ConnectDB(&config)
+	config, err := initializers.LoadEnv(".")
+	if err != nil {
+		logging.Danger("🚀 Could not load environment variables %s", err.Error())
+	}
+
+	initializers.ConnectDB(&config)
 }
 
 func testBazelPath() {
@@ -36,13 +36,10 @@ func testBazelPath() {
 		logging.Danger("Failed to find config file in runfiles")
 	}
 
-	// Read and display the content
-	data, err := os.ReadFile(configFilePath)
-	if err != nil {
-		logging.Danger("Failed to read config file: %v", err)
-	}
+	// Get the directory of `app.dev.env`
+	configDir := filepath.Dir(configFilePath)
+	fmt.Printf("Directory of app.dev.env: %s\n", configDir)
 
-	fmt.Printf("Config file content:\n%s\n", string(data))
 }
 
 func removeAllAdmins(DB *gorm.DB) {
@@ -121,16 +118,16 @@ func SetupAdmin(DB *gorm.DB) {
 func main() {
 	// Ensure the uuid-ossp extension is created
 	testBazelPath()
-	//if err := initializers.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";").Error; err != nil {
-	//	logging.Danger("🚀 Could not create uuid-ossp extension: %v", err)
-	//}
-	//
-	////err := initializers.DB.AutoMigrate(&models.User{}, &models.Apps{}, &models.Dataset{}, &models.Document{}, &models.UploadFile{}, &models.Conversation{}, &models.Message{}, &models.MessageFile{})
-	////
-	////if err != nil {
-	////	logger.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))
-	////}
-	//
-	//SetupAdmin(initializers.DB)
-	//fmt.Println("👍 Migration complete")
+	if err := initializers.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";").Error; err != nil {
+		logging.Danger("🚀 Could not create uuid-ossp extension: %v", err)
+	}
+
+	err := initializers.DB.AutoMigrate(&models.User{}, &models.Apps{}, &models.Dataset{}, &models.Document{}, &models.UploadFile{}, &models.Conversation{}, &models.Message{}, &models.MessageFile{})
+
+	if err != nil {
+		logging.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))
+	}
+
+	SetupAdmin(initializers.DB)
+	fmt.Println("👍 Migration complete")
 }
