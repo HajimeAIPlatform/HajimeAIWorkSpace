@@ -311,3 +311,35 @@ func mapToStruct(data map[string]interface{}, result interface{}) error {
 	}
 	return json.Unmarshal(jsonData, result)
 }
+
+// HandlePublish is a custom handler for the /publish route
+func HandlePublish(w http.ResponseWriter, r *http.Request) {
+	// Extract the app_id from the URL
+	vars := mux.Vars(r) // Assuming you're using Gorilla Mux
+	appID := vars["app_id"]
+
+	// Define the app structure
+	var existingApp models.HajimeApps // Replace 'App' with your actual model struct
+	db := initializers.DB
+	// Check if the app exists in the database
+	if err := db.Where("id = ?", appID).First(&existingApp).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "App not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Update the app's isPublish status
+	existingApp.IsPublish = true // or whatever logic you need
+	if err := models.UpdateHajimeApp(db, existingApp); err != nil {
+		logging.Warning("Failed to update app: " + err.Error())
+		http.Error(w, "Failed to update app", http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(existingApp)
+
+	// Respond with a success status
+	w.WriteHeader(http.StatusOK)
+}
