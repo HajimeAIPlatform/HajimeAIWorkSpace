@@ -13,5 +13,6 @@ go_library(
         "//golangp/common/logging:logger",
         "@com_github_gorilla_mux//:go_default_library",
         "@io_gorm_gorm//:go_default_library",
+        "@com_github_rs_cors//:go_default_library",
     ],
 )

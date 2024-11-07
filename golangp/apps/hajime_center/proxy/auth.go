@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
@@ -14,6 +15,19 @@ import (
 	"strings"
 	"sync"
 )
+
+// SetupCORS configures and returns a CORS handler
+func SetupCORS(handler http.Handler) http.Handler {
+	corsConfig := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"}, // Replace with specific origins in production
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposedHeaders:   []string{"Content-Length"},
+		AllowCredentials: true,
+	})
+
+	return corsConfig.Handler(handler)
+}
 
 func DeserializeUser(r *http.Request) (user *models.User, err error) {
 	authorizationHeader := r.Header.Get("Authorization")
@@ -48,13 +62,15 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path is /dify/console/api/setup
 		if r.URL.Path != "/dify/console/api/setup" {
-			//user, err := DeserializeUser(r)
-			//
-			//if err != nil {
-			//	logging.Warning("Auth Failed: " + err.Error())
-			//	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			//	return
-			//}
+			user, err := DeserializeUser(r)
+
+			fmt.Println("user.Role")
+
+			if err != nil {
+				logging.Warning("Auth Failed: " + err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 
 			difyClient, err := dify.GetDifyClient()
 			if err != nil {
@@ -63,8 +79,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				return
 			}
 
-			//Token, err := difyClient.GetUserToken(user.Role)
-			Token, err := difyClient.GetUserToken("admin")
+			Token, err := difyClient.GetUserToken(user.Role)
+			//Token, err := difyClient.GetUserToken("admin")
 			fmt.Println(Token)
 
 			if err != nil {
@@ -93,9 +109,11 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
 	router.Handle("/dify/", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
+	corsHandler := SetupCORS(router)
+
 	server := &http.Server{
 		Addr:    ":8001",
-		Handler: router,
+		Handler: corsHandler,
 	}
 
 	// Start server in a goroutine
