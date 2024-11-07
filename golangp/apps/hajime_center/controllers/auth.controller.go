@@ -102,7 +102,7 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	var payload *models.SignInInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "BAD_REQUEST", "message": err.Error()})
 		return
 	}
 
@@ -111,28 +111,28 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		// Login with email
 		result := ac.DB.First(&user, "email = ?", strings.ToLower(payload.Email))
 		if result.Error != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "account_not_found", "message": "Invalid email or password"})
 			return
 		}
 	} else if payload.Name != "" {
 		// Login with name
 		result := ac.DB.First(&user, "name = ?", payload.Name)
 		if result.Error != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid username or password"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "accout_not_found", "message": "Invalid username or password"})
 			return
 		}
 	} else {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Email or username is required"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "BAD_REQUEST", "message": "Email or username is required"})
 		return
 	}
 
 	if !user.Verified {
-		ctx.JSON(http.StatusForbidden, gin.H{"status": "fail", "message": "Please verify your email"})
+		ctx.JSON(http.StatusForbidden, gin.H{"result": "fail", "code": "UNVERIFIED_ACCOUNT", "message": "Please verify your email"})
 		return
 	}
 
 	if err := utils.VerifyPassword(user.Password, payload.Password); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "INVALID_CREDENTIALS", "message": "Invalid email or password"})
 		return
 	}
 
@@ -141,13 +141,13 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	// Generate Tokens
 	accessToken, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, config.AccessTokenPrivateKey)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "TOKEN_GENERATION_ERROR", "message": err.Error()})
 		return
 	}
 
 	refreshToken, err := utils.CreateToken(config.RefreshTokenExpiresIn, user.ID, config.RefreshTokenPrivateKey)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "TOKEN_GENERATION_ERROR", "message": err.Error()})
 		return
 	}
 
@@ -155,7 +155,7 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	ctx.SetCookie("refresh_token", refreshToken, config.RefreshTokenMaxAge*60, "/", config.Domain, false, true)
 	ctx.SetCookie("logged_in", "true", config.AccessTokenMaxAge*60, "/", config.Domain, false, false)
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": accessToken})
+	ctx.JSON(http.StatusOK, gin.H{"result": "success", "data": gin.H{"access_token": accessToken, "refresh_token": refreshToken}})
 }
 
 // RefreshAccessToken Refresh Access Token
