@@ -518,6 +518,12 @@ def go_dependencies():
         version = "v1.9.0",
     )
     go_repository(
+        name = "com_github_rs_cors",
+        importpath = "github.com/rs/cors",
+        sum = "h1:eU3gRzXLRK57F5rKMGMZURNdIG4EoAmX8k94r9wXWHA=",
+        version = "v1.11.1",
+    )
+    go_repository(
         name = "com_github_rs_xid",
         importpath = "github.com/rs/xid",
         sum = "h1:fV591PaemRlL6JfRxGDEPl69wICngIQ3shQtzfy2gxU=",
