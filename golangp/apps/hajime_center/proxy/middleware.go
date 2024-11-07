@@ -24,18 +24,18 @@ type OriginalResponse struct {
 	HasMore bool                     `json:"has_more"`
 }
 
-func ModifyResponse(w *http.Response, r *http.Request) error {
+func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 	if strings.HasPrefix(r.URL.Path, "/console/api/apps") {
 		db := initializers.DB
 		switch r.Method {
 		case http.MethodGet:
-			return handleGetRequest(w, r, db)
+			return handleGetRequest(w, r, db, user)
 		case http.MethodPost:
-			return handlePostRequest(w, r, db)
+			return handlePostRequest(w, r, db, user)
 		case http.MethodPut:
-			return handlePutRequest(w, r, db)
+			return handlePutRequest(w, r, db, user)
 		case http.MethodDelete:
-			return handleDeleteRequest(w, r, db)
+			return handleDeleteRequest(w, r, db, user)
 		default:
 			return nil
 		}
@@ -56,7 +56,7 @@ func writeResponseBody(resp *http.Response, body []byte) {
 	resp.Header.Set("Content-Length", fmt.Sprint(len(body)))
 }
 
-func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB) error {
+func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	vars := mux.Vars(r)
 	appID := vars["app_id"]
 
@@ -69,7 +69,7 @@ func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB) error {
 		return handleGetSingleApp(resp, body, appID, db)
 	}
 
-	return handleGetAllApps(resp, body, db)
+	return handleGetAllApps(resp, body, db, user)
 }
 
 func handleGetSingleApp(resp *http.Response, body []byte, appID string, db *gorm.DB) error {
@@ -102,7 +102,7 @@ func handleGetSingleApp(resp *http.Response, body []byte, appID string, db *gorm
 	return nil
 }
 
-func handleGetAllApps(resp *http.Response, body []byte, db *gorm.DB) error {
+func handleGetAllApps(resp *http.Response, body []byte, db *gorm.DB, user models.User) error {
 	var originalResponse OriginalResponse
 	if err := json.Unmarshal(body, &originalResponse); err != nil {
 		logging.Warning("Failed to decode incoming data: " + err.Error())
@@ -123,6 +123,7 @@ func handleGetAllApps(resp *http.Response, body []byte, db *gorm.DB) error {
 		}
 
 		dbApp, err := models.GetHajimeAppByID(db, id)
+		incomingApp.Owner = user.ID.String()
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				if err := models.CreateHajimeApp(db, incomingApp); err != nil {
@@ -159,7 +160,7 @@ func handleGetAllApps(resp *http.Response, body []byte, db *gorm.DB) error {
 	return nil
 }
 
-func handlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB) error {
+func handlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	body, err := readResponseBody(resp)
 	if err != nil {
 		logging.Warning("Failed to read response body: " + err.Error())
@@ -182,6 +183,7 @@ func handlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB) error 
 		logging.Warning("Failed to parse response body: " + err.Error())
 		return err
 	}
+	app.Owner = user.ID.String()
 
 	if err := models.CreateHajimeApp(db, app); err != nil {
 		logging.Warning("Failed to create app: " + err.Error())
@@ -212,7 +214,7 @@ func handlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB) error 
 	return nil
 }
 
-func handlePutRequest(resp *http.Response, r *http.Request, db *gorm.DB) error {
+func handlePutRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	body, err := readResponseBody(resp)
 	if err != nil {
 		logging.Warning("Failed to read response body: " + err.Error())
@@ -234,6 +236,7 @@ func handlePutRequest(resp *http.Response, r *http.Request, db *gorm.DB) error {
 	var existingApp models.HajimeApps
 	if err := db.Where("id = ?", app.ID).First(&existingApp).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			app.Owner = user.ID.String()
 			if err := models.CreateHajimeApp(db, app); err != nil {
 				logging.Warning("Failed to create app: " + err.Error())
 				return err
@@ -276,7 +279,7 @@ func handlePutRequest(resp *http.Response, r *http.Request, db *gorm.DB) error {
 	return nil
 }
 
-func handleDeleteRequest(resp *http.Response, r *http.Request, db *gorm.DB) error {
+func handleDeleteRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	vars := mux.Vars(r)
 	appID, ok := vars["app_id"]
 	if !ok {
