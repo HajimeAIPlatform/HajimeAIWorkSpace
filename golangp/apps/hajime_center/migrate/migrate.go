@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/bazelbuild/rules_go/go/runfiles"
 	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
 	"hajime/golangp/common/logging"
 	"hajime/golangp/common/utils"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -21,25 +19,6 @@ func init() {
 	}
 
 	initializers.ConnectDB(&config)
-}
-
-func testBazelPath() {
-	// Initialize runfiles environment
-	rf, err := runfiles.New()
-	if err != nil {
-		logging.Danger("Failed to create runfiles handler: %v", err)
-	}
-
-	// Locate the config file in the runfiles
-	configFilePath, _ := rf.Rlocation("hajime_ai/golangp/apps/hajime_center/app.dev.env")
-	if configFilePath == "" {
-		logging.Danger("Failed to find config file in runfiles")
-	}
-
-	// Get the directory of `app.dev.env`
-	configDir := filepath.Dir(configFilePath)
-	fmt.Printf("Directory of app.dev.env: %s\n", configDir)
-
 }
 
 func removeAllAdmins(DB *gorm.DB) {
@@ -117,12 +96,16 @@ func SetupAdmin(DB *gorm.DB) {
 
 func main() {
 	// Ensure the uuid-ossp extension is created
-	testBazelPath()
 	if err := initializers.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";").Error; err != nil {
 		logging.Danger("🚀 Could not create uuid-ossp extension: %v", err)
 	}
 
-	err := initializers.DB.AutoMigrate(&models.User{}, &models.Apps{}, &models.Dataset{}, &models.Document{}, &models.UploadFile{}, &models.Conversation{}, &models.Message{}, &models.MessageFile{})
+	//err := initializers.DB.AutoMigrate(&models.User{}, &models.Apps{}, &models.Dataset{}, &models.Document{}, &models.UploadFile{}, &models.Conversation{}, &models.Message{}, &models.MessageFile{})
+	//
+	//if err != nil {
+	//	logger.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))
+	//}
+	err := initializers.DB.AutoMigrate(&models.User{}, &models.Apps{}, &models.HajimeApps{})
 
 	if err != nil {
 		logging.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))

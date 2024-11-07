@@ -1,30 +1,16 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
-load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 go_binary(
     name = "migrate",
     srcs = ["migrate.go"],
-    data = ["//golangp/apps/hajime_center:app.dev.env"],
-    importpath = "hajime/golangp/apps/hajime_center/migrate",
+    data = ["//golangp/apps/hajime_center:app.env"],
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/apps/hajime_center/constants",
         "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/models",
-        "//golangp/common/logging:logger",
         "//golangp/common/utils",
-        "@com_github_bazelbuild_rules_go//go/runfiles",
+        "//golangp/common/logging:logger",
         "@io_gorm_gorm//:go_default_library",
     ],
-)
-
-pkg_tar(
-    name = "migrate_tar",
-    srcs = [
-        ":migrate",
-        "//golangp/apps/hajime_center:app.dev.env",
-    ],  # Include the binary
-    extension = "tar.gz",
-    package_dir = "/Hajime/",
 )

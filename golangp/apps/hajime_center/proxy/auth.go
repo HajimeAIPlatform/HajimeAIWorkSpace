@@ -3,6 +3,8 @@ package proxy
 import (
 	"errors"
 	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
@@ -13,6 +15,19 @@ import (
 	"strings"
 	"sync"
 )
+
+// SetupCORS configures and returns a CORS handler
+func SetupCORS(handler http.Handler) http.Handler {
+	corsConfig := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"}, // Replace with specific origins in production
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposedHeaders:   []string{"Content-Length"},
+		AllowCredentials: true,
+	})
+
+	return corsConfig.Handler(handler)
+}
 
 func DeserializeUser(r *http.Request) (user *models.User, err error) {
 	authorizationHeader := r.Header.Get("Authorization")
@@ -25,18 +40,19 @@ func DeserializeUser(r *http.Request) (user *models.User, err error) {
 	}
 
 	if accessToken == "" {
-		return nil, errors.New("you are not logged in")
+		return user, errors.New("you are not logged in")
 	}
 
 	config, _ := initializers.LoadEnv(".")
 	sub, err := utils.ValidateToken(accessToken, config.AccessTokenPublicKey)
 	if err != nil {
-		return nil, err
+		return user, err
 	}
 
 	result := initializers.DB.First(&user, "id = ?", fmt.Sprint(sub))
 	if result.Error != nil {
-		return nil, errors.New("the user belonging to this token no logger exists")
+		err = errors.New("the user belonging to this token no longer exists")
+		return
 	}
 	return user, nil
 }
@@ -46,7 +62,15 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path is /dify/console/api/setup
 		if r.URL.Path != "/dify/console/api/setup" {
-			user, _ := DeserializeUser(r)
+			user, err := DeserializeUser(r)
+
+			fmt.Println("user.Role")
+
+			if err != nil {
+				logging.Warning("Auth Failed: " + err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 
 			difyClient, err := dify.GetDifyClient()
 			if err != nil {
@@ -56,6 +80,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			}
 
 			Token, err := difyClient.GetUserToken(user.Role)
+			//Token, err := difyClient.GetUserToken("admin")
+			fmt.Println(Token)
+
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -72,14 +99,21 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 // CreateProxiedServer sets up and starts the HTTP server with middleware
 func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
-	mux := http.NewServeMux()
+
+	router := mux.NewRouter()
 
 	// Register handlers with middleware
-	mux.Handle("/dify/", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", HandlePublish).Methods("POST")
+
+	router.Handle("/dify/", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+
+	corsHandler := SetupCORS(router)
 
 	server := &http.Server{
 		Addr:    ":8001",
-		Handler: mux,
+		Handler: corsHandler,
 	}
 
 	// Start server in a goroutine
@@ -95,5 +129,3 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
 	return server
 }
-
-// DifyHandler forwards requests after removing the "dify" prefix
