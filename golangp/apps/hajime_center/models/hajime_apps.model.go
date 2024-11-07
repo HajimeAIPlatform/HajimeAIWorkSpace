@@ -81,3 +81,11 @@ func GetAllHajimeApps(db *gorm.DB) ([]HajimeApps, error) {
 	}
 	return apps, nil
 }
+
+func GetAllHajimeAppsNoAuth(db *gorm.DB) ([]HajimeApps, error) {
+	var apps []HajimeApps
+	if err := db.Where("is_publish = ?", true).Find(&apps).Error; err != nil {
+		return nil, err
+	}
+	return apps, nil
+}

@@ -346,3 +346,27 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 	// Respond with a success status
 	w.WriteHeader(http.StatusOK)
 }
+
+func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
+	db := initializers.DB
+	// 调用 GetAllHajimeApps 函数，获取已发布的应用程序
+	apps, err := models.GetAllHajimeAppsNoAuth(db)
+	if err != nil {
+		// 如果发生错误，返回 500 状态码和错误信息
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// 将应用程序列表转换为 JSON 格式
+	response, err := json.Marshal(apps)
+	if err != nil {
+		// 如果 JSON 编码失败，返回 500 状态码和错误信息
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// 设置响应头为 JSON 格式
+	w.Header().Set("Content-Type", "application/json")
+	// 写入响应
+	w.Write(response)
+}
