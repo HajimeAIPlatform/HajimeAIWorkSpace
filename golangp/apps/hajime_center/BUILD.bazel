@@ -7,7 +7,7 @@ exports_files(["app.env"], visibility = ["//visibility:public"])
 go_binary(
     name = "hajime_center",
     srcs = ["main.go"],
-    data = ["app.dev.env"],
+    data = ["app.env"],
     importpath = "hajime/golangp/apps/hajime_center",
     visibility = ["//visibility:public"],
     deps = [

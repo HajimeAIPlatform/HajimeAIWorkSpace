@@ -16,7 +16,7 @@ type HajimeApps struct {
 	AppModelConfigID int    `gorm:"not null" json:"app_model_config_id"`
 	WorkflowID       int    `gorm:"not null" json:"workflow_id"`
 	Status           string `gorm:"type:varchar(50)" json:"status"`
-	Owner            string `gorm:"type:varchar(100) default:''" json:"owner"`
+	Owner            string `gorm:"type:varchar(100);default:''" json:"owner"`
 	IsPublish        bool   `gorm:"not null default:false" json:"is_publish"`
 }
 
@@ -54,7 +54,6 @@ func UpdateHajimeApp(db *gorm.DB, app HajimeApps) error {
 	existingApp.Name = app.Name
 	existingApp.Description = app.Description
 	existingApp.IsPublish = app.IsPublish
-	existingApp.Owner = app.Owner
 
 	// Save changes
 	if err := db.Save(&existingApp).Error; err != nil {

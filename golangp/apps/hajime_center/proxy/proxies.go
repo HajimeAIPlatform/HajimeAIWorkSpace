@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"hajime/golangp/apps/hajime_center/initializers"
+	"hajime/golangp/apps/hajime_center/models"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -21,10 +22,13 @@ func DifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Retrieve user from context
+	user := r.Context().Value("user").(*models.User)
+
 	// Create a reverse proxy
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	proxy.ModifyResponse = func(resp *http.Response) error {
-		return ModifyResponse(resp, r)
+		return ModifyResponse(resp, r, *user)
 	}
 
 	// Serve the request using the proxy

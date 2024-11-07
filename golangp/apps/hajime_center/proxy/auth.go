@@ -1,10 +1,12 @@
 package proxy
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
+	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
@@ -16,59 +18,58 @@ import (
 	"sync"
 )
 
-// SetupCORS configures and returns a CORS handler
-func SetupCORS(handler http.Handler) http.Handler {
-	corsConfig := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Replace with specific origins in production
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposedHeaders:   []string{"Content-Length"},
-		AllowCredentials: true,
-	})
-
-	return corsConfig.Handler(handler)
-}
-
-func DeserializeUser(r *http.Request) (user *models.User, err error) {
+func DeserializeUser(r *http.Request) (*models.User, error) {
 	authorizationHeader := r.Header.Get("Authorization")
 	fields := strings.Fields(authorizationHeader)
 
-	accessToken := ""
-
-	if len(fields) != 0 && fields[0] == "Bearer" {
-		accessToken = fields[1]
+	if len(fields) < 2 || fields[0] != "Bearer" {
+		return nil, errors.New("you are not logged in")
 	}
 
-	if accessToken == "" {
-		return user, errors.New("you are not logged in")
+	accessToken := fields[1]
+
+	config, err := initializers.LoadEnv(".")
+	if err != nil {
+		return nil, fmt.Errorf("failed to load environment variables: %w", err)
 	}
 
-	config, _ := initializers.LoadEnv(".")
 	sub, err := utils.ValidateToken(accessToken, config.AccessTokenPublicKey)
 	if err != nil {
-		return user, err
+		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
+	var user models.User
 	result := initializers.DB.First(&user, "id = ?", fmt.Sprint(sub))
 	if result.Error != nil {
-		err = errors.New("the user belonging to this token no longer exists")
-		return
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, errors.New("the user belonging to this token no longer exists")
+		}
+		return nil, fmt.Errorf("database error: %w", result.Error)
 	}
-	return user, nil
+
+	return &user, nil
+}
+
+func writeErrorResponse(w http.ResponseWriter, code, message string, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	response := map[string]interface{}{
+		"code":    code,
+		"message": message,
+		"status":  status,
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 // AuthMiddleware adds authentication headers to the request
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path is /dify/console/api/setup
-		if r.URL.Path != "/dify/console/api/setup" {
+		if r.URL.Path != "/dify/console/api/setup" && r.URL.Path != "/dify/console/api/system-features" {
 			user, err := DeserializeUser(r)
-
-			fmt.Println("user.Role")
-
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				writeErrorResponse(w, "email_or_password_mismatch", err.Error(), http.StatusBadRequest)
 				return
 			}
 
@@ -90,6 +91,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			}
 			// Add the token to the request header
 			r.Header.Set("Authorization", "Bearer "+Token)
+
+			ctx := context.WithValue(r.Context(), "user", user)
+			r = r.WithContext(ctx)
 		}
 
 		// Call the next handler
@@ -106,14 +110,11 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", HandlePublish).Methods("POST")
-
-	router.Handle("/dify/", AuthMiddleware(http.HandlerFunc(DifyHandler)))
-
-	corsHandler := SetupCORS(router)
+	router.PathPrefix("/dify/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
 	server := &http.Server{
 		Addr:    ":8001",
-		Handler: corsHandler,
+		Handler: router,
 	}
 
 	// Start server in a goroutine
