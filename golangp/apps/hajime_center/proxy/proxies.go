@@ -23,6 +23,9 @@ func DifyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create a reverse proxy
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
+	proxy.ModifyResponse = func(resp *http.Response) error {
+		return ModifyResponse(resp, r)
+	}
 
 	// Serve the request using the proxy
 	proxy.ServeHTTP(w, r)

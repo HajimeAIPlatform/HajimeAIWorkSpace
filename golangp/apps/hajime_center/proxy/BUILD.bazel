@@ -11,5 +11,7 @@ go_library(
         "//golangp/apps/hajime_center/models",
         "//golangp/common/utils",
         "//golangp/common/logging:logger",
+        "@com_github_gorilla_mux//:go_default_library",
+        "@io_gorm_gorm//:go_default_library",
     ],
 )

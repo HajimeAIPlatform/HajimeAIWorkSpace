@@ -1,9 +1,9 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
-go_library(
+go_binary(
     name = "migrate",
-    srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/hajime_center/migrate",
+    srcs = ["migrate.go"],
+    data = ["//golangp/apps/hajime_center:app.env"],
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/apps/hajime_center/constants",
