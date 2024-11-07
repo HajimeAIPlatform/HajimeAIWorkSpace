@@ -242,6 +242,12 @@ def go_dependencies():
         version = "v0.0.0-20181017120253-0766667cb4d1",
     )
     go_repository(
+        name = "com_github_gorilla_mux",
+        importpath = "github.com/gorilla/mux",
+        sum = "h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=",
+        version = "v1.8.1",
+    )
+    go_repository(
         name = "com_github_hashicorp_consul_api",
         importpath = "github.com/hashicorp/consul/api",
         sum = "h1:mXfkRHrpHN4YY3RqL09nXU1eHKLNiuAN4kHvDQ16k/8=",

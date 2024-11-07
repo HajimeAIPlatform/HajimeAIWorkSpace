@@ -1,5 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
+exports_files(["app.env"], visibility = ["//visibility:public"])
+
 go_binary(
     name = "hajime_center",
     srcs = ["main.go"],

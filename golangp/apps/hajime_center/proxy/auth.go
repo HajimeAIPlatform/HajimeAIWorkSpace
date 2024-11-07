@@ -3,6 +3,7 @@ package proxy
 import (
 	"errors"
 	"fmt"
+	"github.com/gorilla/mux"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
@@ -47,13 +48,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path is /dify/console/api/setup
 		if r.URL.Path != "/dify/console/api/setup" {
-			user, err := DeserializeUser(r)
-
-			if err != nil {
-				logging.Warning("Auth Failed: " + err.Error())
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
+			//user, err := DeserializeUser(r)
+			//
+			//if err != nil {
+			//	logging.Warning("Auth Failed: " + err.Error())
+			//	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			//	return
+			//}
 
 			difyClient, err := dify.GetDifyClient()
 			if err != nil {
@@ -61,8 +62,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
-			fmt.Println(user.Role)
-			Token, err := difyClient.GetUserToken(user.Role)
+
+			//Token, err := difyClient.GetUserToken(user.Role)
+			Token, err := difyClient.GetUserToken("admin")
+			fmt.Println(Token)
+
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -79,14 +83,17 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 // CreateProxiedServer sets up and starts the HTTP server with middleware
 func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
-	mux := http.NewServeMux()
+
+	router := mux.NewRouter()
 
 	// Register handlers with middleware
-	mux.Handle("/dify/", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
 	server := &http.Server{
 		Addr:    ":8001",
-		Handler: mux,
+		Handler: router,
 	}
 
 	// Start server in a goroutine

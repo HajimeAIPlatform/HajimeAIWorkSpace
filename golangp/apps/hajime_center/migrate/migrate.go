@@ -7,6 +7,7 @@ import (
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
 	"hajime/golangp/common/logging"
+	"hajime/golangp/common/utils"
 	"strings"
 	"time"
 )
@@ -104,6 +105,11 @@ func main() {
 	//if err != nil {
 	//	logger.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))
 	//}
+	err := initializers.DB.AutoMigrate(&models.User{}, &models.Apps{}, &models.HajimeApps{})
+
+	if err != nil {
+		logging.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))
+	}
 
 	SetupAdmin(initializers.DB)
 	fmt.Println("👍 Migration complete")
