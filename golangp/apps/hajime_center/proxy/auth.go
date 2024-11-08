@@ -108,9 +108,9 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
 	// Register handlers with middleware
 	router.HandleFunc("/dify/console/api/apps/no_auth", GetAllNoAuthApp).Methods("GET")
-	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
-	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", HandlePublish).Methods("POST")
+	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.PathPrefix("/dify/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
 	server := &http.Server{

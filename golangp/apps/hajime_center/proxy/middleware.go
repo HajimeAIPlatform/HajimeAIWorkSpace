@@ -12,7 +12,7 @@ import (
 	"hajime/golangp/common/logging"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"regexp"
 )
 
 // OriginalResponse defines the structure for the original response
@@ -48,7 +48,7 @@ type NoAuthApp struct {
 }
 
 func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
-	if strings.HasPrefix(r.URL.Path, "/console/api/apps") {
+	if r.URL.Path == "/console/api/apps" || isAppIDPath(r.URL.Path) {
 		db := initializers.DB
 		switch r.Method {
 		case http.MethodGet:
@@ -64,6 +64,12 @@ func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 		}
 	}
 	return nil
+}
+
+func isAppIDPath(path string) bool {
+	// 匹配 "/console/api/apps/{app_id}"，确保后面没有其他路径
+	matched, _ := regexp.MatchString(`^/console/api/apps/[a-fA-F0-9\-]+/?$`, path)
+	return matched
 }
 
 func readResponseBody(resp *http.Response) ([]byte, error) {
