@@ -24,6 +24,29 @@ type OriginalResponse struct {
 	HasMore bool                     `json:"has_more"`
 }
 
+type RecommendedAPP struct {
+	App struct {
+		Icon           string `json:"icon"`
+		IconBackground string `json:"icon_background"`
+		ID             string `json:"id"`
+		Mode           string `json:"mode"`
+		Name           string `json:"name"`
+	} `json:"app"`
+	AppID            string      `json:"app_id"`
+	Category         string      `json:"category"`
+	Copyright        interface{} `json:"copyright"`
+	CustomDisclaimer interface{} `json:"custom_disclaimer"`
+	Description      interface{} `json:"description"`
+	IsListed         bool        `json:"is_listed"`
+	Position         int64       `json:"position"`
+	PrivacyPolicy    interface{} `json:"privacy_policy"`
+}
+
+type NoAuthApp struct {
+	Categories     []string         `json:"categories"`
+	RecommendedAPP []RecommendedAPP `json:"recommended_apps"`
+}
+
 func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 	if strings.HasPrefix(r.URL.Path, "/console/api/apps") {
 		db := initializers.DB
@@ -349,24 +372,63 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 
 func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
 	db := initializers.DB
-	// 调用 GetAllHajimeApps 函数，获取已发布的应用程序
+
+	// Call GetAllHajimeAppsNoAuth to get published apps
 	apps, err := models.GetAllHajimeAppsNoAuth(db)
 	if err != nil {
-		// 如果发生错误，返回 500 状态码和错误信息
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 将应用程序列表转换为 JSON 格式
-	response, err := json.Marshal(apps)
+	// Initialize a single NoAuthApp with empty categories
+	noAuthApp := NoAuthApp{
+		Categories:     []string{},
+		RecommendedAPP: []RecommendedAPP{},
+	}
+
+	// Iterate over apps and build the RecommendedAPP list
+	for index, app := range apps {
+		recommendedApp := RecommendedAPP{
+			App: struct {
+				Icon           string `json:"icon"`
+				IconBackground string `json:"icon_background"`
+				ID             string `json:"id"`
+				Mode           string `json:"mode"`
+				Name           string `json:"name"`
+			}{
+				Icon:           app.Icon,
+				IconBackground: app.IconBackground,
+				ID:             app.ID,
+				Mode:           app.Mode,
+				Name:           app.Name,
+			},
+			AppID:            app.ID,
+			Category:         "", // Default to empty string
+			Copyright:        nil,
+			CustomDisclaimer: nil,
+			Description:      nil,
+			IsListed:         false,
+			Position:         int64(index), // Use index as Position
+			PrivacyPolicy:    nil,
+		}
+
+		// Append each app to the RecommendedAPP slice
+		noAuthApp.RecommendedAPP = append(noAuthApp.RecommendedAPP, recommendedApp)
+	}
+
+	// If no apps found, ensure RecommendedAPP is an empty slice
+	if len(apps) == 0 {
+		noAuthApp.RecommendedAPP = []RecommendedAPP{}
+	}
+
+	// Convert the single NoAuthApp to JSON
+	response, err := json.Marshal([]NoAuthApp{noAuthApp})
 	if err != nil {
-		// 如果 JSON 编码失败，返回 500 状态码和错误信息
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 设置响应头为 JSON 格式
+	// Set response header to JSON format
 	w.Header().Set("Content-Type", "application/json")
-	// 写入响应
 	w.Write(response)
 }
