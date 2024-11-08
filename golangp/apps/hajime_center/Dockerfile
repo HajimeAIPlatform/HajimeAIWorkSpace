@@ -1,5 +1,5 @@
 # 使用 Ubuntu 20.04 作为基础镜像
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # 设置非交互模式
 ENV DEBIAN_FRONTEND=noninteractive

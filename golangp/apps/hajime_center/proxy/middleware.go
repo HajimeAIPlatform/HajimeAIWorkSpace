@@ -422,7 +422,7 @@ func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Convert the single NoAuthApp to JSON
-	response, err := json.Marshal([]NoAuthApp{noAuthApp})
+	response, err := json.Marshal(noAuthApp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
