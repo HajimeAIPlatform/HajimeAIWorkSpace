@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"crypto/tls"
 	"github.com/k3a/html2text"
-	"gopkg.in/gomail.v2"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
 	"html/template"
 	"log"
 	"os"
 	"path/filepath"
+
+	gomail "gopkg.in/gomail.v2"
 )
 
 type EmailData struct {
@@ -60,7 +61,7 @@ func SendEmail(user *models.User, data *EmailData, emailTemp string) {
 
 	var body bytes.Buffer
 
-	tmpl, err := ParseTemplateDir("templates")
+	tmpl, err := ParseTemplateDir("golangp/apps/hajime_center/templates")
 	if err != nil {
 		log.Fatal("Could not parse template", err)
 	}
