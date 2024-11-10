@@ -1,6 +1,7 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from typing import List, Dict, Any
 
+
 class KeyboardFactory:
     """键盘布局工厂类"""
     
@@ -34,38 +35,41 @@ class KeyboardFactory:
                         self.i18n.get_button('community', context=context),
                         callback_data='join_community_button'
                     ),
-                    # InlineKeyboardButton(
-                    #     "🌐 Language/语言",
-                    #     callback_data='switch_lang'
-                    # )
-                ],
-                [
                     InlineKeyboardButton(
                         self.i18n.get_button('info', context=context),
                         callback_data='for_your_information_button'
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        self.i18n.get_button('aura', context=context),
+                        callback_data='show_aura_rules'
                     )
                 ],
         ]
         return InlineKeyboardMarkup(keyboard)
     
     def _create_info_keyboard(self, context: Any) -> InlineKeyboardMarkup:
-        """创建开始界面的键盘布局"""
+        """创建详情界面的键盘布局"""
         keyboard = [
                 [
                     InlineKeyboardButton(
                         self.i18n.get_button('launch', context=context),
                         callback_data='launch_to_reveal_button'
+
                     )
                 ],
                 [
                     InlineKeyboardButton(
                         self.i18n.get_button('community', context=context),
                         callback_data='join_community_button'
-                    ),
-                    # InlineKeyboardButton(
-                    #     "🌐 Language/语言",
-                    #     callback_data='switch_lang'
-                    # )
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        self.i18n.get_button('aura', context=context),
+                        callback_data='show_aura_rules'
+                    )
                 ],
         ]
         return InlineKeyboardMarkup(keyboard)
@@ -76,19 +80,31 @@ class KeyboardFactory:
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('role1', context=context),
-                    callback_data=f'risk:{token}'
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role2', context=context),
-                    callback_data=f'risk:{token}'
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role3', context=context),
-                    callback_data=f'risk:{token}'
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role4', context=context),
-                    callback_data=f'risk:{token}'
+                    callback_data=f'risk:{token}',
+                )
+            ],
+        ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _create_aura_keyboard(self, context: Any=None) -> InlineKeyboardMarkup:
+        """创建风险选择的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('launch', context=context),
+                    callback_data='launch_to_reveal_button'
                 )
             ],
         ]

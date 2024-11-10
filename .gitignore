@@ -60,3 +60,4 @@ common/apps/jancsi_image_system/frontend/dist
 __pycache__/
 .DS_Store
 command_log.txt
+MODULE.bazel.lock
