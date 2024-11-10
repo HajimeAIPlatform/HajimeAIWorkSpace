@@ -39,6 +39,7 @@ type HajimeApps struct {
 	IconBackground   string   `gorm:"type:varchar(100)" json:"icon_background"`
 	CreatedAt        UnixTime `gorm:"type:bigint" json:"created_at"`
 	PublishAt        UnixTime `gorm:"type:bigint" json:"publish_at"`
+	InstallAppID     string   `gorm:"type:varchar(50)" json:"install_app_id"`
 }
 
 // CreateHajimeApp 创建一个新的 HajimeApps

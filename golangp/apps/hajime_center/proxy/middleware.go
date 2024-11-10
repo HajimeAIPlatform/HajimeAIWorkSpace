@@ -24,6 +24,20 @@ type OriginalResponse struct {
 	HasMore bool                     `json:"has_more"`
 }
 
+type InstallAppResponse struct {
+	InstalledApps []InstalledApps `json:"installed_apps"`
+}
+
+type InstalledApps struct {
+	ID               string            `json:"id"`
+	App              models.HajimeApps `json:"app"`
+	AppOwnerTenantID string            `json:"app_owner_tenant_id"`
+	IsPinned         bool              `json:"is_pinned"`
+	LastUsedAt       int64             `json:"last_used_at"`
+	Editable         bool              `json:"editable"`
+	Uninstallable    bool              `json:"uninstallable"`
+}
+
 type RecommendedAPP struct {
 	App struct {
 		Icon           string `json:"icon"`
@@ -32,6 +46,7 @@ type RecommendedAPP struct {
 		Mode           string `json:"mode"`
 		Name           string `json:"name"`
 	} `json:"app"`
+	ID               string      `json:"id"`
 	AppID            string      `json:"app_id"`
 	Category         string      `json:"category"`
 	Copyright        interface{} `json:"copyright"`
@@ -48,8 +63,9 @@ type NoAuthApp struct {
 }
 
 func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
+
+	db := initializers.DB
 	if r.URL.Path == "/console/api/apps" || isAppIDPath(r.URL.Path) {
-		db := initializers.DB
 		switch r.Method {
 		case http.MethodGet:
 			return handleGetRequest(w, r, db, user)
@@ -59,6 +75,15 @@ func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 			return handlePutRequest(w, r, db, user)
 		case http.MethodDelete:
 			return handleDeleteRequest(w, r, db, user)
+		default:
+			return nil
+		}
+	}
+
+	if r.URL.Path == "/console/api/installed-apps" {
+		switch r.Method {
+		case http.MethodGet:
+			return handleInstallGetRequest(w, r, db, user)
 		default:
 			return nil
 		}
@@ -83,6 +108,73 @@ func writeResponseBody(resp *http.Response, body []byte) {
 	resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 	resp.ContentLength = int64(len(body))
 	resp.Header.Set("Content-Length", fmt.Sprint(len(body)))
+}
+
+func handleInstallGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
+	body, err := readResponseBody(resp)
+	if err != nil {
+		return err
+	}
+	return handleInstallGetAllApps(resp, body, db, user)
+}
+
+func handleInstallGetAllApps(resp *http.Response, body []byte, db *gorm.DB, user models.User) error {
+	var originalResponse InstallAppResponse
+	if err := json.Unmarshal(body, &originalResponse); err != nil {
+		logging.Warning("Failed to decode incoming data: " + err.Error())
+		return err
+	}
+
+	for _, incomingAppData := range originalResponse.InstalledApps {
+		appID := incomingAppData.App.ID
+		if appID == "" {
+			logging.Warning("Invalid or missing app ID in incoming app data")
+			continue
+		}
+
+		InstallAppID := incomingAppData.ID
+		if InstallAppID == "" {
+			logging.Warning("Invalid or missing install app ID in incoming app data")
+			continue
+		}
+
+		var incomingApp models.HajimeApps
+		if err := mapToStructApps(incomingAppData.App, &incomingApp); err != nil {
+			logging.Warning("Failed to convert incoming app data to struct: " + err.Error())
+			return err
+		}
+
+		dbApp, err := models.GetHajimeAppByID(db, appID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Create new app entry
+				incomingApp.InstallAppID = InstallAppID
+				if err := models.CreateHajimeApp(db, incomingApp); err != nil {
+					logging.Warning("Failed to create app: " + err.Error())
+					return err
+				}
+				fmt.Println("App added:", appID)
+			} else {
+				logging.Warning("Error checking app existence: " + err.Error())
+				return err
+			}
+		} else {
+			// Update existing app entry with InstallAppID
+			dbApp.InstallAppID = InstallAppID
+			if err := db.Save(&dbApp).Error; err != nil {
+				logging.Warning("Failed to update app: " + err.Error())
+				return err
+			}
+		}
+	}
+
+	modifiedBody, err := json.Marshal(originalResponse)
+	if err != nil {
+		return err
+	}
+
+	writeResponseBody(resp, modifiedBody)
+	return nil
 }
 
 func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
@@ -344,6 +436,14 @@ func mapToStruct(data map[string]interface{}, result interface{}) error {
 	return json.Unmarshal(jsonData, result)
 }
 
+func mapToStructApps(data models.HajimeApps, result interface{}) error {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(jsonData, result)
+}
+
 // HandlePublish is a custom handler for the /publish route
 func HandlePublish(w http.ResponseWriter, r *http.Request) {
 	// Extract the app_id from the URL
@@ -370,10 +470,12 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to update app", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(existingApp)
+	// 设置响应头为 JSON
+	w.Header().Set("Content-Type", "application/json")
 
-	// Respond with a success status
+	// 返回成功状态和 JSON 响应
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"result": "success"})
 }
 
 func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
@@ -408,6 +510,7 @@ func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
 				Mode:           app.Mode,
 				Name:           app.Name,
 			},
+			ID:               app.InstallAppID,
 			AppID:            app.ID,
 			Category:         "", // Default to empty string
 			Copyright:        nil,

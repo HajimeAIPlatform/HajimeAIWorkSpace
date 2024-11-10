@@ -499,7 +499,11 @@ func (ac *AuthController) GetAllUsers(ctx *gin.Context) {
 }
 
 func (ac *AuthController) GetMe(ctx *gin.Context) {
-	currentUser := ctx.MustGet("currentUser").(models.User)
+	currentUser, ok := ctx.MustGet("currentUser").(models.User)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "User not found"})
+		return
+	}
 
 	userResponse := &models.UserResponse{
 		ID:        currentUser.ID,
