@@ -116,7 +116,7 @@ class DailyFortune:
         if cached_lot is not None:
             logging.info(f"Hit cache for chat_id {chat_id}, ticker {ticker}")
             return json.loads(cached_lot) # 从Redis中获取缓存的签并转换为dict
-        return {}
+        return None
 
     async def get_daily_lot(self, chat_id: str, ticker: str) -> dict:
         try:
