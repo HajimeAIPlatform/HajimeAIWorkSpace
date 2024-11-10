@@ -2,23 +2,29 @@
   "dialogs": {
     "en": {
       "start": "GM, fren! Welcome to Token Fate.\nEnter your token and reveal your fortune. Gain guidance from the divine Universe and big data.\nWhat is the fate of my token today?",
-      "info": "At the core of Token Fate, we offer a big data-driven token indicator and a meditation app designed for the fast-paced crypto space, where hundreds of tokens are launched each day.\n\nNFA warning\nWhile we discuss tokens and provide recommendations, all decisions are ultimately yours. It is essential to Do Your Own Research.\n\nHow should I understand the results?\nListen to your heart and let the market carry you. There are never definitive right or wrong answers, but we do leverage big data and AI like never before to enhance our insights.\n\nNeed Further Support?\nJoin our Telegram group @_____ and our moderators will be happy to assist you.",
+      "info": "At the core of Token Fate, we offer a big data-driven token indicator and a meditation app designed for the fast-paced crypto space, where hundreds of tokens are launched each day.\n\nNFA warning\nWhile we discuss tokens and provide recommendations, all decisions are ultimately yours. It is essential to Do Your Own Research.\n\nHow should I understand the results?\nListen to your heart and let the market carry you. There are never definitive right or wrong answers, but we do leverage big data and AI like never before to enhance our insights.\n\nNeed Further Support?\nJoin our Telegram group @HajimeAI and our moderators will be happy to assist you.",
       "quest": "Ah, seeker of fortune, what token whispers to your today?\nShare with me the ticker that calls to you. Remember, it must begin with the sacred \"$\" sign.",
       "risk": "Ah, the final inquiry before destiny unfolds: What does your heart echo regarding the dance of risk?",
       "recommended": "Also my dear fortune seeker, here lies today's token selection.\nWhile I do not urge you, the choice is yours to click and trade right here, right now.",
-      "recently-connected": "Thank you, my dear.\nNow, with the stars aligned, it is time to reveal the fate of your token.",
+      "recently_connected": "Thank you, my dear.\nNow, with the stars aligned, it is time to reveal the fate of your token.",
       "connected": "Now, with the stars aligned, it is time to reveal the fate of your token!",
       "unconnected": "Fantastic! \nYou stand at a crossroads, a decision awaits: \nChoose how you wish to proceed on this journey."
     },
     "zh": {
       "start": "阁下，欢迎来到命运之符 Token Fate。\n请输入您的符码代号 (Token Ticker, 如 $BTC)，揭示您的命理。从神圣的宇宙和大数据中获得指引。\n今日，您的符之命运如何？",
-      "info": "在命运之符 Token Fate 的核心，在于大数据和LLM 驱动的符码指标和一个为快节奏的加密货币领域设计的冥想应用，在加密世界每天都有数百个符码被推出。\n\n风险提示\n虽然我们讨论符码Token并提供建议，但最终所有的决定都在于您。进行您自己的研究是至关重要的。\n\n我该如何理解这些结果？\n倾听内心的声音，让市场引领你前行。这里没有绝对的对或错，但我们前所未有地利用大数据和人工智能来增强我们的洞察力。\n\n需要进一步的支持？\n加入我们的电报群组 @_____，我们的版主将乐意为您提供帮助。",
+      "info": "在命运之符 Token Fate 的核心，在于大数据和LLM 驱动的符码指标和一个为快节奏的加密货币领域设计的冥想应用，在加密世界每天都有数百个符码被推出。\n\n风险提示\n虽然我们讨论符码Token并提供建议，但最终所有的决定都在于您。进行您自己的研究是至关重要的。\n\n我该如何理解这些结果？\n倾听内心的声音，让市场引领你前行。这里没有绝对的对或错，但我们前所未有地利用大数据和人工智能来增强我们的洞察力。\n\n需要进一步的支持？\n加入我们的电报群组 @HajimeAI，我们的版主将乐意为您提供帮助。",
       "quest": "啊，探求财富的旅人，今日何符低语于你？\n与我分享那呼唤你的代币吧。记住，它必须以神圣的'$'符号为始。",
       "risk": "命运展开前的最终探询：你对风险有何偏好？",
       "recommended": "亲爱的命运探寻者，今日之符码选择就在眼前。\n我并不强求于你，点击交易，此刻此地，选择权在你手中。",
-      "recently-connected": "多谢，吾之挚友。现星辰已排列就绪，是时候揭示你代币符码的命运了。",
+      "recently_connected": "多谢，吾之挚友。现星辰已排列就绪，是时候揭示你代币符码的命运了。",
       "connected": "此刻，星象已然齐聚，是时候揭示汝之符命了！",
-      "unconnected": "太奇妙了！\n你伫立在符命的十字路口，一个抉择在等待：\n选择你希望在这段旅程中前行的方式。"
+      "unconnected": "太奇妙了！\n你伫立在符命的十字路口，一个抉择在等待：\n选择你希望在这段旅程中前行的方式。",
+      "aura_rules": "以下四行举止，将触动汝之灵气：\n- **钱包之连结**：增益二百 / 连结一次\n- **日日签到**：增益二十 / 日\n- **探问汝之代币命运**：减损十五 / 探问一次\n- **点击今日推荐之符码代币**：增益十 / 点击一次",
+      "aura_action_wallet_connect": "User[{user_id}] 钱包连结: 灵气增益二百",
+      "aura_action_daily_checkin": "User[{user_id}] 每日打卡: 灵气增益二十",
+      "aura_action_recommend_click": "User[{user_id}] 点击推荐: 灵气增益十",
+      "aura_action_fate_reveal": "User[{user_id}] 揭示符命: 灵气减损十五",
+      "aura_action_invalid": "User[{user_id}] 无效操作: 灵气不足，无法揭示符命"
     }
   },
   "buttons": {
@@ -28,6 +34,7 @@
       "info": "For Your Information",
       "connect": "Connect Wallet",
       "reveal": "Reveal My Token Fate Now",
+      "aura": "😇 Read My Aura",
       "role1": "Preserver",
       "role2": "Stabilizer",
       "role3": "Enterpriser",
@@ -39,6 +46,7 @@
       "info": "供君参考",
       "connect": "链接钱包",
       "reveal": "揭示吾之符命",
+      "aura": "😇 探查吾之灵气",
       "role1": "守成者",
       "role2": "稳健者",
       "role3": "进取者",

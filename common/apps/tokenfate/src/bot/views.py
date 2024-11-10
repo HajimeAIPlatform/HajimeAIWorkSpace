@@ -3,7 +3,7 @@ import asyncio
 from flask import Blueprint, jsonify, request
 from md2tgmd import escape
 from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, \
-    InlineQueryResultsButton, InputMediaPhoto
+    InlineQueryResultsButton, InputMediaPhoto, Message, CallbackQuery
 from io import BytesIO
 from PIL import Image
 from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
@@ -23,6 +23,7 @@ import time
 import json
 import os
 from src.ton.tc_storage import DailyFortune
+from models.transaction import UserPoints
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')
@@ -36,7 +37,6 @@ telegram_app = ApplicationBuilder().token(telegram_bot_token).persistence(
     persistence).build()
 
 # 初始化数据库连接
-# db = FortunesDatabase()
 daily_fortune = DailyFortune()
 
 # 初始化语言和键盘工厂
@@ -151,7 +151,7 @@ async def webhook():
         update = Update.de_json(body, telegram_app.bot)
         logging.debug(f"Received update: {update}")
         if update.edited_message:
-            return 'OK'
+            return jsonify({'status': 'ok'}), 200
 
         if update.callback_query:
             await set_handlers(update, telegram_app)
@@ -170,7 +170,7 @@ async def webhook():
                     parse_mode="MarkdownV2",
                     reply_markup=reply_markup
                 )
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
             
             if update.callback_query.data == "launch_to_reveal_button":
                 await update.callback_query.answer()
@@ -183,42 +183,41 @@ async def webhook():
                     escape(dialog),
                     parse_mode='HTML'
                 )
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data == "show_aura_rules":
+                await update.callback_query.answer()
+                await show_aura_rules(update.callback_query)
+                return jsonify({'status': 'ok'}), 200
 
             if update.callback_query.data == "connect_wallet_button":
                 await update.callback_query.answer()
                 # connect to wallet
                 await ton_module.wallet_menu_callback.on_choose_wallet_click(update)
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
 
             if update.callback_query.data.startswith("reveal_fate"):
                 data = update.callback_query.data
                 logging.info(f"data: {data}")
                 token = data.split(":")[1]
-                # is_connected = await ton_module.check_connected(update, telegram_app)
-                # 现在不强制检查钱包连接状态，直接揭示命运
-                # if not is_connected:
-                #     await update.callback_query.message.reply_text("You haven't connected the wallet")
-                #     return 'OK'
-                # await reveal_fate(update, token)
                 await risk_preference(update, token)
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
             
             if update.callback_query.data.startswith("risk"):
                 data = update.callback_query.data
                 logging.info(f"data: {data}")
                 token = data.split(":")[1]
                 await reveal_fate(update, token)
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
 
         # Process update with the application
         await telegram_app.process_update(update)
         result = ChatStatus.get_transaction_status(update.message.chat_id)
         print(result, 'result', update.message.chat_id)
         if result:
-            return 'OK'
+            return jsonify({'status': 'ok'}), 200
         if update.message.text == '/cancel' or update.message.text == '/buy' or update.message.text == '/sell':
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
 
         ton_response = await ton_command_handle(update)
         if ton_response:
@@ -229,7 +228,7 @@ async def webhook():
                     "text": ton_response["text"],
                 }
             print(ton_response, 'return')
-            return 'OK'
+            return jsonify({'status': 'ok'}), 200
 
         chat_id = update.message.chat_id
         binance_response = handle_binance_command(update.message.text)
@@ -251,7 +250,7 @@ async def webhook():
                     parse_mode="MarkdownV2", 
                     reply_markup=reply_markup
                 )  
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
 
         if update.message.text == '/quest':
             dialog = i18n.get_dialog('quest')
@@ -259,7 +258,11 @@ async def webhook():
                 text=dialog,
                 parse_mode='HTML'
             )
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
+        
+        if update.message.text == '/aura':
+            await show_aura_rules(update)
+            return jsonify({'status': 'ok'}), 200
 
         if update.message.text.startswith('$'):
             chat_id = update.message.chat_id
@@ -285,8 +288,7 @@ async def webhook():
                 
                 # 发送新的消息
                 await update.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
-                return 'OK'
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
 
         if update.message.photo:
             file_id = update.message.photo[-1].file_id
@@ -336,14 +338,8 @@ async def webhook():
                 await update.message.reply_text(escape(text), parse_mode="MarkdownV2", reply_markup=keyboard)
             else:
                 await update.message.reply_text(escape(text), parse_mode="MarkdownV2")
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
 
-        return {
-            "method": "sendMessage",
-            "chat_id": chat_id,
-            "text": escape(text),
-            "parse_mode": "MarkdownV2"
-        }
     except Exception as error:
         logging.error(f"Error Occurred: {error}")
         return {
@@ -362,21 +358,6 @@ def get_image_path(image_name):
     # 构建图片的绝对路径
     image_path = os.path.join(project_root, 'static', 'images', image_name)
     return image_path
-
-
-def send_start_image(update, context):
-    # 获取图片路径
-    image_path = get_image_path('start.png')
-
-    # 检查图片路径是否存在
-    if not os.path.exists(image_path):
-        update.message.reply_text('Image not found.')
-        return
-
-    # 发送图片
-    with open(image_path, 'rb') as image_file:
-        update.message.reply_photo(photo=image_file)
-
 
 def validate_token_data(response_data: Dict[str, Union[str, list]]) -> List[Dict[str, str]]:
     if not isinstance(response_data, dict) or 'data' not in response_data:
@@ -410,17 +391,7 @@ def parse_token_response(response: str) -> Dict[str, Union[str, list]]:
 
 def fetch_trending_tokens():
     try:
-        # 构建查询请求
-        query = """请推荐5个当前最热门的加密货币交易对。
-                    请用JSON格式返回，包含token名称和推荐理由，格式如下：
-                    {
-                        "status": "success",
-                        "data": [
-                            {"token": "BTC", "reason": "市场领导者"},
-                            {"token": "ETH", "reason": "智能合约平台"}
-                        ]
-                    }
-                """
+        query = ""
         
         data = {
             "query": query,
@@ -463,12 +434,21 @@ def create_token_keyboard(tokens):
 
 async def reveal_fate(update, token):
     try:
-        await update.callback_query.answer()
+        # 处理普通消息
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        # 处理回调查询
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
         if not token:
-            await update.callback_query.message.reply_text("Please Enter Your Token.")
-            return 'OK'
+            await target.message.reply_text("Please Enter Your Token.")
+            return jsonify({'status': 'ok'}), 200
         # 随机抽签
-        chat_id = update.callback_query.message.chat_id
+        chat_id = target.message.chat_id
         result_of_draw = await daily_fortune.get_daily_lot(chat_id, token)
         logging.info(f"result_of_draw: {result_of_draw}")
         sign_level = result_of_draw["sign_level"]
@@ -480,7 +460,7 @@ async def reveal_fate(update, token):
         escaped_words = escape(words)
         image_path = get_image_path(level_photo[sign_level])
         with open(image_path, 'rb') as image_file:
-            await update.callback_query.message.reply_photo(
+            await target.message.reply_photo(
                 photo=image_file,
                 caption=escaped_words,
                 parse_mode="MarkdownV2",
@@ -490,20 +470,26 @@ async def reveal_fate(update, token):
         recommended_tokens = fetch_trending_tokens()
         if not recommended_tokens:
             logging.error("Failed to get token recommendations")
-            return 'OK'
+            return jsonify({'status': 'ok'}), 200
         reply_markup = create_token_keyboard(recommended_tokens)
 
         # 发送推荐的token
         dialog = i18n.get_dialog("recommended")
-        await update.callback_query.message.reply_text(
+        await target.message.reply_text(
             escape(dialog), 
             parse_mode="MarkdownV2", 
             reply_markup=reply_markup
         )
-        return 'OK'
+        sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=-15)
+        if not sql_status:
+            logging.error("Failed to update user points")
+            await get_aura_status(update, "aura_action_invalid")
+            return jsonify({'status': 'ok'}), 200
+        await get_aura_status(update, "aura_action_fate_reveal")
+        return jsonify({'status': 'ok'}), 200
     except Exception as e:
         logging.error(f"Error in reveal_fate: {e}")
-        await update.callback_query.message.reply_text(
+        await target.message.reply_text(
             "Sorry, something went wrong while processing your request."
         )
         return
@@ -513,7 +499,7 @@ async def risk_preference(update, token):
         await update.callback_query.answer()
         if not token:
             await update.callback_query.message.reply_text("Please Enter Your Token.")
-            return 'OK'
+            return jsonify({'status': 'ok'}), 200
         
         # 发送文本信息
         dialog = i18n.get_dialog('risk')
@@ -531,11 +517,73 @@ async def risk_preference(update, token):
                 parse_mode="MarkdownV2",
                 reply_markup=reply_markup
             )
-        return 'OK'
+        return jsonify({'status': 'ok'}), 200
 
     except Exception as e:
         logging.error(f"Error in reveal_fate: {e}")
         await update.callback_query.message.reply_text(
             "Sorry, something went wrong while processing your request."
         )
+        return
+    
+async def show_aura_rules(update: Union[Update, CallbackQuery]):
+    try:
+        if isinstance(update, CallbackQuery):
+            await update.answer()
+            target = update.message
+        elif isinstance(update, Update):
+            target = update.message
+        else:
+            return
+
+        # Send aura rules information
+        dialog = i18n.get_dialog('aura_rules')
+        image_path = get_image_path("吾之灵气.png")
+        with open(image_path, 'rb') as image_file:
+            await target.reply_photo(
+                photo=image_file,
+                caption=escape(dialog),
+                parse_mode="MarkdownV2",
+            )
+
+        # Send interactive elements
+        reply_markup = keyboard_factory.create_keyboard("aura")
+        image_path = get_image_path('ways-to-impact-aura.png')
+        with open(image_path, 'rb') as image_file:
+            await target.reply_photo(
+                photo=image_file,
+                reply_markup=reply_markup
+            )
+        return jsonify({'status': 'ok'}), 200
+
+    except Exception as e:
+        logging.error(f"Error in show_aura_rules: {e}")
+        if isinstance(update, CallbackQuery):
+            await update.message.reply_text("Sorry, something went wrong while processing your request.")
+        elif isinstance(update, Message):
+            await update.reply_text("Sorry, something went wrong while processing your request.")
+        return
+    
+async def get_aura_status(update, action: str):
+    try:
+        # 处理普通消息
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        # 处理回调查询
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        dialog = i18n.get_dialog(action)
+        dialog = dialog.format(user_id=user_id)
+        button = i18n.get_button("aura")
+        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=button, callback_data="show_aura_rules")]])
+        await target.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+        return jsonify({'status': 'ok'}), 200
+
+    except Exception as e:
+        logging.error(f"Error in get_aura_status: {e}")
+        await target.message.reply_text("Sorry, something went wrong while processing your request.")
         return

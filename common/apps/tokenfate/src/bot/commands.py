@@ -31,6 +31,7 @@ async def set_bot_commands(telegram_app):
         # BotCommand("sell", "Sell transaction"),
         BotCommand("disconnect", "Disconnect wallet"),
         # BotCommand("my_wallet", "Show connected wallet"),
+        BotCommand("aura", "Read My Aura"),
     ]
     await telegram_app.bot.set_my_commands(commands)
     # await set_menu_button(telegram_app)
