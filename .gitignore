@@ -54,5 +54,3 @@ __pycache__/
 .DS_Store
 command_log.txt
 MODULE.bazel.lock
-
-*.tar.gz
