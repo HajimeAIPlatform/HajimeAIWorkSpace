@@ -65,7 +65,7 @@ func writeErrorResponse(w http.ResponseWriter, code, message string, status int)
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path is /dify/console/api/setup
-		if r.URL.Path != "/dify/console/api/setup" && r.URL.Path != "/dify/console/api/system-features" || r.URL.Path != "/dify/api/passport" {
+		if r.URL.Path != "/dify/console/api/setup" && r.URL.Path != "/dify/console/api/system-features" && !strings.HasPrefix(r.URL.Path, "/dify/api") {
 			user, err := DeserializeUser(r)
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())

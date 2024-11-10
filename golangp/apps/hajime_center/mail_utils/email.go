@@ -26,6 +26,12 @@ type EmailData struct {
 // ? Email template parser
 
 func ParseTemplateDir(dir string) (*template.Template, error) {
+	// 检查目录是否存在
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		// 如果目录不存在，使用默认路径
+		dir = "/srv/HajimeCenter/templates"
+	}
+
 	var paths []string
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
