@@ -190,7 +190,7 @@ func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user mo
 		return handleGetSingleApp(resp, body, appID, db)
 	}
 
-	return handleGetAllApps(resp, body, db, user)
+	return handleGetAllApps(resp, r, body, db, user)
 }
 
 func handleGetSingleApp(resp *http.Response, body []byte, appID string, db *gorm.DB) error {
@@ -223,12 +223,22 @@ func handleGetSingleApp(resp *http.Response, body []byte, appID string, db *gorm
 	return nil
 }
 
-func handleGetAllApps(resp *http.Response, body []byte, db *gorm.DB, user models.User) error {
+func handleGetAllApps(resp *http.Response, r *http.Request, body []byte, db *gorm.DB, user models.User) error {
 	var originalResponse OriginalResponse
 	if err := json.Unmarshal(body, &originalResponse); err != nil {
 		logging.Warning("Failed to decode incoming data: " + err.Error())
 		return err
 	}
+
+	// Make a request to /console/api/installed-apps
+	installedApps, err := FetchInstalledApps(r)
+	if err != nil {
+		logging.Warning("Failed to fetch installed apps: " + err.Error())
+		return err
+	}
+
+	// Process the installed apps as needed
+	fmt.Println("Installed Apps:", installedApps)
 
 	for i, incomingAppData := range originalResponse.Data {
 		id, ok := incomingAppData["id"].(string)
@@ -242,9 +252,14 @@ func handleGetAllApps(resp *http.Response, body []byte, db *gorm.DB, user models
 			logging.Warning("Failed to convert incoming app data to struct: " + err.Error())
 			return err
 		}
+		for _, installedApp := range installedApps {
+			if installedApp.App.ID == id {
+				incomingApp.InstallAppID = installedApp.ID
+				break
+			}
+		}
 
 		dbApp, err := models.GetHajimeAppByID(db, id)
-		incomingApp.Owner = user.ID.String()
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				if err := models.CreateHajimeApp(db, incomingApp); err != nil {

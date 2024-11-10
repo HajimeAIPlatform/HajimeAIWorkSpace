@@ -254,7 +254,7 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 	}
 
 	// Generate Verification Code
-	resetToken := randstr.String(20)
+	resetToken := randstr.String(6)
 
 	passwordResetToken := utils.Encode(resetToken)
 	user.PasswordResetToken = passwordResetToken
