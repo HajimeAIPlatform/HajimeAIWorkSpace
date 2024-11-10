@@ -24,7 +24,8 @@
       "aura_action_daily_checkin": "User[{user_id}] 每日打卡: 灵气增益二十",
       "aura_action_recommend_click": "User[{user_id}] 点击推荐: 灵气增益十",
       "aura_action_fate_reveal": "User[{user_id}] 揭示符命: 灵气减损十五",
-      "aura_action_invalid": "User[{user_id}] 无效操作: 灵气不足，无法揭示符命"
+      "aura_action_invalid": "User[{user_id}] 无效操作: 灵气不足，无法揭示符命",
+      "aura_action_cached_hit": "User[{user_id}] 此符命今日已揭示: 灵气毫无波动"
     }
   },
   "buttons": {
