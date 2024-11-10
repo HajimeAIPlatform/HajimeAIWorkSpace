@@ -59,7 +59,7 @@ type ForgotPasswordInput struct {
 // ResetPasswordInput struct
 type ResetPasswordInput struct {
 	Password        string `json:"password" binding:"required"`
-	PasswordConfirm string `json:"passwordConfirm" binding:"required"`
+	PasswordConfirm string `json:"password_confirm" binding:"required"`
 }
 
 type UpdateBalanceInput struct {
@@ -68,9 +68,9 @@ type UpdateBalanceInput struct {
 }
 
 type PasswordChangeInput struct {
-	CurrentPassword string `json:"currentPassword" binding:"required"`
+	CurrentPassword string `json:"current_password" binding:"required"`
 	NewPassword     string `json:"newPassword" binding:"required,min=8"`
-	PasswordConfirm string `json:"passwordConfirm" binding:"required,min=8"`
+	PasswordConfirm string `json:"password_confirm" binding:"required,min=8"`
 }
 
 type UpdateUserInput struct {
