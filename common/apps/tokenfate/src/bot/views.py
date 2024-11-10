@@ -24,6 +24,7 @@ import json
 import os
 from src.ton.tc_storage import DailyFortune
 from models.transaction import UserPoints
+import datetime
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')
@@ -150,6 +151,7 @@ async def webhook():
         body = request.get_json()
         update = Update.de_json(body, telegram_app.bot)
         logging.debug(f"Received update: {update}")
+        await handle_daily_checkin(update)
         if update.edited_message:
             return jsonify({'status': 'ok'}), 200
 
@@ -199,15 +201,19 @@ async def webhook():
             if update.callback_query.data.startswith("reveal_fate"):
                 data = update.callback_query.data
                 logging.info(f"data: {data}")
-                token = data.split(":")[1]
-                await risk_preference(update, token)
+                details = data.split(":")
+                token = details[1]
+                token_from = details[2]
+                await risk_preference(update, token, token_from)
                 return jsonify({'status': 'ok'}), 200
             
             if update.callback_query.data.startswith("risk"):
                 data = update.callback_query.data
                 logging.info(f"data: {data}")
-                token = data.split(":")[1]
-                await reveal_fate(update, token)
+                details = data.split(":")
+                token = details[1]
+                token_from = details[2]
+                await reveal_fate(update, token, token_from)
                 return jsonify({'status': 'ok'}), 200
 
         # Process update with the application
@@ -418,7 +424,7 @@ def create_token_keyboard(tokens):
         if token_name:
             button = InlineKeyboardButton(
                 text=f"${token_name}",
-                callback_data=f"reveal_fate:${token_name}"
+                callback_data=f"reveal_fate:${token_name}:recommended"
             )
             row.append(button)
 
@@ -432,7 +438,7 @@ def create_token_keyboard(tokens):
     return InlineKeyboardMarkup(keyboard)
 
 
-async def reveal_fate(update, token):
+async def reveal_fate(update, token, token_from='normal'):
     try:
         # 处理普通消息
         if update.message:
@@ -447,8 +453,15 @@ async def reveal_fate(update, token):
         if not token:
             await target.message.reply_text("Please Enter Your Token.")
             return jsonify({'status': 'ok'}), 200
+        
         # 随机抽签
         chat_id = target.message.chat_id
+        cached_lot = await daily_fortune.get_cached_lot(chat_id, token)
+        is_cached = cached_lot is not None
+        if is_cached:
+            result_of_draw = cached_lot
+        else:
+            result_of_draw = await daily_fortune.get_daily_lot(chat_id, token)
         result_of_draw = await daily_fortune.get_daily_lot(chat_id, token)
         logging.info(f"result_of_draw: {result_of_draw}")
         sign_level = result_of_draw["sign_level"]
@@ -480,6 +493,20 @@ async def reveal_fate(update, token):
             parse_mode="MarkdownV2", 
             reply_markup=reply_markup
         )
+
+        if is_cached:
+            await get_aura_status(update, "aura_action_cached_hit")
+            return jsonify({'status': 'ok'}), 200
+        
+        # 更新用户积分
+        if token_from == 'recommended':
+            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=-5)
+            if not sql_status:
+                logging.error("Failed to update user points")
+                await get_aura_status(update, "aura_action_invalid")
+                return jsonify({'status': 'ok'}), 200
+            await get_aura_status(update, "aura_action_recommend_click")
+
         sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=-15)
         if not sql_status:
             logging.error("Failed to update user points")
@@ -494,7 +521,7 @@ async def reveal_fate(update, token):
         )
         return
     
-async def risk_preference(update, token):
+async def risk_preference(update, token, token_from='normal'):
     try:
         await update.callback_query.answer()
         if not token:
@@ -509,7 +536,7 @@ async def risk_preference(update, token):
         )
 
         # 发送图片及选择项
-        reply_markup = keyboard_factory.create_keyboard("risk", token=token)
+        reply_markup = keyboard_factory.create_keyboard("risk", token=token, token_from=token_from)
         image_path = get_image_path('risk_preference_combined.png')
         with open(image_path, 'rb') as image_file:
             await update.callback_query.message.reply_photo(
@@ -587,3 +614,30 @@ async def get_aura_status(update, action: str):
         logging.error(f"Error in get_aura_status: {e}")
         await target.message.reply_text("Sorry, something went wrong while processing your request.")
         return
+    
+async def handle_daily_checkin(update):
+    # 处理普通消息
+    if update.message:
+        user_id = update.message['from']['id']
+    # 处理回调查询
+    elif update.callback_query:
+        user_id = update.callback_query['from']['id']
+    else:
+        return
+    today = datetime.date.today()
+    user_checkins = ChatStatus.user_checkins
+    # 检查用户是否已经打卡
+    if user_id in user_checkins and user_checkins[user_id] == today:
+        return  # 已经打过卡，不需要再打卡
+
+    # 更新用户打卡日期
+    user_checkins[user_id] = today
+
+    # 发送打卡成功消息
+    sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=20)
+    if not sql_status:
+        logging.error("Failed to update user points")
+        await get_aura_status(update, "aura_action_invalid")
+        del user_checkins[user_id]
+        return 
+    await get_aura_status(update, "aura_action_daily_checkin")

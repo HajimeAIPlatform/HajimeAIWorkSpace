@@ -74,25 +74,25 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_risk_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
+    def _create_risk_keyboard(self, context: Any=None, token: str=None, token_from: str='normal') -> InlineKeyboardMarkup:
         """创建风险选择的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('role1', context=context),
-                    callback_data=f'risk:{token}',
+                    callback_data=f'risk:{token}:{token_from}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role2', context=context),
-                    callback_data=f'risk:{token}',
+                    callback_data=f'risk:{token}:{token_from}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role3', context=context),
-                    callback_data=f'risk:{token}',
+                    callback_data=f'risk:{token}:{token_from}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role4', context=context),
-                    callback_data=f'risk:{token}',
+                    callback_data=f'risk:{token}:{token_from}',
                 )
             ],
         ]
@@ -122,7 +122,7 @@ class KeyboardFactory:
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('reveal', context=context),
-                    callback_data=f'reveal_fate:{token}'
+                    callback_data=f'reveal_fate:{token}:normal'
                 )
             ]
         ]
@@ -133,7 +133,7 @@ class KeyboardFactory:
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('reveal', context=context),
-                    callback_data=f'reveal_fate:{token}'
+                    callback_data=f'reveal_fate:{token}:normal'
                 )
             ]
         ]

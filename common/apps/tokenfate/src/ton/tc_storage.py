@@ -106,17 +106,21 @@ class DailyFortune:
         now = datetime.now()
         next_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
         return next_midnight
+    
+    async def get_cached_lot(self, chat_id: str, ticker: str) -> dict:
+        """
+        检查特定聊天的ticker的今日签是否已缓存
+        """
+        key = self._generate_daily_key(chat_id, ticker)
+        cached_lot = await self.redis_client.get(key)
+        if cached_lot is not None:
+            logging.info(f"Hit cache for chat_id {chat_id}, ticker {ticker}")
+            return json.loads(cached_lot) # 从Redis中获取缓存的签并转换为dict
+        return {}
 
     async def get_daily_lot(self, chat_id: str, ticker: str) -> dict:
         try:
             key = self._generate_daily_key(chat_id, ticker)
-            
-            # 尝试从Redis获取今日已存在的签ID
-            cached_lot = await self.redis_client.get(key)
-            
-            if cached_lot is not None:
-                logging.info(f"Hit cache for chat_id {chat_id}, ticker {ticker}")
-                return json.loads(cached_lot) # 从Redis中获取缓存的签并转换为dict
             
             # 如果没有缓存,则从sqlite3中随机抽签
             result_of_draw = self.db.randomly_choose_sign_by_weight()
