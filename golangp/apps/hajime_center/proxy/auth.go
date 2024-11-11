@@ -61,22 +61,45 @@ func writeErrorResponse(w http.ResponseWriter, code, message string, status int)
 	json.NewEncoder(w).Encode(response)
 }
 
+func isPathExcluded(path string, excludedPaths []string) bool {
+	for _, excludedPath := range excludedPaths {
+		if path == excludedPath {
+			return true
+		}
+	}
+	return false
+}
+
 // AuthMiddleware adds authentication headers to the request
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path is /dify/console/api/setup
-		if r.URL.Path != "/dify/console/api/setup" && r.URL.Path != "/dify/console/api/system-features" && !strings.HasPrefix(r.URL.Path, "/dify/api") {
+		excludedPaths := []string{
+			"/dify/console/api/setup",
+			"/dify/console/api/system-features",
+			"/dify/console/api/installed-apps",
+			"/dify/console/api/features",
+			"/dify/console/api/workspaces",
+			"/dify/console/api/workspaces/current/members",
+			"/dify/console/api/workspaces/current/model-providers",
+			"/dify/console/api/workspaces/current/models/model-types/llm",
+			"/dify/console/api/datasets/retrieval-setting",
+			"dify/console/api/apps",
+			"dify/console/api/workspaces/current",
+		}
+
+		difyClient, err := dify.GetDifyClient()
+		if err != nil {
+			logging.Warning("Auth Failed: " + err.Error())
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if !isPathExcluded(r.URL.Path, excludedPaths) && !strings.HasPrefix(r.URL.Path, "/dify/api") {
 			user, err := DeserializeUser(r)
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
 				writeErrorResponse(w, "email_or_password_mismatch", err.Error(), http.StatusBadRequest)
-				return
-			}
-
-			difyClient, err := dify.GetDifyClient()
-			if err != nil {
-				logging.Warning("Auth Failed: " + err.Error())
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
@@ -94,6 +117,16 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 			ctx := context.WithValue(r.Context(), "user", user)
 			r = r.WithContext(ctx)
+		}
+
+		if isPathExcluded(r.URL.Path, excludedPaths) {
+			Token, err := difyClient.GetUserToken("admin")
+			if err != nil {
+				logging.Warning("Token retrieval failed: " + err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			r.Header.Set("Authorization", "Bearer "+Token)
 		}
 
 		// Call the next handler
