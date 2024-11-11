@@ -294,7 +294,7 @@ class UserPoints(db.Model):
         user_points = db.session.query(cls).filter_by(user_id=user_id).first()
         if user_points:
             return user_points.points
-        return None
+        return 0
 
     @classmethod
     def update_points_by_user_id(cls, user_id, points, description=""):

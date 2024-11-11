@@ -11,6 +11,11 @@ from pytoniq_core import Address
 from pytonconnect import TonConnect
 import src.bot.state as TaskState
 import src.ton.views as ton_module
+import src.bot.state as ChatStatus
+from models.transaction import UserPoints
+from md2tgmd import escape
+from src.bot.i18n_helper import I18nHelper
+i18n = I18nHelper()
 
 def get_wallets():
     wallets_list = TonConnect.get_wallets()
@@ -38,6 +43,8 @@ async def wait_for_connection(connector, telegram_app, chat_id, timeout=180):
             f'Waiting for connection... {i}, connector.connected : {connector.connected}'
         )
         if connector.connected:
+            logging.info(connector.wallet.device.app_name, "wallet_name")
+            wallet_name = connector.wallet.device.app_name
             if connector.account.address:
                 wallet_address = connector.account.address
                 wallet_address = Address(wallet_address).to_str(
@@ -68,6 +75,18 @@ async def wait_for_connection(connector, telegram_app, chat_id, timeout=180):
                             parse_mode='HTML',
                             reply_markup=new_keyboard
                         )
+                    if chat_id not in ChatStatus.user_wallets:
+                        ChatStatus.user_wallets[chat_id] = set()
+                    if wallet_name not in ChatStatus.user_wallets[chat_id]:
+                        ChatStatus.user_wallets[chat_id].add(wallet_name)
+                        # 发送钱包首次连接成功消息
+                        sql_status = UserPoints.update_points_by_user_id(user_id=chat_id, points=200)
+                        if not sql_status:
+                            logging.error("Failed to update user points")
+                            await get_aura_status(chat_id, telegram_app, "aura_action_invalid")
+                            ChatStatus.user_wallets[chat_id].remove(wallet_address)
+                            return 
+                        await get_aura_status(chat_id, telegram_app, "aura_action_wallet_connect")
                     return 
     await telegram_app.bot.send_message(chat_id=chat_id,
                                         text='Connect wallet timeout!')
@@ -321,3 +340,15 @@ async def set_handlers(update, telegram_app):
         await handle_send_transaction(update, telegram_app, query.data, "BUY")
     elif query.data.startswith('sell'):
         await handle_send_transaction(update, telegram_app, query.data, "SELL")
+
+async def get_aura_status(chat_id, telegram_app,action: str):
+    dialog = i18n.get_dialog(action)
+    dialog = dialog.format(user_id=chat_id)
+    button = i18n.get_button("aura")
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=button, callback_data="show_aura_rules")]])
+    await telegram_app.bot.send_message(
+            chat_id=chat_id,
+            text=escape(dialog),
+            parse_mode='MARKDOWNV2',
+            reply_markup=reply_markup
+        )

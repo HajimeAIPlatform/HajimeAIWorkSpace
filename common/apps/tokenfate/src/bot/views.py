@@ -499,7 +499,7 @@ async def reveal_fate(update, token, token_from='normal'):
         
         # 更新用户积分
         if token_from == 'recommended':
-            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=-5)
+            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=10)
             if not sql_status:
                 logging.error("Failed to update user points")
                 await get_aura_status(update, "aura_action_invalid")
@@ -557,13 +557,16 @@ async def show_aura_rules(update: Union[Update, CallbackQuery]):
         if isinstance(update, CallbackQuery):
             await update.answer()
             target = update.message
+            user_id = update['from']['id']
         elif isinstance(update, Update):
             target = update.message
+            user_id = update.message['from']['id']
         else:
             return
 
         # Send aura rules information
         dialog = i18n.get_dialog('aura_rules')
+        dialog = dialog.format(points= UserPoints.get_points_by_user_id(user_id=user_id))
         image_path = get_image_path("吾之灵气.png")
         with open(image_path, 'rb') as image_file:
             await target.reply_photo(
