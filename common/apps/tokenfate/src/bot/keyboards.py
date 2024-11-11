@@ -33,7 +33,7 @@ class KeyboardFactory:
                 [
                     InlineKeyboardButton(
                         self.i18n.get_button('community', context=context),
-                        callback_data='join_community_button'
+                        url="t.me/HajimeAI"
                     ),
                     InlineKeyboardButton(
                         self.i18n.get_button('info', context=context),
@@ -62,7 +62,7 @@ class KeyboardFactory:
                 [
                     InlineKeyboardButton(
                         self.i18n.get_button('community', context=context),
-                        callback_data='join_community_button'
+                        url="t.me/HajimeAI"
                     )
                 ],
                 [
@@ -74,7 +74,7 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_risk_keyboard(self, context: Any=None, token: str=None, token_from: str='normal') -> InlineKeyboardMarkup:
+    def _create_risk_keyboard(self, context: Any=None, token: str=None, token_from: str=None) -> InlineKeyboardMarkup:
         """创建风险选择的键盘布局"""
         keyboard = [
             [

@@ -138,7 +138,7 @@ class DailyFortune:
             # 如果Redis出错,仍然返回一个固定的签,确保同一天同一个ticker得到相同结果
             result_of_draw = self.db.randomly_choose_sign_by_weight()
             return result_of_draw
-        
+            
     async def clear_fortune(self, chat_id: str, ticker: str) -> bool:
         """
         清除特定聊天的ticker的今日签

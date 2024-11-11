@@ -21,7 +21,6 @@ def get_wallets():
     wallets_list = TonConnect.get_wallets()
     return wallets_list
 
-
 async def send_callback(chat_id, connector, telegram_app):
     try:
         await wait_for_connection(connector, telegram_app, chat_id)
