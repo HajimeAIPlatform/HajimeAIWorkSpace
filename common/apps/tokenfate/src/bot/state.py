@@ -4,7 +4,7 @@ waiting_tasks = {}
 tmp_tokens = {}
 chat_free = {}
 user_checkins = {}
-user_wallets = defaultdict(list)
+user_wallets = defaultdict(set)
 
 def get_transaction_status(chat_id):
     

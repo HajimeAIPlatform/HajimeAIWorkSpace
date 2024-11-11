@@ -99,19 +99,31 @@ class KeyboardFactory:
         return InlineKeyboardMarkup(keyboard)
     
     def _create_aura_keyboard(self, context: Any=None) -> InlineKeyboardMarkup:
-        """创建风险选择的键盘布局"""
+        """创建积分规则的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
-                    self.i18n.get_button('launch', context=context),
+                    self.i18n.get_button('aura_action_wallet_connect', context=context),
+                    callback_data='connect_wallet_button'
+                ),
+                InlineKeyboardButton(
+                    self.i18n.get_button('aura_action_daily_checkin', context=context),
                     callback_data='launch_to_reveal_button'
-                )
+                ),
+                InlineKeyboardButton(
+                    self.i18n.get_button('aura_action_fate_reveal', context=context),
+                    callback_data='launch_to_reveal_button'
+                ),
+                InlineKeyboardButton(
+                    self.i18n.get_button('aura_action_recommend_click', context=context),
+                    callback_data='launch_to_reveal_button'
+                ),
             ],
         ]
         return InlineKeyboardMarkup(keyboard)
     
     def _create_unconnected_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
-        """创建代币操作的键盘布局"""
+        """创建未连接钱包时的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
@@ -128,7 +140,7 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     def _create_connected_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
-        """创建代币操作的键盘布局"""
+        """创建已连接钱包的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(

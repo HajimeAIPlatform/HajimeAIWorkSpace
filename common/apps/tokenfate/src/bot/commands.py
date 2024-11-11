@@ -9,9 +9,10 @@ from telegram.ext import (
 )
 from os import getenv
 import urllib.parse
-
+from src.bot.i18n_helper import I18nHelper
 WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
 
+i18n = I18nHelper()
 async def set_menu_button(telegram_app):
     # 创建一个MenuButtonWebApp对象
     miniapp_url = f"{WEB_MINI_APP_URL}"
@@ -24,14 +25,14 @@ async def set_menu_button(telegram_app):
 
 async def set_bot_commands(telegram_app):
     commands = [
-        BotCommand("start", "Start Use TokenFate"),
-        BotCommand("quest", "quest your fate"),
-        BotCommand("connect", "connect your wallet"),
+        BotCommand("start", "开始使用 TokenFate"),
+        BotCommand("quest", "探问符命"),
+        BotCommand("connect", "连接钱包"),
         # BotCommand("buy", "Buy transaction"),
         # BotCommand("sell", "Sell transaction"),
-        BotCommand("disconnect", "Disconnect wallet"),
+        BotCommand("disconnect", "断开钱包连接"),
         # BotCommand("my_wallet", "Show connected wallet"),
-        BotCommand("aura", "Read My Aura"),
+        BotCommand("aura", "符命，灵能感应！"),
     ]
     await telegram_app.bot.set_my_commands(commands)
     # await set_menu_button(telegram_app)
@@ -64,4 +65,3 @@ async def set_bot_send_ex_handler(telegram_app):
 
 async def set_bot_commands_handler(telegram_app):
     await set_bot_commands(telegram_app)
-    # await set_bot_send_ex_handler(telegram_app)
