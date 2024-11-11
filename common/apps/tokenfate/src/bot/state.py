@@ -1,8 +1,10 @@
+from collections import defaultdict
 user_chat_status = {}
 waiting_tasks = {}
 tmp_tokens = {}
 chat_free = {}
 user_checkins = {}
+user_wallets = defaultdict(list)
 
 def get_transaction_status(chat_id):
     
