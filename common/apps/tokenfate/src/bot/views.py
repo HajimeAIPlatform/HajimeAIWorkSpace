@@ -24,7 +24,6 @@ import json
 import os
 from src.ton.tc_storage import DailyFortune, UserActivityTracker
 from models.transaction import UserPoints
-from datetime import datetime, date
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')
@@ -196,7 +195,27 @@ async def webhook():
             if update.callback_query.data == "connect_wallet_button":
                 await update.callback_query.answer()
                 # connect to wallet
+                user_id = update.callback_query['from']['id']
+                connected_wallets = await user_activity_tracker.get_connected_wallets(user_id)
+                
+                if connected_wallets:
+                    # Format the set into a list with each wallet on a new line
+                    wallet_list = "\n".join(connected_wallets)
+                    await update.callback_query.message.reply_text(f"已连接过的钱包:\n{wallet_list}")
                 await ton_module.wallet_menu_callback.on_choose_wallet_click(update)
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data == "aura_action_daily_checkin":
+                await update.callback_query.answer()
+                user_id = update.callback_query['from']['id']
+                if await user_activity_tracker.is_checked_in_today(user_id=user_id):
+                    await update.callback_query.message.reply_text("灵气无波，重访无效")
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data == "aura_action_recommend_click":
+                await update.callback_query.answer()
+                reply_markup = keyboard_factory.create_keyboard("launch")
+                await update.callback_query.message.reply_text("完成一次符命探寻，方可征得启示", reply_markup=reply_markup)
                 return jsonify({'status': 'ok'}), 200
 
             if update.callback_query.data.startswith("reveal_fate"):
@@ -216,6 +235,7 @@ async def webhook():
                 token_from = details[2]
                 await reveal_fate(update, token, token_from)
                 return jsonify({'status': 'ok'}), 200
+            
 
         # Process update with the application
         await telegram_app.process_update(update)
@@ -629,23 +649,3 @@ async def handle_daily_checkin(update):
             return
 
         # 检查用户是否已打卡
-        if await user_activity_tracker.is_checked_in_today(user_id=user_id):
-            return
-
-        # 执行打卡操作
-        if await user_activity_tracker.daily_checkin(user_id=user_id):
-            # 更新用户积分
-            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=20)
-            if not sql_status:
-                logging.error("Failed to update user points")
-                await get_aura_status(update, "aura_action_invalid")
-                return
-
-            # 发送打卡成功消息
-            await get_aura_status(update, "aura_action_daily_checkin")
-        else:
-            logging.error("Failed to check in user")
-
-    except Exception as e:
-        logging.error(f"Error in handle_daily_checkin: {str(e)}")
-        await get_aura_status(update, "aura_action_invalid")
