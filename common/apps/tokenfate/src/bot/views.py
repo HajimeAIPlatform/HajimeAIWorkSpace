@@ -649,3 +649,23 @@ async def handle_daily_checkin(update):
             return
 
         # 检查用户是否已打卡
+        if await user_activity_tracker.is_checked_in_today(user_id=user_id):
+            return
+
+        # 执行打卡操作
+        if await user_activity_tracker.daily_checkin(user_id=user_id):
+            # 更新用户积分
+            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=20)
+            if not sql_status:
+                logging.error("Failed to update user points")
+                await get_aura_status(update, "aura_action_invalid")
+                return
+
+            # 发送打卡成功消息
+            await get_aura_status(update, "aura_action_daily_checkin")
+        else:
+            logging.error("Failed to check in user")
+
+    except Exception as e:
+        logging.error(f"Error in handle_daily_checkin: {str(e)}")
+        await get_aura_status(update, "aura_action_invalid")

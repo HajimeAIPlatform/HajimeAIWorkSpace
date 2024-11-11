@@ -150,3 +150,15 @@ class KeyboardFactory:
             ]
         ]
         return InlineKeyboardMarkup(keyboard)
+    
+    def _create_launch_keyboard(self, context: Any=None) -> InlineKeyboardMarkup:
+        """创建揭示的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('aura_action_fate_reveal', context=context),
+                    callback_data='launch_to_reveal_button'
+                )
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
