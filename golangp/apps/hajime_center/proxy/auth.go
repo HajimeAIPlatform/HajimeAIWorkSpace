@@ -79,13 +79,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			"/dify/console/api/system-features",
 			"/dify/console/api/installed-apps",
 			"/dify/console/api/features",
-			"/dify/console/api/workspaces",
-			"/dify/console/api/workspaces/current/members",
-			"/dify/console/api/workspaces/current/model-providers",
-			"/dify/console/api/workspaces/current/models/model-types/llm",
 			"/dify/console/api/datasets/retrieval-setting",
-			"dify/console/api/apps",
-			"dify/console/api/workspaces/current",
+			"/dify/console/api/apps",
 		}
 
 		difyClient, err := dify.GetDifyClient()
@@ -95,7 +90,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if !isPathExcluded(r.URL.Path, excludedPaths) && !strings.HasPrefix(r.URL.Path, "/dify/api") {
+		if !isPathExcluded(r.URL.Path, excludedPaths) && !strings.HasPrefix(r.URL.Path, "/dify/api") && !strings.HasPrefix(r.URL.Path, "/dify/console/api/installed-apps") {
 			user, err := DeserializeUser(r)
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
@@ -119,7 +114,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
-		if isPathExcluded(r.URL.Path, excludedPaths) {
+		if isPathExcluded(r.URL.Path, excludedPaths) || strings.HasPrefix(r.URL.Path, "/dify/console/api/installed-apps") {
 			Token, err := difyClient.GetUserToken("admin")
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())
