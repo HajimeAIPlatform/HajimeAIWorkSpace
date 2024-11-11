@@ -22,9 +22,9 @@ import urllib.parse
 import time
 import json
 import os
-from src.ton.tc_storage import DailyFortune
+from src.ton.tc_storage import DailyFortune, UserActivityTracker
 from models.transaction import UserPoints
-import datetime
+from datetime import datetime, date
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')
@@ -37,8 +37,9 @@ persistence = DictPersistence()
 telegram_app = ApplicationBuilder().token(telegram_bot_token).persistence(
     persistence).build()
 
-# 初始化数据库连接
+# 初始化redis数据库连接
 daily_fortune = DailyFortune()
+user_activity_tracker = UserActivityTracker()
 
 # 初始化语言和键盘工厂
 i18n = I18nHelper()
@@ -451,7 +452,7 @@ async def reveal_fate(update, token, token_from='normal'):
         else:
             return
         if not token:
-            await target.message.reply_text("Please Enter Your Token.")
+            await target.message.reply_text("请输入你的符币代码。")
             return jsonify({'status': 'ok'}), 200
         
         # 随机抽签
@@ -463,12 +464,30 @@ async def reveal_fate(update, token, token_from='normal'):
         else:
             result_of_draw = await daily_fortune.get_daily_lot(chat_id, token)
         logging.info(f"result_of_draw: {result_of_draw}")
+
+        if is_cached:
+            # 用户积分无需更新
+            await get_aura_status(update, "aura_action_cached_hit")
+        else:
+            # 更新用户积分
+            if token_from == 'recommended':
+                sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=10)
+                if not sql_status:
+                    logging.error("Failed to update user points")
+                    await get_aura_status(update, "aura_action_invalid")
+                await get_aura_status(update, "aura_action_recommend_click")
+
+            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=-15)
+            if not sql_status:
+                logging.error("Failed to update user points")
+                await get_aura_status(update, "aura_action_invalid")
+            await get_aura_status(update, "aura_action_fate_reveal")
+
         sign_level = result_of_draw["sign_level"]
         sign_from = result_of_draw["sign_from"]
         sign_text = result_of_draw["sign_text"]
-
         # 发送抽签结果
-        words = f"**{token} Today**\n\n{sign_text}\n\n摘自：《{sign_from}》\n"
+        words = f"**{token}的今日运势**\n\n{sign_text}\n\n摘自：《{sign_from}》\n"
         escaped_words = escape(words)
         image_path = get_image_path(level_photo[sign_level])
         with open(image_path, 'rb') as image_file:
@@ -493,26 +512,8 @@ async def reveal_fate(update, token, token_from='normal'):
             reply_markup=reply_markup
         )
 
-        if is_cached:
-            await get_aura_status(update, "aura_action_cached_hit")
-            return jsonify({'status': 'ok'}), 200
-        
-        # 更新用户积分
-        if token_from == 'recommended':
-            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=10)
-            if not sql_status:
-                logging.error("Failed to update user points")
-                await get_aura_status(update, "aura_action_invalid")
-                return jsonify({'status': 'ok'}), 200
-            await get_aura_status(update, "aura_action_recommend_click")
-
-        sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=-15)
-        if not sql_status:
-            logging.error("Failed to update user points")
-            await get_aura_status(update, "aura_action_invalid")
-            return jsonify({'status': 'ok'}), 200
-        await get_aura_status(update, "aura_action_fate_reveal")
         return jsonify({'status': 'ok'}), 200
+    
     except Exception as e:
         logging.error(f"Error in reveal_fate: {e}")
         await target.message.reply_text(
@@ -618,28 +619,33 @@ async def get_aura_status(update, action: str):
         return
     
 async def handle_daily_checkin(update):
-    # 处理普通消息
-    if update.message:
-        user_id = update.message['from']['id']
-    # 处理回调查询
-    elif update.callback_query:
-        user_id = update.callback_query['from']['id']
-    else:
-        return
-    today = datetime.date.today()
-    user_checkins = ChatStatus.user_checkins
-    # 检查用户是否已经打卡
-    if user_id in user_checkins and user_checkins[user_id] == today:
-        return  # 已经打过卡，不需要再打卡
+    try:
+        # 获取用户ID
+        if update.message:
+            user_id = update.message['from']['id']
+        elif update.callback_query:
+            user_id = update.callback_query['from']['id']
+        else:
+            return
 
-    # 更新用户打卡日期
-    user_checkins[user_id] = today
+        # 检查用户是否已打卡
+        if await user_activity_tracker.is_checked_in_today(user_id=user_id):
+            return
 
-    # 发送打卡成功消息
-    sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=20)
-    if not sql_status:
-        logging.error("Failed to update user points")
+        # 执行打卡操作
+        if await user_activity_tracker.daily_checkin(user_id=user_id):
+            # 更新用户积分
+            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=20)
+            if not sql_status:
+                logging.error("Failed to update user points")
+                await get_aura_status(update, "aura_action_invalid")
+                return
+
+            # 发送打卡成功消息
+            await get_aura_status(update, "aura_action_daily_checkin")
+        else:
+            logging.error("Failed to check in user")
+
+    except Exception as e:
+        logging.error(f"Error in handle_daily_checkin: {str(e)}")
         await get_aura_status(update, "aura_action_invalid")
-        del user_checkins[user_id]
-        return 
-    await get_aura_status(update, "aura_action_daily_checkin")

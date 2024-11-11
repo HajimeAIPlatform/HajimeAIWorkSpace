@@ -1,6 +1,6 @@
 from pytonconnect.storage import IStorage
 from datetime import datetime, timedelta
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Set
 from models.db_ops import FortunesDatabase
 import redis.asyncio as redis
 import json
@@ -149,4 +149,115 @@ class DailyFortune:
             return await self.redis_client.delete(key) > 0
         except Exception as e:
             self.logging.error(f"Error in clear_fortune: {str(e)}")
+            return False
+        
+class UserActivityTracker:
+    def __init__(self):
+        self.redis_client = client
+        
+    def _get_wallet_set_key(self, user_id: str) -> str:
+        """获取用户已连接钱包集合的Redis键"""
+        return f"user:{user_id}:connected_wallets"
+        
+    def _get_checkin_key(self, user_id: str) -> str:
+        """获取用户打卡记录的Redis键"""
+        return f"user:{user_id}:last_checkin"
+    
+    async def _has_checked_in_today(self, user_id: str) -> bool:
+        """检查用户今天是否已经打卡"""
+        checkin_key = self._get_checkin_key(user_id)
+        return await self.redis_client.exists(checkin_key) 
+
+    def _get_next_midnight(self) -> datetime:
+        """获取下一个午夜时间"""
+        now = datetime.now()
+        next_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+        return next_midnight
+
+    async def connect_wallet(self, user_id: str, wallet_name: str) -> bool:
+        """
+        处理用户连接钱包的逻辑
+        
+        Args:
+            user_id: 用户ID
+            wallet_name: 钱包名称
+            
+        Returns:
+            bool: 是否是首次连接这种钱包
+        """
+        try:
+            wallet_set_key = self._get_wallet_set_key(user_id)
+            
+            # 检查是否首次连接这种钱包
+            is_new_wallet = await self.redis_client.sadd(wallet_set_key, wallet_name)
+            
+            if is_new_wallet:
+                logging.info(f"User {user_id} connected new wallet type: {wallet_name}")
+            else:
+                logging.info(f"User {user_id} reconnected existing wallet type: {wallet_name}")
+            
+            return bool(is_new_wallet)
+            
+        except Exception as e:
+            logging.error(f"Error in connect_wallet: {str(e)}")
+            raise
+    
+    async def disconnect_wallet(self, user_id: str, wallet_name: str) -> bool:
+        """撤回用户连接的钱包"""
+        try:
+            wallet_set_key = self._get_wallet_set_key(user_id)
+            removed = await self.redis_client.srem(wallet_set_key, wallet_name)
+            
+            if removed:
+                logging.info(f"User {user_id} disconnected wallet type: {wallet_name}")
+            else:
+                logging.info(f"Wallet type {wallet_name} was not connected for user {user_id}")
+            
+            return bool(removed)
+            
+        except Exception as e:
+            logging.error(f"Error in disconnect_wallet: {str(e)}")
+            raise
+
+    async def daily_checkin(self, user_id: str) -> bool:
+        """处理用户每日打卡"""
+        try:
+            if await self._has_checked_in_today(user_id):
+                return False
+            
+            # 未打卡，记录打卡时间
+            checkin_key = self._get_checkin_key(user_id)
+            next_midnight = self._get_next_midnight()
+            expire_seconds = int((next_midnight - datetime.now()).total_seconds())
+            
+            # 设置打卡记录，到午夜过期
+            await self.redis_client.set(
+                checkin_key,
+                str(datetime.now().timestamp()),
+                ex=expire_seconds
+            )
+            
+            logging.info(f"User {user_id} checked in successfully")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Error in daily_checkin: {str(e)}")
+            raise
+            
+    async def get_connected_wallets(self, user_id: str) -> Set[str]:
+        """获取用户已连接的钱包列表"""
+        try:
+            wallet_set_key = self._get_wallet_set_key(user_id)
+            wallets = await self.redis_client.smembers(wallet_set_key)
+            return {w.decode() for w in wallets}
+        except Exception as e:
+            logging.error(f"Error in get_connected_wallets: {str(e)}")
+            return set()
+            
+    async def is_checked_in_today(self, user_id: str) -> bool:
+        """检查用户今天是否已经打卡"""
+        try:
+            return await self._has_checked_in_today(user_id)
+        except Exception as e:
+            logging.error(f"Error in is_checked_in_today: {str(e)}")
             return False
