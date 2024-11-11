@@ -113,6 +113,7 @@ attrs==24.2.0 \
     # via
     #   aiohttp
     #   aiohttp-sse-client
+    #   pytest
     #   service-identity
     #   twisted
 automat==24.8.1 \
@@ -744,6 +745,10 @@ incremental==24.7.2 \
     --hash=sha256:8cb2c3431530bec48ad70513931a760f446ad6c25e8333ca5d95e24b0ed7b8fe \
     --hash=sha256:fb4f1d47ee60efe87d4f6f0ebb5f70b9760db2b2574c59c8e8912be4ebd464c9
     # via twisted
+iniconfig==2.0.0 \
+    --hash=sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3 \
+    --hash=sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374
+    # via pytest
 itemadapter==0.9.0 \
     --hash=sha256:cfd108c9d5205d056fcac402ec8f8e9d799ce9066911eec1cd521ea442f87af1 \
     --hash=sha256:e4f958a6b6b6f5831fa207373010031a0bd7ed0429ddd09b51979c011475cafd
@@ -1303,6 +1308,7 @@ packaging==24.1 \
     # via
     #   matplotlib
     #   parsel
+    #   pytest
     #   scrapy
 parsel==1.9.1 \
     --hash=sha256:14e00dc07731c9030db620c195fcae884b5b4848e9f9c523c6119f708ccfa9ac \
@@ -1394,6 +1400,10 @@ pillow==10.4.0 \
     # via
     #   -r requirements.in
     #   matplotlib
+pluggy==1.5.0 \
+    --hash=sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1 \
+    --hash=sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669
+    # via pytest
 propcache==0.2.0 \
     --hash=sha256:00181262b17e517df2cd85656fcd6b4e70946fe62cd625b9d74ac9977b64d8d9 \
     --hash=sha256:0e53cb83fdd61cbd67202735e6a6687a7b491c8742dfc39c9e01e80354956763 \
@@ -1559,6 +1569,10 @@ psycopg2-binary==2.9.3 \
     --hash=sha256:e847774f8ffd5b398a75bc1c18fbb56564cda3d629fe68fd81971fece2d3c67e \
     --hash=sha256:ffb7a888a047696e7f8240d649b43fb3644f14f0ee229077e7f6b9f9081635bd
     # via -r requirements.in
+py==1.11.0 \
+    --hash=sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719 \
+    --hash=sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378
+    # via pytest
 pyasn1==0.6.1 \
     --hash=sha256:0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629 \
     --hash=sha256:6f580d2bdd84365380830acf45550f2511469f673cb4a5ae3857a3170128b034
@@ -1769,6 +1783,10 @@ pypng==0.20220715.0 \
     --hash=sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c \
     --hash=sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1
     # via qrcode
+pytest==7.1.2 \
+    --hash=sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c \
+    --hash=sha256:a06a0425453864a270bc45e71f783330a7428defb4230fb5e6a731fde06ecd45
+    # via -r requirements.in
 python-binance==1.0.19 \
     --hash=sha256:aabc86955e3f99d5e8b1d49796eb584127af4c44f3eaab64ef92b8ee8fa88bff \
     --hash=sha256:b58cb5313d4fafbcfab3afe6082fff8ba4ebf7261211e7a322c2137637825e82
@@ -2013,6 +2031,10 @@ tldextract==5.1.2 \
     --hash=sha256:4dfc4c277b6b97fa053899fcdb892d2dc27295851ab5fac4e07797b6a21b2e46 \
     --hash=sha256:c9e17f756f05afb5abac04fe8f766e7e70f9fe387adb1859f0f52408ee060200
     # via scrapy
+tomli==2.0.2 \
+    --hash=sha256:2ebe24485c53d303f690b0ec092806a085f07af5a5aa1464f3931eec36caaa38 \
+    --hash=sha256:d46d457a85337051c36524bc5349dd91b1877838e2979ac5ced3e710ed8a60ed
+    # via pytest
 tonutils==0.0.5 \
     --hash=sha256:166320c17d57ff3b847d2f8b22f86814cc909107d0e695f59daa19f5a6ddf1c8 \
     --hash=sha256:5b138d961780c0cb64fcb10a59d9f3a56482107042d6f1ad20e24abab5e3a0a7

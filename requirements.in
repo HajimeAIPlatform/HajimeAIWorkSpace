@@ -1,5 +1,6 @@
 matplotlib==3.9.2
 scrapy==2.11.2
+pytest==7.1.2
 
 flask[async]~=3.0.3
 python-dotenv~=1.0.1

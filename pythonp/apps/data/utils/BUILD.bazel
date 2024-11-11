@@ -1,0 +1,18 @@
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+py_library(
+    name = "utils",
+    srcs = ["utils.py"],
+    visibility = ["//visibility:public"],
+    deps = [],
+)
+
+py_test(
+    name = "utils_test",
+    srcs = ["utils_test.py"],
+    deps = [
+        "//pythonp/apps/data/utils",
+        requirement("pytest"),
+    ],
+)
