@@ -1,6 +1,7 @@
 package models
 
 import (
+	"hajime/golangp/apps/hajime_center/initializers"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +20,12 @@ type User struct {
 	PasswordResetAt    time.Time
 	Verified           bool      `gorm:"not null"`
 	Balance            int64     `gorm:"not null:default:0"`
+	Address            string    `gorm:"type:varchar(255);default:''"`
+	Status             int32     `gorm:"not null;default:1"` // Corrected type
+	Code               string    `gorm:"type:varchar(255);default:''"`
+	Twitter            string    `gorm:"type:varchar(255);default:''"` // Twitter
+	Telegram           string    `gorm:"type:varchar(255);default:''"` // Telegram
+	Discord            string    `gorm:"type:varchar(255);default:''"` // Discord
 	CreatedAt          time.Time `gorm:"not null"`
 	UpdatedAt          time.Time `gorm:"not null"`
 }
@@ -77,4 +84,23 @@ type UpdateUserInput struct {
 	Name  string `json:"name,omitempty"`
 	Email string `json:"email,omitempty"`
 	Role  string `json:"role,omitempty"`
+}
+
+func (u *User) GetUserByAddress(address string) (*User, error) {
+	db := initializers.DB
+	var user User
+	result := db.Where("address = ?", address).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}
+
+func (u *User) SaveUser(user *User) error {
+	db := initializers.DB
+	result := db.Save(user)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

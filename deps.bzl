@@ -560,6 +560,12 @@ def go_dependencies():
         version = "v1.32.5",
     )
     go_repository(
+        name = "com_github_shopspring_decimal",
+        importpath = "github.com/shopspring/decimal",
+        sum = "h1:bxl37RwXBklmTi0C79JfXCEBD1cqqHt0bbgBAGFp81k=",
+        version = "v1.4.0",
+    )
+    go_repository(
         name = "com_github_smartwalle_alipay_v3",
         importpath = "github.com/smartwalle/alipay/v3",
         sum = "h1:i1VwJeu70EmwpsXXz6GZZnMAtRx5MTfn2dPoql/L3zE=",

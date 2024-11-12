@@ -144,12 +144,12 @@ func handleInstallGetAllApps(resp *http.Response, body []byte, db *gorm.DB, user
 			return err
 		}
 
-		dbApp, err := models.GetHajimeAppByID(db, appID)
+		dbApp, err := models.GetHajimeAppByID(appID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				// Create new app entry
 				incomingApp.InstallAppID = InstallAppID
-				if err := models.CreateHajimeApp(db, incomingApp); err != nil {
+				if err := models.CreateHajimeApp(incomingApp); err != nil {
 					logging.Warning("Failed to create app: " + err.Error())
 					return err
 				}
@@ -187,14 +187,14 @@ func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user mo
 	}
 
 	if appID != "" {
-		return handleGetSingleApp(resp, body, appID, db)
+		return handleGetSingleApp(resp, body, appID)
 	}
 
 	return handleGetAllApps(resp, r, body, db, user)
 }
 
-func handleGetSingleApp(resp *http.Response, body []byte, appID string, db *gorm.DB) error {
-	app, err := models.GetHajimeAppByID(db, appID)
+func handleGetSingleApp(resp *http.Response, body []byte, appID string) error {
+	app, err := models.GetHajimeAppByID(appID)
 	if err != nil {
 		logging.Warning("Failed to fetch app: " + err.Error())
 		return err
@@ -259,10 +259,10 @@ func handleGetAllApps(resp *http.Response, r *http.Request, body []byte, db *gor
 			}
 		}
 
-		dbApp, err := models.GetHajimeAppByID(db, id)
+		dbApp, err := models.GetHajimeAppByID(id)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				if err := models.CreateHajimeApp(db, incomingApp); err != nil {
+				if err := models.CreateHajimeApp(incomingApp); err != nil {
 					logging.Warning("Failed to create app: " + err.Error())
 					return err
 				}
@@ -321,7 +321,7 @@ func handlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB, user m
 	}
 	app.Owner = user.ID.String()
 
-	if err := models.CreateHajimeApp(db, app); err != nil {
+	if err := models.CreateHajimeApp(app); err != nil {
 		logging.Warning("Failed to create app: " + err.Error())
 		return err
 	}
@@ -373,7 +373,7 @@ func handlePutRequest(resp *http.Response, r *http.Request, db *gorm.DB, user mo
 	if err := db.Where("id = ?", app.ID).First(&existingApp).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			app.Owner = user.ID.String()
-			if err := models.CreateHajimeApp(db, app); err != nil {
+			if err := models.CreateHajimeApp(app); err != nil {
 				logging.Warning("Failed to create app: " + err.Error())
 				return err
 			}
@@ -383,7 +383,7 @@ func handlePutRequest(resp *http.Response, r *http.Request, db *gorm.DB, user mo
 			return err
 		}
 	} else {
-		if err := models.UpdateHajimeApp(db, app); err != nil {
+		if err := models.UpdateHajimeApp(app); err != nil {
 			logging.Warning("Failed to update app: " + err.Error())
 			return err
 		}
@@ -423,7 +423,7 @@ func handleDeleteRequest(resp *http.Response, r *http.Request, db *gorm.DB, user
 		return fmt.Errorf("app ID is required")
 	}
 
-	if err := models.DeleteHajimeApp(db, appID); err != nil {
+	if err := models.DeleteHajimeApp(appID); err != nil {
 		logging.Warning("Failed to delete app: " + err.Error())
 		return err
 	}
@@ -480,7 +480,7 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 
 	// Update the app's isPublish status
 	existingApp.IsPublish = true // or whatever logic you need
-	if err := models.UpdateHajimeApp(db, existingApp); err != nil {
+	if err := models.UpdateHajimeApp(existingApp); err != nil {
 		logging.Warning("Failed to update app: " + err.Error())
 		http.Error(w, "Failed to update app", http.StatusInternalServerError)
 		return
@@ -494,10 +494,9 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
-	db := initializers.DB
 
 	// Call GetAllHajimeAppsNoAuth to get published apps
-	apps, err := models.GetAllHajimeAppsNoAuth(db)
+	apps, err := models.GetAllHajimeAppsNoAuth()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
