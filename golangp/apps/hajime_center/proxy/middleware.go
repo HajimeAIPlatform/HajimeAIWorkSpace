@@ -282,8 +282,14 @@ func handleGetAllApps(resp *http.Response, r *http.Request, body []byte, user mo
 		}
 
 		owner, ok := incomingAppData["owner"].(string)
-		if ok && owner == user.ID.String() {
-			filteredData = append(filteredData, incomingAppData)
+		if user.Role == "admin" {
+			if owner == "" || owner == user.ID.String() {
+				filteredData = append(filteredData, incomingAppData)
+			}
+		} else {
+			if ok && owner == user.ID.String() {
+				filteredData = append(filteredData, incomingAppData)
+			}
 		}
 	}
 
