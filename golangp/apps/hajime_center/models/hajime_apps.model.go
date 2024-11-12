@@ -1,23 +1,45 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"hajime/golangp/common/logging"
+	"time"
 )
 
+type UnixTime int64
+
+func (t *UnixTime) UnmarshalJSON(b []byte) error {
+	var timestamp int64
+	if err := json.Unmarshal(b, &timestamp); err != nil {
+		return fmt.Errorf("UnixTime: %w", err)
+	}
+	*t = UnixTime(timestamp)
+	return nil
+}
+
+func (t UnixTime) Time() time.Time {
+	return time.Unix(int64(t), 0)
+}
+
 type HajimeApps struct {
-	ID               string `gorm:"type:uuid;primaryKey" json:"id"`
-	TenantID         int    `gorm:"not null" json:"tenant_id"`
-	Mode             string `gorm:"type:varchar(50)" json:"mode"`
-	Name             string `gorm:"type:varchar(100)" json:"name"`
-	Description      string `gorm:"type:text" json:"description"`
-	AppModelConfigID int    `gorm:"not null" json:"app_model_config_id"`
-	WorkflowID       int    `gorm:"not null" json:"workflow_id"`
-	Status           string `gorm:"type:varchar(50)" json:"status"`
-	Owner            string `gorm:"type:varchar(100);default:''" json:"owner"`
-	IsPublish        bool   `gorm:"not null default:false" json:"is_publish"`
+	ID               string   `gorm:"type:uuid;primaryKey" json:"id"`
+	TenantID         int      `gorm:"not null" json:"tenant_id"`
+	Mode             string   `gorm:"type:varchar(50)" json:"mode"`
+	Name             string   `gorm:"type:varchar(100)" json:"name"`
+	Description      string   `gorm:"type:text" json:"description"`
+	AppModelConfigID int      `gorm:"not null" json:"app_model_config_id"`
+	WorkflowID       int      `gorm:"not null" json:"workflow_id"`
+	Status           string   `gorm:"type:varchar(50)" json:"status"`
+	Owner            string   `gorm:"type:varchar(100);default:''" json:"owner"`
+	IsPublish        bool     `gorm:"not null;default:false" json:"is_publish"`
+	Icon             string   `gorm:"type:varchar(100)" json:"icon"`
+	IconBackground   string   `gorm:"type:varchar(100)" json:"icon_background"`
+	CreatedAt        UnixTime `gorm:"type:bigint" json:"created_at"`
+	PublishAt        UnixTime `gorm:"type:bigint" json:"publish_at"`
+	InstallAppID     string   `gorm:"type:varchar(50)" json:"install_app_id"`
 }
 
 // CreateHajimeApp 创建一个新的 HajimeApps

@@ -30,11 +30,11 @@ func (dc *DifyClient) UserLogin(email string, password string) (result UserLogin
 		Password:   password,
 		RememberMe: true,
 	}
-
 	api := dc.GetConsoleAPI(CONSOLE_API_LOGIN)
 
 	code, body, err := SendPostRequestToConsole(dc, api, payload)
 
+	logging.Warning("code: %d, body: %s\n", code, string(body))
 	err = CommonRiskForSendRequest(code, err)
 	if err != nil {
 		return result, err

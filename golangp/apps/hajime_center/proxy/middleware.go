@@ -12,7 +12,7 @@ import (
 	"hajime/golangp/common/logging"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"regexp"
 )
 
 // OriginalResponse defines the structure for the original response
@@ -24,9 +24,48 @@ type OriginalResponse struct {
 	HasMore bool                     `json:"has_more"`
 }
 
+type InstallAppResponse struct {
+	InstalledApps []InstalledApps `json:"installed_apps"`
+}
+
+type InstalledApps struct {
+	ID               string            `json:"id"`
+	App              models.HajimeApps `json:"app"`
+	AppOwnerTenantID string            `json:"app_owner_tenant_id"`
+	IsPinned         bool              `json:"is_pinned"`
+	LastUsedAt       int64             `json:"last_used_at"`
+	Editable         bool              `json:"editable"`
+	Uninstallable    bool              `json:"uninstallable"`
+}
+
+type RecommendedAPP struct {
+	App struct {
+		Icon           string `json:"icon"`
+		IconBackground string `json:"icon_background"`
+		ID             string `json:"id"`
+		Mode           string `json:"mode"`
+		Name           string `json:"name"`
+	} `json:"app"`
+	ID               string      `json:"id"`
+	AppID            string      `json:"app_id"`
+	Category         string      `json:"category"`
+	Copyright        interface{} `json:"copyright"`
+	CustomDisclaimer interface{} `json:"custom_disclaimer"`
+	Description      interface{} `json:"description"`
+	IsListed         bool        `json:"is_listed"`
+	Position         int64       `json:"position"`
+	PrivacyPolicy    interface{} `json:"privacy_policy"`
+}
+
+type NoAuthApp struct {
+	Categories     []string         `json:"categories"`
+	RecommendedAPP []RecommendedAPP `json:"recommended_apps"`
+}
+
 func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
-	if strings.HasPrefix(r.URL.Path, "/console/api/apps") {
-		db := initializers.DB
+
+	db := initializers.DB
+	if r.URL.Path == "/console/api/apps" || isAppIDPath(r.URL.Path) {
 		switch r.Method {
 		case http.MethodGet:
 			return handleGetRequest(w, r, db, user)
@@ -40,7 +79,22 @@ func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 			return nil
 		}
 	}
+
+	if r.URL.Path == "/console/api/installed-apps" {
+		switch r.Method {
+		case http.MethodGet:
+			return handleInstallGetRequest(w, r, db, user)
+		default:
+			return nil
+		}
+	}
 	return nil
+}
+
+func isAppIDPath(path string) bool {
+	// 匹配 "/console/api/apps/{app_id}"，确保后面没有其他路径
+	matched, _ := regexp.MatchString(`^/console/api/apps/[a-fA-F0-9\-]+/?$`, path)
+	return matched
 }
 
 func readResponseBody(resp *http.Response) ([]byte, error) {
@@ -56,6 +110,73 @@ func writeResponseBody(resp *http.Response, body []byte) {
 	resp.Header.Set("Content-Length", fmt.Sprint(len(body)))
 }
 
+func handleInstallGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
+	body, err := readResponseBody(resp)
+	if err != nil {
+		return err
+	}
+	return handleInstallGetAllApps(resp, body, db, user)
+}
+
+func handleInstallGetAllApps(resp *http.Response, body []byte, db *gorm.DB, user models.User) error {
+	var originalResponse InstallAppResponse
+	if err := json.Unmarshal(body, &originalResponse); err != nil {
+		logging.Warning("Failed to decode incoming data: " + err.Error())
+		return err
+	}
+
+	for _, incomingAppData := range originalResponse.InstalledApps {
+		appID := incomingAppData.App.ID
+		if appID == "" {
+			logging.Warning("Invalid or missing app ID in incoming app data")
+			continue
+		}
+
+		InstallAppID := incomingAppData.ID
+		if InstallAppID == "" {
+			logging.Warning("Invalid or missing install app ID in incoming app data")
+			continue
+		}
+
+		var incomingApp models.HajimeApps
+		if err := mapToStructApps(incomingAppData.App, &incomingApp); err != nil {
+			logging.Warning("Failed to convert incoming app data to struct: " + err.Error())
+			return err
+		}
+
+		dbApp, err := models.GetHajimeAppByID(db, appID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Create new app entry
+				incomingApp.InstallAppID = InstallAppID
+				if err := models.CreateHajimeApp(db, incomingApp); err != nil {
+					logging.Warning("Failed to create app: " + err.Error())
+					return err
+				}
+				fmt.Println("App added:", appID)
+			} else {
+				logging.Warning("Error checking app existence: " + err.Error())
+				return err
+			}
+		} else {
+			// Update existing app entry with InstallAppID
+			dbApp.InstallAppID = InstallAppID
+			if err := db.Save(&dbApp).Error; err != nil {
+				logging.Warning("Failed to update app: " + err.Error())
+				return err
+			}
+		}
+	}
+
+	modifiedBody, err := json.Marshal(originalResponse)
+	if err != nil {
+		return err
+	}
+
+	writeResponseBody(resp, modifiedBody)
+	return nil
+}
+
 func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	vars := mux.Vars(r)
 	appID := vars["app_id"]
@@ -69,7 +190,7 @@ func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user mo
 		return handleGetSingleApp(resp, body, appID, db)
 	}
 
-	return handleGetAllApps(resp, body, db, user)
+	return handleGetAllApps(resp, r, body, db, user)
 }
 
 func handleGetSingleApp(resp *http.Response, body []byte, appID string, db *gorm.DB) error {
@@ -102,12 +223,22 @@ func handleGetSingleApp(resp *http.Response, body []byte, appID string, db *gorm
 	return nil
 }
 
-func handleGetAllApps(resp *http.Response, body []byte, db *gorm.DB, user models.User) error {
+func handleGetAllApps(resp *http.Response, r *http.Request, body []byte, db *gorm.DB, user models.User) error {
 	var originalResponse OriginalResponse
 	if err := json.Unmarshal(body, &originalResponse); err != nil {
 		logging.Warning("Failed to decode incoming data: " + err.Error())
 		return err
 	}
+
+	// Make a request to /console/api/installed-apps
+	installedApps, err := FetchInstalledApps(r)
+	if err != nil {
+		logging.Warning("Failed to fetch installed apps: " + err.Error())
+		return err
+	}
+
+	// Process the installed apps as needed
+	fmt.Println("Installed Apps:", installedApps)
 
 	for i, incomingAppData := range originalResponse.Data {
 		id, ok := incomingAppData["id"].(string)
@@ -121,9 +252,14 @@ func handleGetAllApps(resp *http.Response, body []byte, db *gorm.DB, user models
 			logging.Warning("Failed to convert incoming app data to struct: " + err.Error())
 			return err
 		}
+		for _, installedApp := range installedApps {
+			if installedApp.App.ID == id {
+				incomingApp.InstallAppID = installedApp.ID
+				break
+			}
+		}
 
 		dbApp, err := models.GetHajimeAppByID(db, id)
-		incomingApp.Owner = user.ID.String()
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				if err := models.CreateHajimeApp(db, incomingApp); err != nil {
@@ -315,6 +451,14 @@ func mapToStruct(data map[string]interface{}, result interface{}) error {
 	return json.Unmarshal(jsonData, result)
 }
 
+func mapToStructApps(data models.HajimeApps, result interface{}) error {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(jsonData, result)
+}
+
 // HandlePublish is a custom handler for the /publish route
 func HandlePublish(w http.ResponseWriter, r *http.Request) {
 	// Extract the app_id from the URL
@@ -341,32 +485,74 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to update app", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(existingApp)
+	// 设置响应头为 JSON
+	w.Header().Set("Content-Type", "application/json")
 
-	// Respond with a success status
+	// 返回成功状态和 JSON 响应
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"result": "success"})
 }
 
 func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
 	db := initializers.DB
-	// 调用 GetAllHajimeApps 函数，获取已发布的应用程序
+
+	// Call GetAllHajimeAppsNoAuth to get published apps
 	apps, err := models.GetAllHajimeAppsNoAuth(db)
 	if err != nil {
-		// 如果发生错误，返回 500 状态码和错误信息
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 将应用程序列表转换为 JSON 格式
-	response, err := json.Marshal(apps)
+	// Initialize a single NoAuthApp with empty categories
+	noAuthApp := NoAuthApp{
+		Categories:     []string{},
+		RecommendedAPP: []RecommendedAPP{},
+	}
+
+	// Iterate over apps and build the RecommendedAPP list
+	for index, app := range apps {
+		recommendedApp := RecommendedAPP{
+			App: struct {
+				Icon           string `json:"icon"`
+				IconBackground string `json:"icon_background"`
+				ID             string `json:"id"`
+				Mode           string `json:"mode"`
+				Name           string `json:"name"`
+			}{
+				Icon:           app.Icon,
+				IconBackground: app.IconBackground,
+				ID:             app.ID,
+				Mode:           app.Mode,
+				Name:           app.Name,
+			},
+			ID:               app.InstallAppID,
+			AppID:            app.ID,
+			Category:         "", // Default to empty string
+			Copyright:        nil,
+			CustomDisclaimer: nil,
+			Description:      nil,
+			IsListed:         false,
+			Position:         int64(index), // Use index as Position
+			PrivacyPolicy:    nil,
+		}
+
+		// Append each app to the RecommendedAPP slice
+		noAuthApp.RecommendedAPP = append(noAuthApp.RecommendedAPP, recommendedApp)
+	}
+
+	// If no apps found, ensure RecommendedAPP is an empty slice
+	if len(apps) == 0 {
+		noAuthApp.RecommendedAPP = []RecommendedAPP{}
+	}
+
+	// Convert the single NoAuthApp to JSON
+	response, err := json.Marshal(noAuthApp)
 	if err != nil {
-		// 如果 JSON 编码失败，返回 500 状态码和错误信息
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 设置响应头为 JSON 格式
+	// Set response header to JSON format
 	w.Header().Set("Content-Type", "application/json")
-	// 写入响应
 	w.Write(response)
 }

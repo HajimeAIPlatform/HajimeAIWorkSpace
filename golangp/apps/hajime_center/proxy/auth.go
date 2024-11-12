@@ -61,22 +61,40 @@ func writeErrorResponse(w http.ResponseWriter, code, message string, status int)
 	json.NewEncoder(w).Encode(response)
 }
 
+func isPathExcluded(path string, excludedPaths []string) bool {
+	for _, excludedPath := range excludedPaths {
+		if path == excludedPath {
+			return true
+		}
+	}
+	return false
+}
+
 // AuthMiddleware adds authentication headers to the request
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path is /dify/console/api/setup
-		if r.URL.Path != "/dify/console/api/setup" && r.URL.Path != "/dify/console/api/system-features" {
+		excludedPaths := []string{
+			"/dify/console/api/setup",
+			"/dify/console/api/system-features",
+			"/dify/console/api/installed-apps",
+			"/dify/console/api/features",
+			"/dify/console/api/datasets/retrieval-setting",
+			"/dify/console/api/apps",
+		}
+
+		difyClient, err := dify.GetDifyClient()
+		if err != nil {
+			logging.Warning("Auth Failed: " + err.Error())
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if !isPathExcluded(r.URL.Path, excludedPaths) && !strings.HasPrefix(r.URL.Path, "/dify/api") && !strings.HasPrefix(r.URL.Path, "/dify/console/api/installed-apps") {
 			user, err := DeserializeUser(r)
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
 				writeErrorResponse(w, "email_or_password_mismatch", err.Error(), http.StatusBadRequest)
-				return
-			}
-
-			difyClient, err := dify.GetDifyClient()
-			if err != nil {
-				logging.Warning("Auth Failed: " + err.Error())
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
@@ -96,6 +114,16 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
+		if isPathExcluded(r.URL.Path, excludedPaths) || strings.HasPrefix(r.URL.Path, "/dify/console/api/installed-apps") {
+			Token, err := difyClient.GetUserToken("admin")
+			if err != nil {
+				logging.Warning("Token retrieval failed: " + err.Error())
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			r.Header.Set("Authorization", "Bearer "+Token)
+		}
+
 		// Call the next handler
 		next.ServeHTTP(w, r)
 	})
@@ -108,9 +136,9 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
 	// Register handlers with middleware
 	router.HandleFunc("/dify/console/api/apps/no_auth", GetAllNoAuthApp).Methods("GET")
-	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
-	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", HandlePublish).Methods("POST")
+	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.PathPrefix("/dify/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
 	server := &http.Server{

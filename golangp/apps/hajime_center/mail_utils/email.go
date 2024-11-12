@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"crypto/tls"
 	"github.com/k3a/html2text"
-	"gopkg.in/gomail.v2"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
 	"html/template"
 	"log"
 	"os"
 	"path/filepath"
+
+	gomail "gopkg.in/gomail.v2"
 )
 
 type EmailData struct {
@@ -25,6 +26,12 @@ type EmailData struct {
 // ? Email template parser
 
 func ParseTemplateDir(dir string) (*template.Template, error) {
+	// 检查目录是否存在
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		// 如果目录不存在，使用默认路径
+		dir = "/srv/HajimeCenter/templates"
+	}
+
 	var paths []string
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -60,7 +67,7 @@ func SendEmail(user *models.User, data *EmailData, emailTemp string) {
 
 	var body bytes.Buffer
 
-	tmpl, err := ParseTemplateDir("templates")
+	tmpl, err := ParseTemplateDir("golangp/apps/hajime_center/templates")
 	if err != nil {
 		log.Fatal("Could not parse template", err)
 	}

@@ -27,7 +27,7 @@ type SignUpInput struct {
 	Name            string `json:"name" binding:"required"`
 	Email           string `json:"email" binding:"required"`
 	Password        string `json:"password" binding:"required,min=8"`
-	PasswordConfirm string `json:"passwordConfirm" binding:"required"`
+	PasswordConfirm string `json:"password_confirm" binding:"required"`
 	Photo           string `json:"photo,omitempty"`
 	Role            string `json:"role"`
 }
@@ -37,7 +37,6 @@ type SignInInput struct {
 	Name     string `json:"name"`
 	Password string `json:"password" binding:"required"`
 }
-
 
 type UserResponse struct {
 	ID        uuid.UUID `json:"id,omitempty"`
@@ -60,7 +59,7 @@ type ForgotPasswordInput struct {
 // ResetPasswordInput struct
 type ResetPasswordInput struct {
 	Password        string `json:"password" binding:"required"`
-	PasswordConfirm string `json:"passwordConfirm" binding:"required"`
+	PasswordConfirm string `json:"password_confirm" binding:"required"`
 }
 
 type UpdateBalanceInput struct {
@@ -69,13 +68,13 @@ type UpdateBalanceInput struct {
 }
 
 type PasswordChangeInput struct {
-	CurrentPassword  string `json:"currentPassword" binding:"required"`
-	NewPassword      string `json:"newPassword" binding:"required,min=8"`
-	PasswordConfirm  string `json:"passwordConfirm" binding:"required,min=8"`
+	CurrentPassword string `json:"current_password" binding:"required"`
+	NewPassword     string `json:"newPassword" binding:"required,min=8"`
+	PasswordConfirm string `json:"password_confirm" binding:"required,min=8"`
 }
 
 type UpdateUserInput struct {
-    Name     string `json:"name,omitempty"`
-    Email    string `json:"email,omitempty"`
-    Role     string `json:"role,omitempty"`
+	Name  string `json:"name,omitempty"`
+	Email string `json:"email,omitempty"`
+	Role  string `json:"role,omitempty"`
 }
