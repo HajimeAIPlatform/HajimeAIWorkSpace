@@ -190,7 +190,7 @@ func handleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user mo
 		return handleGetSingleApp(resp, body, appID)
 	}
 
-	return handleGetAllApps(resp, r, body, db, user)
+	return handleGetAllApps(resp, r, body, user)
 }
 
 func handleGetSingleApp(resp *http.Response, body []byte, appID string) error {
@@ -223,24 +223,22 @@ func handleGetSingleApp(resp *http.Response, body []byte, appID string) error {
 	return nil
 }
 
-func handleGetAllApps(resp *http.Response, r *http.Request, body []byte, db *gorm.DB, user models.User) error {
+func handleGetAllApps(resp *http.Response, r *http.Request, body []byte, user models.User) error {
 	var originalResponse OriginalResponse
 	if err := json.Unmarshal(body, &originalResponse); err != nil {
 		logging.Warning("Failed to decode incoming data: " + err.Error())
 		return err
 	}
 
-	// Make a request to /console/api/installed-apps
 	installedApps, err := FetchInstalledApps(r)
 	if err != nil {
 		logging.Warning("Failed to fetch installed apps: " + err.Error())
 		return err
 	}
 
-	// Process the installed apps as needed
-	fmt.Println("Installed Apps:", installedApps)
+	filteredData := []map[string]interface{}{}
 
-	for i, incomingAppData := range originalResponse.Data {
+	for _, incomingAppData := range originalResponse.Data {
 		id, ok := incomingAppData["id"].(string)
 		if !ok {
 			logging.Warning("Invalid or missing ID in incoming app data")
@@ -250,8 +248,9 @@ func handleGetAllApps(resp *http.Response, r *http.Request, body []byte, db *gor
 		var incomingApp models.HajimeApps
 		if err := mapToStruct(incomingAppData, &incomingApp); err != nil {
 			logging.Warning("Failed to convert incoming app data to struct: " + err.Error())
-			return err
+			continue
 		}
+
 		for _, installedApp := range installedApps {
 			if installedApp.App.ID == id {
 				incomingApp.InstallAppID = installedApp.ID
@@ -264,27 +263,31 @@ func handleGetAllApps(resp *http.Response, r *http.Request, body []byte, db *gor
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				if err := models.CreateHajimeApp(incomingApp); err != nil {
 					logging.Warning("Failed to create app: " + err.Error())
-					return err
+					continue
 				}
-				fmt.Println("App added:", id)
 			} else {
 				logging.Warning("Error checking app existence: " + err.Error())
-				return err
+				continue
 			}
 		} else {
 			dbAppData, err := structToMap(dbApp)
 			if err != nil {
 				logging.Warning("Failed to convert db app to map: " + err.Error())
-				return err
+				continue
 			}
 
 			for key, value := range dbAppData {
 				incomingAppData[key] = value
 			}
+		}
 
-			originalResponse.Data[i] = incomingAppData
+		owner, ok := incomingAppData["owner"].(string)
+		if ok && owner == user.ID.String() {
+			filteredData = append(filteredData, incomingAppData)
 		}
 	}
+
+	originalResponse.Data = filteredData
 
 	modifiedBody, err := json.Marshal(originalResponse)
 	if err != nil {
@@ -320,6 +323,8 @@ func handlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB, user m
 		return err
 	}
 	app.Owner = user.ID.String()
+
+	fmt.Println("user", app.Owner, user)
 
 	if err := models.CreateHajimeApp(app); err != nil {
 		logging.Warning("Failed to create app: " + err.Error())
