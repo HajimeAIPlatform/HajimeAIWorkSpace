@@ -520,3 +520,52 @@ func (ac *AuthController) GetMe(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"user": userResponse}})
 }
+
+func (ac *AuthController) LoginWithWallet(ctx *gin.Context) {
+	// 获取当前用户
+	currentUser, ok := ctx.MustGet("currentUser").(models.User)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "User not found"})
+		return
+	}
+
+	// 从请求中获取 SignLoginModel
+	var form models.SignLoginModel
+
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Invalid request"})
+		return
+	}
+
+	// 将 WalletAddress 转为小写
+	form.WalletAddress = strings.ToLower(form.WalletAddress)
+
+	// 调用 LoginWithSign 方法
+	loginResponse, err := currentUser.LoginWithSign(form, currentUser.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	// 返回登录响应
+	ctx.JSON(http.StatusOK, loginResponse)
+}
+
+func (ac *AuthController) UnlinkWallet(ctx *gin.Context) {
+	// 获取当前用户
+	currentUser, ok := ctx.MustGet("currentUser").(models.User)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "User not found"})
+		return
+	}
+
+	// 调用 UnlinkWallet 方法
+	err := currentUser.UnlinkWallet(currentUser.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	// 返回成功响应
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": "Wallet unlinked successfully"})
+}

@@ -24,19 +24,9 @@ var (
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
-	DocumentController      controllers.DocumentController
-	DocumentRouteController routes.DocumentRouteController
-
 	AppsController      controllers.AppsController
 	AppsRouteController routes.AppsRouteController
-
-	ModelController      controllers.ModelController
-	ModelRouteController routes.ModelRouteController
-
-	ConversationsController      controllers.ConversationsController
-	ConversationsRouteController routes.ConversationsRouteController
-
-	wg sync.WaitGroup
+	wg                  sync.WaitGroup
 )
 
 func init() {
@@ -51,17 +41,8 @@ func init() {
 	AuthController = controllers.NewAuthController(initializers.DB)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 
-	DocumentController = controllers.NewDocumentController(initializers.DB, initializers.DBDify)
-	DocumentRouteController = routes.NewDocumentRouteController(DocumentController)
-
 	AppsController = controllers.NewAppsController(initializers.DB)
 	AppsRouteController = routes.NewAppsRouteController(AppsController)
-
-	ModelController = controllers.NewModelController(initializers.DB)
-	ModelRouteController = routes.NewModelRouteController(ModelController)
-
-	ConversationsController = controllers.NewConversationsController(initializers.DB)
-	ConversationsRouteController = routes.NewConversationsRouteController(ConversationsController)
 
 	server = gin.Default()
 }
@@ -106,10 +87,7 @@ func main() {
 	})
 
 	AuthRouteController.AuthRoute(router)
-	DocumentRouteController.DocumentRoute(router)
 	AppsRouteController.AppsRoute(router)
-	ModelRouteController.ModelRoute(router)
-	ConversationsRouteController.ConversationsRoute(router)
 
 	// Start the main server in a new goroutine
 	httpServer := &http.Server{

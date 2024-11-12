@@ -26,6 +26,9 @@ func (rc *AuthRouteController) AuthRoute(rg *gin.RouterGroup) {
 	router.PATCH("/resetpassword/:resetToken", rc.authController.ResetPassword)
 	router.POST("/password", middleware.DeserializeUser(), rc.authController.PasswordChange)
 
+	router.POST("/login_with_wallet", middleware.DeserializeUser(), rc.authController.LoginWithWallet)
+	router.POST("/unlink_wallet", middleware.DeserializeUser(), rc.authController.UnlinkWallet)
+
 	// admin manager routes
 	router.POST("/add", middleware.DeserializeUser(), rc.authController.AddUser)
 	router.DELETE("/:userId", middleware.DeserializeUser(), rc.authController.DeleteUser)

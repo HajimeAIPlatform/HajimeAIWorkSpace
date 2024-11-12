@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"time"
 
@@ -21,6 +23,7 @@ type User struct {
 	Verified           bool      `gorm:"not null"`
 	Balance            int64     `gorm:"not null:default:0"`
 	Address            string    `gorm:"type:varchar(255);default:''"`
+	Sign               string    `gorm:"type:varchar(255);default:''"`
 	Status             int32     `gorm:"not null;default:1"` // Corrected type
 	Code               string    `gorm:"type:varchar(255);default:''"`
 	Twitter            string    `gorm:"type:varchar(255);default:''"` // Twitter
@@ -102,5 +105,121 @@ func (u *User) SaveUser(user *User) error {
 	if result.Error != nil {
 		return result.Error
 	}
+	return nil
+}
+
+func (u *User) GetUserByUID(uid string) (*User, error) {
+	db := initializers.DB
+	var user User
+	result := db.Where("id = ?", uid).First(&user)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil // User not found
+		}
+		return nil, result.Error // Other errors
+	}
+	return &user, nil
+}
+
+func (u *User) UpdateAddressAndSign(address, sign string) error {
+	// Update the user's Address and Sign fields
+	db := initializers.DB
+	result := db.Model(u).Updates(User{Address: address, Sign: sign})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+type SignLoginModel struct {
+	WalletAddress string `json:"walletAddress"`
+	Sign          string `json:"sign"`
+	Code          string `json:"code,omitempty"`
+	Msg           string `json:"msg,omitempty"`
+}
+
+type LoginResponse struct {
+	WalletAddress string `json:"walletAddress"`
+	UID           string `json:"uid,omitempty"`
+	Sign          string `json:"sign,omitempty"`
+}
+
+func (u *User) GenerateLoginResponse(walletAddress, uid string) *LoginResponse {
+	return &LoginResponse{
+		WalletAddress: walletAddress,
+		UID:           uid,
+	}
+}
+
+func (u *User) LoginWithSign(form SignLoginModel, UID uuid.UUID) (*LoginResponse, error) {
+	uidStr := UID.String()
+
+	user, err := u.GetUserByUID(uidStr)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("please first login")
+	}
+
+	// Update address and sign
+	err = user.UpdateAddressAndSign(form.WalletAddress, form.Sign)
+	if err != nil {
+		return nil, err
+	}
+
+	loginResponse := u.GenerateLoginResponse(form.WalletAddress, uidStr)
+
+	return loginResponse, nil
+}
+
+func (u *User) GetUserAddressAndSign(UID uuid.UUID) (*LoginResponse, error) {
+	uidStr := UID.String()
+
+	// 获取用户
+	user, err := u.GetUserByUID(uidStr)
+	if err != nil {
+		return nil, err
+	}
+
+	// 检查用户是否存在
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	// 创建登录响应
+	loginResponse := &LoginResponse{
+		WalletAddress: user.Address,
+		Sign:          user.Sign,
+	}
+
+	return loginResponse, nil
+}
+
+func (u *User) UnlinkWallet(UID uuid.UUID) error {
+	uidStr := UID.String()
+
+	// 获取用户
+	user, err := u.GetUserByUID(uidStr)
+	if err != nil {
+		return err
+	}
+
+	// 检查用户是否存在
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	// 更新用户对象的字段
+	user.Address = ""
+	user.Sign = ""
+
+	// 保存用户
+	err = user.SaveUser(user)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
