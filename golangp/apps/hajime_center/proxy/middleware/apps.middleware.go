@@ -303,8 +303,21 @@ func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
 		RecommendedAPP: []RecommendedAPP{},
 	}
 
+	installedApps, err := FetchInstalledApps(r)
+	if err != nil {
+		logging.Warning("Failed to fetch installed apps: " + err.Error())
+		return
+	}
+	installedAppMap := make(map[string]string)
+	for _, installedApp := range installedApps {
+		installedAppMap[installedApp.App.ID] = installedApp.ID
+	}
+
 	// Iterate over apps and build the RecommendedAPP list
 	for index, app := range apps {
+		if id, exists := installedAppMap[app.ID]; exists {
+			app.InstallAppID = id
+		}
 		recommendedApp := RecommendedAPP{
 			App: struct {
 				Icon           string `json:"icon"`
@@ -372,8 +385,8 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 
 	isGreater, err := models.IsAppPublishAmountGreaterThanTen(existingApp.Owner)
 	if err != nil {
-		logging.Warning("Error checking AppPublishAmount: " + err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		logging.Warning("This app is not your own: " + err.Error())
+		http.Error(w, "This app is not your own", http.StatusInternalServerError)
 		return
 	}
 

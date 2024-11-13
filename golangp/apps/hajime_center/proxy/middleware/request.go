@@ -12,13 +12,15 @@ import (
 func FetchInstalledApps(r *http.Request) ([]InstalledApps, error) {
 	client := &http.Client{}
 
-	// Extract token from the request header
-	token := r.Header.Get("Authorization")
-
 	difyClient, err := dify.GetDifyClient()
 	if err != nil {
 		logging.Warning("Auth Failed: " + err.Error())
 		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	Token, err := difyClient.GetUserToken("admin")
+	if err != nil {
+		logging.Warning("failed to unauthorized: " + err.Error())
+		return nil, fmt.Errorf("failed to unauthorized: %w", err)
 	}
 
 	// Construct the URL using the scheme and host
@@ -30,7 +32,7 @@ func FetchInstalledApps(r *http.Request) ([]InstalledApps, error) {
 	}
 
 	// Add the authorization token
-	req.Header.Set("Authorization", token)
+	req.Header.Set("Authorization", `Bearer `+Token)
 
 	resp, err := client.Do(req)
 	if err != nil {
