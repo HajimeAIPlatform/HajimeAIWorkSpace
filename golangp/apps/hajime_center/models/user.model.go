@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/initializers"
+	"hajime/golangp/common/logging"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,6 +30,8 @@ type User struct {
 	Twitter            string    `gorm:"type:varchar(255);default:''"` // Twitter
 	Telegram           string    `gorm:"type:varchar(255);default:''"` // Telegram
 	Discord            string    `gorm:"type:varchar(255);default:''"` // Discord
+	AppPublishAmount   int64     `gorm:"not null;default:0"`
+	AppAmount          int64     `gorm:"not null;default:0"`
 	CreatedAt          time.Time `gorm:"not null"`
 	UpdatedAt          time.Time `gorm:"not null"`
 }
@@ -222,4 +225,42 @@ func (u *User) UnlinkWallet(UID uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func UpdateAppPublishAmount(uid string, amount int64) error {
+	db := initializers.DB
+	result := db.Model(&User{}).Where("id = ?", uid).Update("app_publish_amount", amount)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func UpdateAppAmount(uid string, amount int64) error {
+	db := initializers.DB
+	result := db.Model(&User{}).Where("id = ?", uid).Update("app_amount", amount)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func IsAppPublishAmountGreaterThanTen(uid string) (bool, error) {
+	config, err := initializers.LoadEnv(".")
+	if err != nil {
+		logging.Danger("🚀 Could not load environment variables %s", err.Error())
+		return false, err
+	}
+
+	db := initializers.DB
+	var user User
+
+	// 查询用户的 AppPublishAmount
+	result := db.Select("app_publish_amount").Where("id = ?", uid).First(&user)
+	if result.Error != nil {
+		return false, result.Error
+	}
+
+	// 判断是否大于 10
+	return user.AppPublishAmount > config.MaxPublishAppAmount, nil
 }
