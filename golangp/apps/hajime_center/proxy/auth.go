@@ -10,6 +10,7 @@ import (
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/apps/hajime_center/proxy/middleware"
 	"hajime/golangp/common/logging"
 	"hajime/golangp/common/utils"
 	"log"
@@ -149,8 +150,8 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 	router := mux.NewRouter()
 
 	// Register handlers with middleware
-	router.HandleFunc("/dify/console/api/apps/no_auth", GetAllNoAuthApp).Methods("GET")
-	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", HandlePublish).Methods("POST")
+	router.HandleFunc("/dify/console/api/apps/no_auth", middleware.GetAllNoAuthApp).Methods("GET")
+	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", middleware.HandlePublish).Methods("POST")
 	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.Handle("/dify/console/api/datasets/{dataset_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
