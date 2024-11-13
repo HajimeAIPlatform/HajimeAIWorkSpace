@@ -11,6 +11,18 @@ from pytoniq_core import Address
 from pytonconnect import TonConnect
 import src.bot.state as TaskState
 import src.ton.views as ton_module
+from models.transaction import UserPoints
+from src.ton.tc_storage import UserActivityTracker
+from md2tgmd import escape
+from src.bot.i18n_helper import I18nHelper
+from src.bot.keyboards import KeyboardFactory
+
+# 初始化语言和键盘工厂
+i18n = I18nHelper()
+keyboard_factory = KeyboardFactory(i18n)
+
+# 连接到redis
+user_activity_tracker = UserActivityTracker()
 
 def get_wallets():
     wallets_list = TonConnect.get_wallets()
@@ -38,39 +50,48 @@ async def wait_for_connection(connector, telegram_app, chat_id, timeout=180):
             f'Waiting for connection... {i}, connector.connected : {connector.connected}'
         )
         if connector.connected:
+            wallet_name = connector.wallet.device.app_name
+            print(wallet_name, "wallet_name")
             if connector.account.address:
                 wallet_address = connector.account.address
                 wallet_address = Address(wallet_address).to_str(
                     is_bounceable=False)
                 logging.info(f'Connected with address: {wallet_address}')
                 if wallet_address:
+                    # 更新用户积分
+                    if await user_activity_tracker.connect_wallet(user_id=chat_id, wallet_name=wallet_name):
+                        # 发送钱包首次连接成功消息
+                        sql_status = UserPoints.update_points_by_user_id(user_id=chat_id, points=200)
+                        if not sql_status:
+                            logging.error("Failed to update user points")
+                            await user_activity_tracker.disconnect_wallet(user_id=chat_id, wallet_name=wallet_name)
+                            await get_aura_status(chat_id, telegram_app, "aura_action_invalid")
+                        else:
+                            await get_aura_status(chat_id, telegram_app, "aura_action_wallet_connect")
+                    # 发送连接地址成功消息
                     await telegram_app.bot.send_message(
                         chat_id=chat_id,
-                        text=
-                        f'You are connected with address <code>{wallet_address}</code>',
+                        text=i18n.get_dialog('connected_address').format(address=wallet_address),
                         parse_mode='HTML')
                     query_token = TaskState.get_tmp_token(chat_id)
                     TaskState.remove_tmp_token(chat_id)
                     if query_token:
                         # 构造新的文本内容
-                        escaped_text = f'Thank you, my dear.\nNow, with the stars aligned, it is time to reveal the fate of your token.'
+                        dialog = i18n.get_dialog('recently_connected')
 
-                        # 重新创建原有的两个按钮
-                        button = InlineKeyboardButton(text="Reveal My Token Fate Now", callback_data=f"reveal_fate:{query_token}")
-
-                        # 创建新的键盘布局
-                        new_keyboard = InlineKeyboardMarkup([[button]])
+                        # 创建新的键盘
+                        reply_markup = keyboard_factory.create_keyboard("connected")
 
                         # 根据您的模板发送消息
                         await telegram_app.bot.send_message(
                             chat_id=chat_id,
-                            text=escaped_text,
+                            text=escape(dialog),
                             parse_mode='HTML',
-                            reply_markup=new_keyboard
+                            reply_markup=reply_markup
                         )
                     return 
     await telegram_app.bot.send_message(chat_id=chat_id,
-                                        text='Connect wallet timeout!')
+                                        text=i18n.get_dialog('connect_timeout'),)
 
 
 ITEMS_PER_PAGE = 3
@@ -116,9 +137,9 @@ async def on_choose_wallet_click(update: Update):
     # 添加分页按钮
     pagination_buttons = []
     if current_page > 0:
-        pagination_buttons.append(InlineKeyboardButton("« Left", callback_data=f"choose_wallet:{current_page - 1}"))
+        pagination_buttons.append(InlineKeyboardButton("« 左", callback_data=f"choose_wallet:{current_page - 1}"))
     if current_page < total_pages - 1:
-        pagination_buttons.append(InlineKeyboardButton("Right »", callback_data=f"choose_wallet:{current_page + 1}"))
+        pagination_buttons.append(InlineKeyboardButton("右 »", callback_data=f"choose_wallet:{current_page + 1}"))
 
     if pagination_buttons:
         keyboard.append(pagination_buttons)
@@ -154,7 +175,7 @@ async def on_open_universal_qr_click(update: Update, telegram_app):
     connector = get_connector(chat_id)
     link = await connector.connect(wallets)
 
-    await edit_qr(query.message, link, telegram_app, 'Select a wallet')
+    await edit_qr(query.message, link, telegram_app, i18n.get_button('choose_wallet'))
 
     keyboard = build_universal_keyboard(link)
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -189,11 +210,11 @@ async def on_wallet_click(update: Update, telegram_app):
         await edit_qr(query.message,
                       qr_link,
                       telegram_app,
-                      caption=f"Connect wallet within 3 minutes")
+                      caption=i18n.get_button("time_limit").format(mins=3))
 
         keyboard = [[
-            InlineKeyboardButton("« Back", callback_data="choose_wallet"),
-            InlineKeyboardButton(f"Open {selected_wallet['name']}",
+            InlineKeyboardButton(i18n.get_button('back'), callback_data="choose_wallet"),
+            InlineKeyboardButton(f"打开 {selected_wallet['name']}",
                                  url=button_link)
         ]]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -204,7 +225,7 @@ async def on_wallet_click(update: Update, telegram_app):
         asyncio.create_task(send_callback(chat_id, connector, telegram_app))
     except Exception as e:
         logging.error(f"Error in on_wallet_click: {e}")
-        await query.answer("Something went wrong. Please try again later.")
+        await query.answer(i18n.get_dialog('error'))
 
 
 async def edit_qr(message, link, telegram_app, caption='', box_size=4, border=4):
@@ -238,7 +259,7 @@ def add_tg_return_strategy(link, strategy):
 def build_universal_keyboard(link):
     wallets = get_wallets()
     keyboard = [
-        InlineKeyboardButton('Choose a Wallet', callback_data='choose_wallet'),
+        InlineKeyboardButton(i18n.get_button('choose_wallet'), callback_data='choose_wallet'),
         # InlineKeyboardButton('Open Link', url=f'https://ton-connect.github.io/open-tc?connect={urlencode({"connect": link})}')
     ]
     return [keyboard]
@@ -257,7 +278,7 @@ async def callback_query_connect(update: Update, reply_markup):
     file = InputFile(stream.getvalue(), filename='qrcode.png')
 
     await update.callback_query.message.reply_photo(photo=file,
-                                     caption='Choose a wallet:',
+                                     caption=i18n.get_button('choose_wallet'),
                                      reply_markup=reply_markup)
     return True
 
@@ -275,7 +296,7 @@ async def connect(update: Update, reply_markup):
     file = InputFile(stream.getvalue(), filename='qrcode.png')
 
     await update.message.reply_photo(photo=file,
-                                     caption='Choose a wallet:',
+                                     caption=i18n.get_button('choose_wallet'),
                                      reply_markup=reply_markup)
     return True
 
@@ -301,12 +322,10 @@ async def handle_send_transaction(update: Update, telegram_app, text, side):
                                                 text=message)
         except ValueError:
             await telegram_app.bot.send_message(chat_id=chat_id,
-                                                text="Invalid amount. Please enter in the format BTC:0.1,\ncancel to "
-                                                     "input /cancel")
+                                                text=i18n.get_dialog('invalid_amount'))
     else:
         await telegram_app.bot.send_message(chat_id=chat_id,
-                                            text="Invalid format. Please enter in the format BTC:0.1,\n Cancel to "
-                                                 "input /cancel.")
+                                            text=i18n.get_dialog('invalid_format'))
 
 
 async def set_handlers(update, telegram_app):
@@ -321,3 +340,15 @@ async def set_handlers(update, telegram_app):
         await handle_send_transaction(update, telegram_app, query.data, "BUY")
     elif query.data.startswith('sell'):
         await handle_send_transaction(update, telegram_app, query.data, "SELL")
+
+async def get_aura_status(chat_id, telegram_app,action: str):
+    dialog = i18n.get_dialog(action)
+    dialog = dialog.format(user_id=chat_id)
+    button = i18n.get_button("aura")
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=button, callback_data="show_aura_rules")]])
+    await telegram_app.bot.send_message(
+            chat_id=chat_id,
+            text=escape(dialog),
+            parse_mode='MARKDOWNV2',
+            reply_markup=reply_markup
+        )

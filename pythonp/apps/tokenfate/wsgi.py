@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import uvicorn
 from flask import Flask
 from asgiref.wsgi import WsgiToAsgi
-from pythonp.common.logging.logger import setup_logging
+from logger import setup_logging
 import logging
 import nest_asyncio
 
@@ -11,7 +11,7 @@ nest_asyncio.apply()
 
 load_dotenv()
 
-from pythonp.apps.tokenfate.src import blueprint as api
+from src import blueprint as api
 from models import setup_db
 from src.binance.transaction_queue import start_transaction_processor
 from src.binance.schedule import start_schedule_thread

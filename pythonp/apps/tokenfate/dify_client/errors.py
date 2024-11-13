@@ -4,7 +4,7 @@ from typing import Union
 import httpx
 import httpx_sse
 
-from pythonp.apps.tokenfate.dify_client import models
+from dify_client import models
 
 
 class DifyAPIError(Exception):

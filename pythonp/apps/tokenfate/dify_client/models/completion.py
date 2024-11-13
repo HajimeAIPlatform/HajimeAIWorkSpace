@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel
 
-from pythonp.apps.tokenfate.dify_client.models.base import CompletionInputs, ResponseMode, File, Metadata, Mode
+from dify_client.models.base import CompletionInputs, ResponseMode, File, Metadata, Mode
 
 
 class CompletionRequest(BaseModel):
