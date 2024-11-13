@@ -162,3 +162,39 @@ class KeyboardFactory:
             ]
         ]
         return InlineKeyboardMarkup(keyboard)
+    
+    def _create_lot_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
+        """创建灵签的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('lot_decode', context=context),
+                    callback_data=f'decode:{token}'
+                )
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def _create_lang_keyboard(self, context: Any=None) -> InlineKeyboardMarkup:
+        """创建语言选择的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('lang_en', context=context),
+                    callback_data='lang:en'
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('lang_zh', context=context),
+                    callback_data='lang:zh'
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('lang_ja', context=context),
+                    callback_data='lang:ja'
+                )
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)

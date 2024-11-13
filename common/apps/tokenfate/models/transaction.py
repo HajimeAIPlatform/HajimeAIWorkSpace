@@ -281,12 +281,14 @@ class UserPoints(db.Model):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     user_id = Column(BigInteger, nullable=False, unique=True)
     points = Column(Integer, nullable=False, default=0)
+    language = Column(String(2), nullable=False, default='') # default language is Chinese
 
     def to_dict(self):
         return {
             'id': str(self.id),
             'user_id': self.user_id,
-            'points': self.points
+            'points': self.points,
+            'language': self.language
         }
 
     @classmethod
@@ -327,6 +329,31 @@ class UserPoints(db.Model):
             return True
         except (SQLAlchemyError, InsufficientPointsError) as e:
             logging.error(f"Error updating user points: {e}")
+            db.session.rollback()
+            return False
+        
+    
+    @classmethod
+    def get_language_by_user_id(cls, user_id):
+        user_points = db.session.query(cls).filter_by(user_id=user_id).first()
+        if user_points:
+            return user_points.language
+        return ''
+    
+    @classmethod
+    def update_language_by_user_id(cls, user_id, language):
+        try:
+            user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
+            if user_points:
+                user_points.language = language
+            else:
+                user_points = UserPoints(user_id=user_id, language=language)
+                db.session.add(user_points)
+
+            db.session.commit()
+            return True
+        except SQLAlchemyError as e:
+            logging.error(f"Error updating user language: {e}")
             db.session.rollback()
             return False
 
