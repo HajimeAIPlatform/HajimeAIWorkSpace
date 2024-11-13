@@ -88,12 +88,43 @@ func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 			return nil
 		}
 	}
+
+	if r.URL.Path == "/console/api/datasets/init" {
+		switch r.Method {
+		case http.MethodPost:
+			return HandlePostDatasetInit(w, r, db, user)
+		default:
+			return nil
+		}
+	}
+	if r.URL.Path == "/console/api/datasets" {
+		switch r.Method {
+		case http.MethodGet:
+			return handleGetAllDatasets(w, r, user)
+		default:
+			return nil
+		}
+	}
+	if isDatasetIDPath(r.URL.Path) {
+		switch r.Method {
+		case http.MethodDelete:
+			return handleDeleteDatasets(w, r, user)
+		default:
+			return nil
+		}
+	}
 	return nil
 }
 
 func isAppIDPath(path string) bool {
 	// 匹配 "/console/api/apps/{app_id}"，确保后面没有其他路径
 	matched, _ := regexp.MatchString(`^/console/api/apps/[a-fA-F0-9\-]+/?$`, path)
+	return matched
+}
+
+func isDatasetIDPath(path string) bool {
+	// 匹配 "/console/api/datasets/{dataset_id}"，确保后面没有其他路径
+	matched, _ := regexp.MatchString(`^/console/api/datasets/[a-fA-F0-9\-]+/?$`, path)
 	return matched
 }
 
@@ -588,6 +619,10 @@ func HandlePostDatasetInit(resp *http.Response, r *http.Request, db *gorm.DB, us
 	// 设置数据集的所有者
 	responseData.Dataset.Owner = user.ID.String()
 
+	if responseData.Dataset.ID == "" {
+		return errors.New("create dataset error")
+	}
+
 	// 保存数据集到数据库
 	if err := models.SaveDataset(&responseData.Dataset); err != nil {
 		logging.Warning("Failed to save dataset: " + err.Error())
@@ -625,7 +660,11 @@ func HandlePostDatasetInit(resp *http.Response, r *http.Request, db *gorm.DB, us
 	return nil
 }
 
-func handleGetAllDatasets(resp *http.Response, r *http.Request, body []byte, user models.User) error {
+func handleGetAllDatasets(resp *http.Response, r *http.Request, user models.User) error {
+	body, err := readResponseBody(resp)
+	if err != nil {
+		return err
+	}
 	var originalResponse OriginalResponse
 	if err := json.Unmarshal(body, &originalResponse); err != nil {
 		logging.Warning("Failed to decode incoming data: " + err.Error())
@@ -685,5 +724,23 @@ func handleGetAllDatasets(resp *http.Response, r *http.Request, body []byte, use
 
 	// Write the response
 	writeResponseBody(resp, modifiedBody)
+	return nil
+}
+
+func handleDeleteDatasets(resp *http.Response, r *http.Request, user models.User) error {
+	vars := mux.Vars(r)
+	datasetID, ok := vars["dataset_id"]
+	if !ok {
+		logging.Warning("App ID is missing in the request URL")
+		return fmt.Errorf("app ID is required")
+	}
+
+	if err := models.DeleteDatasetByID(datasetID); err != nil {
+		logging.Warning("Failed to delete app: " + err.Error())
+		return err
+	}
+
+	resp.StatusCode = http.StatusNoContent
+	writeResponseBody(resp, []byte(""))
 	return nil
 }

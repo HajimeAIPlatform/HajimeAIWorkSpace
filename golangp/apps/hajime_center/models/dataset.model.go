@@ -1,9 +1,12 @@
 package models
 
-import "hajime/golangp/apps/hajime_center/initializers"
+import (
+	"errors"
+	"hajime/golangp/apps/hajime_center/initializers"
+)
 
 type Dataset struct {
-	ID                string `gorm:"type:varchar(255);primaryKey" json:"id"`
+	ID                string `gorm:"type:uuid;primaryKey" json:"id"`
 	Name              string `gorm:"type:varchar(255)" json:"name"`
 	Description       string `gorm:"type:text" json:"description"`
 	CreatedAt         int64  `gorm:"autoCreateTime" json:"created_at"`
@@ -20,16 +23,6 @@ func SaveDataset(dataset *Dataset) error {
 	return db.Create(dataset).Error
 }
 
-// GetAllDatasets retrieves all Dataset instances from the database
-func GetAllDatasets() ([]Dataset, error) {
-	var datasets []Dataset
-	db := initializers.DB
-	if err := db.Find(&datasets).Error; err != nil {
-		return nil, err
-	}
-	return datasets, nil
-}
-
 func GetDatasetByID(id string) (*Dataset, error) {
 	var dataset Dataset
 	db := initializers.DB
@@ -37,4 +30,21 @@ func GetDatasetByID(id string) (*Dataset, error) {
 		return nil, err
 	}
 	return &dataset, nil
+}
+
+func DeleteDatasetByID(id string) error {
+	db := initializers.DB
+
+	// Check if the dataset exists
+	var dataset Dataset
+	if err := db.First(&dataset, "id = ?", id).Error; err != nil {
+		return errors.New("dataset not found")
+	}
+
+	// Delete the dataset
+	if err := db.Delete(&dataset).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
