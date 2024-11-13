@@ -4,8 +4,8 @@ import logging
 import json
 import time
 from flask import current_app
-from pythonp.apps.tokenfate.models.transaction import save_binance_transaction_to_db
-from pythonp.apps.tokenfate.src.binance.utils import (get_binance_client,
+from models.transaction import save_binance_transaction_to_db
+from src.binance.utils import (get_binance_client,
                                get_common_currency_price, create_order,
                                get_order_info, get_result_info)
 

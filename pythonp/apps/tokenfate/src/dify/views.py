@@ -2,27 +2,33 @@ import uuid
 import json
 import logging
 from typing import Dict
-from pythonp.apps.tokenfate.dify_client import Client, models
+from dify_client import Client, models
 from os import getenv
-from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices
+from src.binance.schedule import get_random_usdt_historical_prices
 from flask import Blueprint, jsonify, request, Response
-from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
+from src.binance.utils import get_all_prices, process_recommendation
 
-dify_api_key = getenv('DIFY_API_KEY')
+dify_api_key_workflow = getenv('DIFY_API_KEY_WORKFLOW')
+dify_api_key_message = getenv('DIFY_API_KEY_MESSAGE')
 dify_api_key_2 = getenv('DIFY_API_KEy_2')
 dify_api_base = getenv('DIFY_BASE_HOST')
-if not dify_api_base or not dify_api_key or not dify_api_key_2:
+if not dify_api_base or not dify_api_key_workflow or not dify_api_key_2:
     raise ValueError(
         "Dify API key and base host are not set in the environment")
 
 # Initialize the client with your API key
 client = Client(
-    api_key=dify_api_key,
+    api_key=dify_api_key_workflow,
     api_base=dify_api_base,
 )
 
 client2 = Client(
     api_key=dify_api_key_2,
+    api_base=dify_api_base,
+)
+
+client3 = Client(
+    api_key=dify_api_key_message,
     api_base=dify_api_base,
 )
 
@@ -50,7 +56,7 @@ def chat_blocking(data):
         logging.info("Sending blocking chat request: %s", blocking_chat_req)
 
         # Send the chat message
-        chat_response = client.chat_messages(blocking_chat_req, timeout=60.)
+        chat_response = client3.chat_messages(blocking_chat_req, timeout=60.)
         chat_response_dict = json.loads(
             json.dumps(chat_response,
                        default=lambda o: o.__dict__))  # Convert to dictionary

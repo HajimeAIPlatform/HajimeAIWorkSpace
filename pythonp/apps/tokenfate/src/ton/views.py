@@ -19,6 +19,10 @@ import src.ton.ton_server as ton_server
 import mock_service.mock_connector as mock_connector
 import mock_service.mock_ton_server as mock_ton_server
 from os import getenv
+from src.bot.i18n_helper import I18nHelper
+
+# 初始化语言
+i18n = I18nHelper()
 
 MOCK_SERVER = getenv('MOCK_SERVER', 'False').lower() in ('true', '1', 't')
 
@@ -195,7 +199,7 @@ async def send_transaction(update, telegram_app, symbol, amount, side):
         return f"{e}"
 
 
-async def check_connected(update, telegram_app):
+async def check_connected(update, telegram_app, timeout=30):
     if update.message:
         chat_id = update.message.chat_id
     elif update.callback_query:
@@ -214,6 +218,16 @@ async def check_connected(update, telegram_app):
         return None
     connected = None
     # Attempt to restore connection
+    # try:
+    #     connected = await asyncio.wait_for(connector.restore_connection(), timeout)
+    # except asyncio.TimeoutError:
+    #     logging.error("Connection restoration timed out")
+    #     await telegram_app.bot.send_message(
+    #         chat_id=chat_id,
+    #         text='The request has timed out. Please try again later.',
+    #         parse_mode='HTML'
+    #     )
+    #     return None
     try:
         connected = await connector.restore_connection()
     except Exception as e:
@@ -237,7 +251,7 @@ async def get_my_wallet(update, telegram_app):
     connector = get_connector(chat_id)
     connected = await connector.restore_connection()
     if not connected:
-        return {"method": "sendMessage", "text": 'Connect wallet first!'}
+        return {"method": "sendMessage", "text": i18n.get_dialog('connect_first')}
 
     if connector.account and connector.account.address:
         wallet_address = convert_address_to_hex(connector.account.address)
@@ -261,7 +275,7 @@ async def get_my_wallet(update, telegram_app):
 
         return True
     else:
-        return {"method": "sendMessage", "text": 'No wallet connected!'}
+        return {"method": "sendMessage", "text": '尚未连接钱包'}
 
 
 async def send_tx(update, context):
@@ -270,7 +284,7 @@ async def send_tx(update, context):
     connected = await connector.restore_connection()
     if not connected:
         await update.message.reply_text(
-            "Connect wallet first!")
+            i18n.get_dialog('connect_first'))
         return ConversationHandler.END
     ChatStatus.set_transaction_status(chat_id, 'transition')
     await update.message.reply_text(
@@ -297,12 +311,12 @@ async def handle_ton_command(telegram_app, update):
         if not connected:
             return {
                 "method": "sendMessage",
-                "text": "Connect wallet first!"
+                "text": i18n.get_dialog('connect_first')
             }
         await disconnect_wallet(update)
         return {
             "method": "sendMessage",
-            "text": 'You have been successfully disconnected!'
+            "text": i18n.get_dialog('disconnected_success')
         }
 
     elif command == '/my_wallet':

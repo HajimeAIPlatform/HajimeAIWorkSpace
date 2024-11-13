@@ -4,12 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from pythonp.apps.tokenfate.src.binance.utils import (get_binance_client, generate_and_validate_symbol,
+from src.binance.utils import (get_binance_client, generate_and_validate_symbol,
                                get_common_currency_price, create_order,
                                get_order_info, get_all_prices, get_min_trade_quantity, is_min_trade_quantity_limit,
                                process_recommendation)
 
-from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices,fetch_and_store_usdt_historical_prices
+from src.binance.schedule import get_random_usdt_historical_prices,fetch_and_store_usdt_historical_prices
 
 def test(user_input):
     try:
