@@ -32,23 +32,23 @@ def create_app():
 
     return WsgiToAsgi(backend_app)
 
+# 从环境变量中获取端口号，如果没有设置则使用默认的5000
+port = int(os.getenv("PORT", 5000))
+env = os.getenv("ENV", "dev")
+
+log_dir = os.getenv("LOG_DIR", "./logs")
+setup_logging(log_dir=log_dir)
+if env == "prod":
+    logging.disable(logging.DEBUG)
+    logging.info("Running in production mode")
+else:
+    logging.disable(logging.DEBUG)
+    logging.info("Running in development mode")
+
+app = create_app()
+
 
 if __name__ == "__main__":
-    # 从环境变量中获取端口号，如果没有设置则使用默认的5000
-    port = int(os.getenv("PORT", 5000))
-    env = os.getenv("ENV", "dev")
-
-    log_dir = os.getenv("LOG_DIR", "./logs")
-    setup_logging(log_dir=log_dir)
-    if env == "prod":
-        logging.disable(logging.DEBUG)
-        logging.info("Running in production mode")
-    else:
-        logging.disable(logging.DEBUG)
-        logging.info("Running in development mode")
-
-    app = create_app()
-
     # 运行 Flask 应用
     logging.info(f"Starting backend server on port {port}...")
     uvicorn.run(app,
