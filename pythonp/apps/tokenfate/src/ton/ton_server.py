@@ -1,8 +1,10 @@
+from os import getenv
+import logging
+
 from tonutils.client import TonapiClient
 from tonutils.wallet import WalletV5R1, WalletV4R2, WalletV4R1, WalletV3R1, WalletV3R2
 from tonutils.utils import Address
-from os import getenv
-import logging
+
 
 # API key for accessing the Tonapi (obtainable from https://tonconsole.com)
 API_KEY = getenv('TON_API_KEY', '')

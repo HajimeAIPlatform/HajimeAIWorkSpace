@@ -6,7 +6,7 @@ import time
 from binance import Client
 import logging
 import json
-from src.binance.utils import get_binance_client
+from pythonp.apps.tokenfate.src.binance.utils import get_binance_client
 import os
 
 def get_symbol_historical_prices(symbol, days):

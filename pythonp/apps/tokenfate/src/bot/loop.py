@@ -1,22 +1,23 @@
 import logging
 import asyncio
+from io import BytesIO
+from os import getenv
+import threading
+
 from flask import Flask, Blueprint, jsonify, request
 from md2tgmd import escape
 from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, InputFile
-from io import BytesIO
 from PIL import Image
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler
 import qrcode
-from os import getenv
-from src.dify.views import chat_blocking, chat_streaming
-from src.binance.views import handle_binance_command
-import src.ton.views as ton_module
-from utils.utils import run_async
 from pytoniq_core import Address
-import threading
-from src.bot.commands import set_bot_commands_handler
-from src.bot.wallet_menu_callback import set_handlers
 
+from pythonp.apps.tokenfate.src.bot.commands import set_bot_commands_handler
+from pythonp.apps.tokenfate.src.bot.wallet_menu_callback import set_handlers
+from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming
+from pythonp.apps.tokenfate.src.binance.views import handle_binance_command
+import pythonp.apps.tokenfate.src.ton.views as ton_module
+from pythonp.apps.tokenfate.utils.utils import run_async
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')

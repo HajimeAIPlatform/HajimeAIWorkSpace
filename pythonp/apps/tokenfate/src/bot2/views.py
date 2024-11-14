@@ -1,14 +1,16 @@
 import logging
 import asyncio
+from io import BytesIO
+from os import getenv
+
 from flask import Blueprint, jsonify, request
 from md2tgmd import escape
 from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo,InlineQueryResultsButton
-from io import BytesIO
 from PIL import Image
 from telegram.ext import ApplicationBuilder, DictPersistence,CommandHandler
-from os import getenv
-from src.bot2.commands import set_bot_commands_handler
-from src.dify.views import chat_blocking_key_2
+
+from pythonp.apps.tokenfate.src.bot2.commands import set_bot_commands_handler
+from pythonp.apps.tokenfate.src.dify.views import chat_blocking_key_2
 
 
 # 获取Telegram Bot Token

@@ -1,8 +1,8 @@
 from flask import Blueprint
-from src.bot.views import bot, run_bot
-from src.bot2.views import bot2
-from src.ton.web import ton
-from src.dify.views import dify
+from pythonp.apps.tokenfate.src.bot.views import bot, run_bot
+from pythonp.apps.tokenfate.src.bot2.views import bot2
+from pythonp.apps.tokenfate.src.ton.web import ton
+from pythonp.apps.tokenfate.src.dify.views import dify
 
 # import src.bot.loop
 
