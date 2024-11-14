@@ -260,7 +260,7 @@ async def webhook():
                 logging.info(f"data: {data}")
                 details = data.split(":")
                 token = details[1]
-                await decode_lot(update, token, i18n)
+                await decode_lot(update, token)
                 return jsonify({'status': 'ok'}), 200
 
         # Process update with the application
@@ -677,17 +677,11 @@ async def decode_lot(update, token):
             "query": sign_text,
             "inputs": {
                 "lot": sign_text,
+                "lang": lang
             },
         }
         decode_reply = chat_decode(data)
         
-        # image_path = get_image_path("吾之灵气.png")
-        # with open(image_path, 'rb') as image_file:
-        #     await target.message.reply_photo(
-        #         photo=image_file,
-        #         caption=escape(decode_reply),
-        #         parse_mode="MarkdownV2",
-        #     )
         await target.message.reply_text(
             escape(decode_reply), parse_mode="MarkdownV2"
         )
