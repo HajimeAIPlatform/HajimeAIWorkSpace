@@ -94,12 +94,10 @@ class DailyFortune:
         # SQLite3连接配置
         self.db = FortunesDatabase()
 
-    def _generate_daily_key(self, chat_id: str, ticker: str) -> str:
-        """
-        生成每日用户-ticker的唯一键
-        格式: fortune:{chat_id}:{ticker.lower()}
-        """
-        return f"fortune:{chat_id}:{ticker.lower()}"
+    def _generate_key(self, chat_id: str, ticker: str, prefix: str, lang: str = None) -> str:
+        if lang:
+            return f"{prefix}:{chat_id}:{ticker.lower()}:{lang}"
+        return f"{prefix}:{chat_id}:{ticker.lower()}"
 
     def _get_next_midnight(self) -> datetime:
         """
@@ -113,16 +111,48 @@ class DailyFortune:
         """
         检查特定聊天的ticker的今日签是否已缓存
         """
-        key = self._generate_daily_key(chat_id, ticker)
+        key = self._generate_key(chat_id, ticker, "fortune")
         cached_lot = await self.redis_client.get(key)
         if cached_lot is not None:
             logging.info(f"Hit cache for chat_id {chat_id}, ticker {ticker}")
             return json.loads(cached_lot) # 从Redis中获取缓存的签并转换为dict
         return None
+    
+    async def get_cached_decode(self, chat_id: str, ticker: str, lang: str) -> str:
+        key = self._generate_key(chat_id, ticker, "decode", lang)
+        cached_decode = await self.redis_client.get(key)
+        if cached_decode is not None:
+            logging.info(f"Hit decode cache for chat_id {chat_id}, ticker {ticker}, lang {lang}")
+            return cached_decode.decode('utf-8')  # 将字节串解码为字符串
+        return None
+    
+    async def set_decode_cache(self, chat_id: str, ticker: str, lang: str, decode: str) -> None:
+        key = self._generate_key(chat_id, ticker, "decode", lang)
+        next_midnight = self._get_next_midnight()
+        expire_seconds = (next_midnight - datetime.now()).total_seconds()
+        await self.redis_client.set(key, decode, ex=int(expire_seconds))
+        logging.info(f"Cached decode for chat_id {chat_id}, ticker {ticker}, lang {lang}: {decode}")
+        # 设置解签状态
+        await self.set_decode_status(chat_id, ticker)
+
+    async def get_decode_status(self, chat_id: str, ticker: str) -> bool:
+        key = self._generate_key(chat_id, ticker, "decode_status")
+        status = await self.redis_client.get(key)
+        if status is not None:
+            logging.info(f"Decode status already recorded for chat_id {chat_id}, ticker {ticker}")
+            return True
+        return False
+
+    async def set_decode_status(self, chat_id: str, ticker: str) -> None:
+        key = self._generate_key(chat_id, ticker, "decode_status")
+        next_midnight = self._get_next_midnight()
+        expire_seconds = (next_midnight - datetime.now()).total_seconds()
+        await self.redis_client.set(key, "1", ex=int(expire_seconds))
+        logging.info(f"Recorded decode status for chat_id {chat_id}, ticker {ticker}")
 
     async def get_daily_lot(self, chat_id: str, ticker: str) -> dict:
         try:
-            key = self._generate_daily_key(chat_id, ticker)
+            key = self._generate_key(chat_id, ticker, "fortune")
             
             # 如果没有缓存,则从sqlite3中随机抽签
             result_of_draw = self.db.randomly_choose_sign_by_weight()
@@ -147,7 +177,7 @@ class DailyFortune:
         用于测试或特殊情况下重置
         """
         try:
-            key = self._generate_daily_key(chat_id, ticker)
+            key = self._generate_key(chat_id, ticker, "fortune")
             return await self.redis_client.delete(key) > 0
         except Exception as e:
             self.logging.error(f"Error in clear_fortune: {str(e)}")

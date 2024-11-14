@@ -201,7 +201,7 @@ async def send_transaction(update, telegram_app, symbol, amount, side):
         return f"{e}"
 
 
-async def check_connected(update, telegram_app, timeout=30):
+async def check_connected(update, telegram_app, timeout=30, send_address=False):
     if update.message:
         chat_id = update.message.chat_id
     elif update.callback_query:
@@ -220,31 +220,31 @@ async def check_connected(update, telegram_app, timeout=30):
         return None
     connected = None
     # Attempt to restore connection
-    # try:
-    #     connected = await asyncio.wait_for(connector.restore_connection(), timeout)
-    # except asyncio.TimeoutError:
-    #     logging.error("Connection restoration timed out")
-    #     await telegram_app.bot.send_message(
-    #         chat_id=chat_id,
-    #         text='The request has timed out. Please try again later.',
-    #         parse_mode='HTML'
-    #     )
-    #     return None
     try:
-        connected = await connector.restore_connection()
-    except Exception as e:
-        logging.error(f"Error restoring connection: {e}")
+        connected = await asyncio.wait_for(connector.restore_connection(), timeout)
+    except asyncio.TimeoutError:
+        logging.error("Connection restoration timed out")
+        await telegram_app.bot.send_message(
+            chat_id=chat_id,
+            text='The request has timed out. Please try again later.',
+            parse_mode='HTML'
+        )
+        return None
+    # try:
+    #     connected = await connector.restore_connection()
+    # except Exception as e:
+    #     logging.error(f"Error restoring connection: {e}")
     logging.info(f"connected == {connected}")
     if not connected:
         return None
 
-    # if connector.account and connector.account.address:
-    #     wallet_address = convert_address_to_hex(connector.account.address)
-    #     await telegram_app.bot.send_message(
-    #         chat_id=chat_id,
-    #         text=
-    #         f'You are connected with address <code>{wallet_address}</code>',
-    #         parse_mode='HTML')
+    if connector.account and connector.account.address and send_address:
+        wallet_address = convert_address_to_hex(connector.account.address)
+        await telegram_app.bot.send_message(
+            chat_id=chat_id,
+            text=
+            f'You are connected with address <code>{wallet_address}</code>',
+            parse_mode='HTML')
     return True
 
 
@@ -300,7 +300,7 @@ async def handle_ton_command(telegram_app, update):
         return None
     command = update.message.text
     if command == '/connect':
-        is_connected = await check_connected(update, telegram_app)
+        is_connected = await check_connected(update, telegram_app, send_address=True)
         if is_connected:
             return True
         isTrue = await wallet_menu_callback.on_choose_wallet_click(update)
