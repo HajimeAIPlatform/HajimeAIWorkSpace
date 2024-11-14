@@ -21,6 +21,10 @@ tonutils==0.0.5
 schedule==1.2.2
 gunicorn==23.0.0
 
+#dex_scraper
+selenium==4.26.1
+undetected-chromedriver==3.5.5
+
 # dify_client
 httpx==0.27.2
 httpx-sse==0.4.0

@@ -13,6 +13,16 @@ py_binary(
 )
 
 py_binary(
+    name = "run_scraper_dexscreener",
+    srcs = ["run_scraper_dexscreener.py"],
+    data = ["scrapy.cfg"],
+    deps = [
+        requirement("selenium"),
+        requirement("undetected-chromedriver"),
+    ],
+)
+
+py_binary(
     name = "format",
     srcs = ["format.py"],
     data = ["scrapy.cfg"],
