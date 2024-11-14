@@ -384,7 +384,8 @@ async def webhook():
 
 def get_image_path(image_name):
     # 获取项目根目录
-    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    #project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    project_root =  'pythonp/apps/tokenfate'
     # 构建图片的绝对路径
     image_path = os.path.join(project_root, 'static', 'images', image_name)
     return image_path
