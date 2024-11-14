@@ -74,25 +74,25 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_risk_keyboard(self, context: Any=None, token: str=None, token_from: str=None) -> InlineKeyboardMarkup:
+    def _create_risk_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
         """创建风险选择的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('role1', context=context),
-                    callback_data=f'risk:{token}:{token_from}',
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role2', context=context),
-                    callback_data=f'risk:{token}:{token_from}',
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role3', context=context),
-                    callback_data=f'risk:{token}:{token_from}',
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role4', context=context),
-                    callback_data=f'risk:{token}:{token_from}',
+                    callback_data=f'risk:{token}',
                 )
             ],
         ]
