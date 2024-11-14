@@ -281,12 +281,18 @@ class UserPoints(db.Model):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     user_id = Column(BigInteger, nullable=False, unique=True)
     points = Column(Integer, nullable=False, default=0)
+    language = Column(String(2), nullable=False, default='') 
+    daily_recommended_points = Column(Integer, nullable=False, default=0)
+    last_reset_date = Column(DateTime, nullable=False, default=datetime.today().date())
 
     def to_dict(self):
         return {
             'id': str(self.id),
             'user_id': self.user_id,
-            'points': self.points
+            'points': self.points,
+            'language': self.language,
+            'daily_recommended_points': self.daily_recommended_points,
+            'last_reset_date': self.last_reset_date
         }
 
     @classmethod
@@ -327,6 +333,71 @@ class UserPoints(db.Model):
             return True
         except (SQLAlchemyError, InsufficientPointsError) as e:
             logging.error(f"Error updating user points: {e}")
+            db.session.rollback()
+            return False
+    
+    @classmethod
+    def get_language_by_user_id(cls, user_id):
+        user_points = db.session.query(cls).filter_by(user_id=user_id).first()
+        if user_points:
+            return user_points.language
+        return ''
+    
+    @classmethod
+    def update_language_by_user_id(cls, user_id, language):
+        try:
+            user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
+            if user_points:
+                user_points.language = language
+            else:
+                user_points = UserPoints(user_id=user_id, language=language)
+                db.session.add(user_points)
+
+            db.session.commit()
+            return True
+        except SQLAlchemyError as e:
+            logging.error(f"Error updating user language: {e}")
+            db.session.rollback()
+            return False
+        
+    @classmethod
+    def check_daily_recommended_points(cls, user_id):
+        try:
+            user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
+            if user_points:
+                today = datetime.today().date()
+                if user_points.last_reset_date != today:
+                    user_points.daily_recommended_points = 0
+                    user_points.last_reset_date = today
+                    db.session.commit()
+                
+                # 检查点击推荐积分是否超过上限
+                if user_points.daily_recommended_points < 50:
+                    return True
+                else:
+                    return False
+            else:
+                return True  # 新用户可以直接增加积分
+        except SQLAlchemyError as e:
+            logging.error(f"Error checking daily recommended points: {e}")
+            db.session.rollback()
+            return False
+    @classmethod
+    def update_daily_recommended_points(cls, user_id, points=10):
+        try:
+            user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
+            if user_points:
+                user_points.daily_recommended_points += points
+                db.session.commit()
+                return True
+            else:
+            # 新用户首次点击推荐
+                user_points = UserPoints(user_id=user_id, daily_recommended_points=points, last_reset_date=datetime.today().date())
+                db.session.add(user_points)
+                db.session.commit()
+                return True
+        except SQLAlchemyError as e:
+            logging.error(f"Error updating daily recommended points: {e}")
             db.session.rollback()
             return False
 

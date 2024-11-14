@@ -74,25 +74,25 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_risk_keyboard(self, context: Any=None, token: str=None, token_from: str=None) -> InlineKeyboardMarkup:
+    def _create_risk_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
         """创建风险选择的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('role1', context=context),
-                    callback_data=f'risk:{token}:{token_from}',
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role2', context=context),
-                    callback_data=f'risk:{token}:{token_from}',
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role3', context=context),
-                    callback_data=f'risk:{token}:{token_from}',
+                    callback_data=f'risk:{token}',
                 ),
                 InlineKeyboardButton(
                     self.i18n.get_button('role4', context=context),
-                    callback_data=f'risk:{token}:{token_from}',
+                    callback_data=f'risk:{token}',
                 )
             ],
         ]
@@ -158,6 +158,42 @@ class KeyboardFactory:
                 InlineKeyboardButton(
                     self.i18n.get_button('aura_action_fate_reveal', context=context),
                     callback_data='launch_to_reveal_button'
+                )
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _create_lot_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
+        """创建灵签的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('lot_decode', context=context),
+                    callback_data=f'decode:{token}'
+                )
+            ]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def _create_lang_keyboard(self, context: Any=None) -> InlineKeyboardMarkup:
+        """创建语言选择的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('lang_en', context=context),
+                    callback_data='lang:en'
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('lang_zh', context=context),
+                    callback_data='lang:zh'
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('lang_ja', context=context),
+                    callback_data='lang:ja'
                 )
             ]
         ]

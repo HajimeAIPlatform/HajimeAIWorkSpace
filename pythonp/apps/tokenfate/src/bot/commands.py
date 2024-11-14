@@ -33,6 +33,7 @@ async def set_bot_commands(telegram_app):
         BotCommand("disconnect", "断开钱包连接"),
         # BotCommand("my_wallet", "Show connected wallet"),
         BotCommand("aura", "符命，灵能感应！"),
+        BotCommand("language", "语言设置"),
     ]
     await telegram_app.bot.set_my_commands(commands)
     # await set_menu_button(telegram_app)
