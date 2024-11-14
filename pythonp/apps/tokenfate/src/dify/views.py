@@ -2,11 +2,14 @@ import uuid
 import json
 import logging
 from typing import Dict
-from dify_client import Client, models
 from os import getenv
-from src.binance.schedule import get_random_usdt_historical_prices
+
 from flask import Blueprint, jsonify, request, Response
-from src.binance.utils import get_all_prices, process_recommendation
+
+from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
+from pythonp.apps.tokenfate.dify_client import Client, models
+from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices
+
 
 dify_api_key_workflow = getenv('DIFY_API_KEY_WORKFLOW')
 dify_api_key_message = getenv('DIFY_API_KEY_MESSAGE')

@@ -1,20 +1,21 @@
 import os
+import logging
+
 from dotenv import load_dotenv
 import uvicorn
 from flask import Flask
 from asgiref.wsgi import WsgiToAsgi
-from logger import setup_logging
-import logging
+from pythonp.common.logging.logger import setup_logging
 import nest_asyncio
 
 nest_asyncio.apply()
 
 load_dotenv()
 
-from src import blueprint as api
-from models import setup_db
-from src.binance.transaction_queue import start_transaction_processor
-from src.binance.schedule import start_schedule_thread
+from pythonp.apps.tokenfate.src import blueprint as api
+from pythonp.apps.tokenfate.models import setup_db
+from pythonp.apps.tokenfate.src.binance.transaction_queue import start_transaction_processor
+from pythonp.apps.tokenfate.src.binance.schedule import start_schedule_thread
 
 
 def create_app():

@@ -1,29 +1,32 @@
 import logging
 import asyncio
-from flask import Blueprint, jsonify, request
-from md2tgmd import escape
-from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, \
-    InlineQueryResultsButton, InputMediaPhoto, Message, CallbackQuery
 from io import BytesIO
-from PIL import Image
-from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
 from os import getenv
-from src.dify.views import chat_blocking, chat_streaming, chat_workflow
-from src.binance.views import handle_binance_command
-from src.binance.utils import get_all_prices, process_recommendation
-import src.ton.views as ton_module
-from src.bot.commands import set_bot_commands_handler
-from src.bot.wallet_menu_callback import set_handlers
-from typing import List, Dict, Union
-import src.bot.state as ChatStatus
-from src.bot.i18n_helper import I18nHelper
-from src.bot.keyboards import KeyboardFactory
 import urllib.parse
 import time
 import json
 import os
-from src.ton.tc_storage import DailyFortune, UserActivityTracker
-from models.transaction import UserPoints
+from typing import List, Dict, Union
+
+from flask import Blueprint, jsonify, request
+from md2tgmd import escape
+from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, \
+    InlineQueryResultsButton, InputMediaPhoto, Message, CallbackQuery
+import PIL as Pillow
+from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
+
+from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming, chat_workflow
+from pythonp.apps.tokenfate.src.binance.views import handle_binance_command
+from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
+import pythonp.apps.tokenfate.src.ton.views as ton_module
+from pythonp.apps.tokenfate.src.bot.commands import set_bot_commands_handler
+from pythonp.apps.tokenfate.src.bot.wallet_menu_callback import set_handlers
+import pythonp.apps.tokenfate.src.bot.state as ChatStatus
+from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
+from pythonp.apps.tokenfate.src.bot.keyboards import KeyboardFactory
+from pythonp.apps.tokenfate.src.ton.tc_storage import DailyFortune, UserActivityTracker
+from pythonp.apps.tokenfate.models.transaction import UserPoints
+
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')
@@ -325,7 +328,7 @@ async def webhook():
             bytes_array = await file.download_as_bytearray()
             bytesIO = BytesIO(bytes_array)
             logging.info("Images file as bytes")
-            image = Image.open(bytesIO)
+            image = Pillow.Image.open(bytesIO)
             logging.info("Image opened")
 
             prompt = 'Describe the image'

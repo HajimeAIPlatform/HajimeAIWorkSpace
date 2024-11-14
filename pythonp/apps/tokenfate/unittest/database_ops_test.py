@@ -1,6 +1,7 @@
 import unittest
 import os
-from db_ops import FortunesDatabase
+
+from pythonp.apps.tokenfate.models.db_ops import FortunesDatabase
 
 class TestFortunesDatabase(unittest.TestCase):
     def setUp(self):

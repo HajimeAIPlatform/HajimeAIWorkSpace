@@ -3,10 +3,11 @@ import sqlite3
 import os
 import random
 from typing import List, Dict, Any
-from models.weightRandom import WeightRandom
+from pythonp.apps.tokenfate.models.weight_random import WeightRandom
 import os
 
-data_source = 'models/available_data.json'
+data_source = 'pythonp/apps/tokenfate/static/assets/available_data.json'
+
 class FortunesDatabase:
     def __init__(self, db_name: str = 'fortunes.db'):
         self.db_name = db_name

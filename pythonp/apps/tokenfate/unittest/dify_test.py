@@ -5,11 +5,13 @@ load_dotenv()
 import uuid
 import json
 import logging
-from dify_client import Client, models
-from pydantic import ValidationError
 from os import getenv
 from typing import Dict
-from src.binance.schedule import get_random_usdt_historical_prices
+
+from pydantic import ValidationError
+
+from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices
+from pythonp.apps.tokenfate.dify_client import Client, models
 
 dify_api_key = getenv('DIFY_API_KEY')
 dify_api_base = getenv('DIFY_BASE_HOST')

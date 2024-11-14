@@ -7,10 +7,8 @@ from telegram.ext import (
     filters,
 )
 from os import getenv
-import urllib.parse
-
-from pythonp/apps/tokenfate.src.ton.views import send_tx, sell_transaction, buy_transaction, WAITING_FOR_INPUT, cancel
-from src.bot.i18n_helper import I18nHelper
+from pythonp.apps.tokenfate.src.ton.views import send_tx, sell_transaction, buy_transaction, WAITING_FOR_INPUT, cancel
+from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
 
 WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
 

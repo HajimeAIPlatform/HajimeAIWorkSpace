@@ -16,7 +16,7 @@ class I18nHelper:
     
     def _load_messages(self):
         """加载语言配置文件"""
-        config_path = Path(__file__).parent / 'i18n_messages.json'
+        config_path =  'pythonp/apps/tokenfate/static/assets/i18n_messages.json'
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 return json.load(f)

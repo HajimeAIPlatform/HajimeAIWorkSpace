@@ -29,6 +29,7 @@ class ImageToolKit:
         combined_image.save(combined_image_path)
         
         return combined_image_path
+
 if __name__ == '__main__':
     # 使用示例
     project_root = '/home/zpc/Projs/TelegramTokenFate'

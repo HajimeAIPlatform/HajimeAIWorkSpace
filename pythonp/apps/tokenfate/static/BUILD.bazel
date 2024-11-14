@@ -1,0 +1,19 @@
+# BUILD file in the static directory
+
+filegroup(
+    name = "assets",
+    srcs = glob([
+        "assets/*.json",
+        "assets/*.db",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "images",
+    srcs = glob([
+        "images/*.png",
+        "images/*.jpg",
+    ]),
+    visibility = ["//visibility:public"],
+)

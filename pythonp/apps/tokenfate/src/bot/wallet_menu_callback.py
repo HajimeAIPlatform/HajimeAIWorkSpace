@@ -1,21 +1,24 @@
 import os
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InputFile, Update, InputMediaPhoto, InputMedia
-from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
-import qrcode
 from io import BytesIO
 import asyncio
 from urllib.parse import urlencode
-from src.ton.connector import get_connector
 import logging
+
 from pytoniq_core import Address
 from pytonconnect import TonConnect
-import src.bot.state as TaskState
-import src.ton.views as ton_module
-from models.transaction import UserPoints
-from src.ton.tc_storage import UserActivityTracker
 from md2tgmd import escape
-from src.bot.i18n_helper import I18nHelper
-from src.bot.keyboards import KeyboardFactory
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InputFile, Update, InputMediaPhoto, InputMedia
+from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
+import qrcode
+
+from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
+from pythonp.apps.tokenfate.src.bot.keyboards import KeyboardFactory
+import pythonp.apps.tokenfate.src.bot.state as TaskState
+import pythonp.apps.tokenfate.src.ton.views as ton_module
+from pythonp.apps.tokenfate.models.transaction import UserPoints
+from pythonp.apps.tokenfate.src.ton.tc_storage import UserActivityTracker
+from pythonp.apps.tokenfate.src.ton.connector import get_connector
+
 
 # 初始化语言和键盘工厂
 i18n = I18nHelper()

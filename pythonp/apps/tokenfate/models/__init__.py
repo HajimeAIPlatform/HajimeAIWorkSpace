@@ -1,6 +1,6 @@
 from flask import Flask
 from string import Template
-from models.transaction import db
+from pythonp.apps.tokenfate.models.transaction import db
 import os
 
 

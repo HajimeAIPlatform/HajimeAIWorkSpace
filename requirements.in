@@ -20,7 +20,9 @@ uvicorn==0.30.6
 tonutils==0.0.5
 schedule==1.2.2
 gunicorn==23.0.0
-
+async-timeout==4.0.3
+exceptiongroup==1.1.1
+olefile==0.47
 #dex_scraper
 zenrows==1.4.0
 bs4==0.0.2
