@@ -16,7 +16,7 @@ def get_dex_info(driver):
     try:
         # 等待复选框元素加载
         checkbox = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'checkbox'))  # 查找复选框元素
+            EC.presence_of_element_located((By.XPATH, '//input[@type="checkbox"]'))  # 查找复选框元素
         )
         
         # 检查复选框是否未被选中，如果是，则点击它
@@ -172,7 +172,7 @@ def run_selenium_spider(url):
         print(f"Page title: {url}{driver.title}")
 
         # 等待页面加载完成
-        WebDriverWait(driver, 20).until(EC.title_is('DEX Screener'))
+        WebDriverWait(driver, 60).until(EC.title_is('DEX Screener'))
         print(f"Page title: {driver.title}")
         print(f"Page URL: {driver.current_url}")
 
