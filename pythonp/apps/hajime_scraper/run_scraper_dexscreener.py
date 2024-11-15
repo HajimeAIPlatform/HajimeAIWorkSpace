@@ -31,7 +31,8 @@ def get_dex_info(driver):
         print(f"Error finding or clicking the checkbox: {e}")
 
     # 等待页面加载数据
-    time.sleep(5)
+    print(f"Page title: {driver.title}")
+    WebDriverWait(driver, 60).until(EC.title_is('DEX Screener'))
     
 
     # 获取表格标题
@@ -166,13 +167,10 @@ def run_selenium_spider(url):
     driver = uc.Chrome(service=service,options=options)
 
     try:
-        print(f"Page title: {url}")
 
         driver.get(url)
-        print(f"Page title: {url}{driver.title}")
 
         # 等待页面加载完成
-        WebDriverWait(driver, 60).until(EC.title_is('DEX Screener'))
         print(f"Page title: {driver.title}")
         print(f"Page URL: {driver.current_url}")
 
