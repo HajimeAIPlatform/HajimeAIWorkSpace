@@ -1,5 +1,6 @@
 load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 exports_files([".env"], visibility = ["//visibility:public"])
@@ -32,14 +33,32 @@ py_binary(
     ],
 )
 
+# build
+pkg_files(
+    name = "static_assets",
+    srcs = [
+        "//pythonp/apps/tokenfate/static:assets",
+    ],
+    prefix = "static/assets",
+)
+
+pkg_files(
+    name = "static_images",
+    srcs = [
+        "//pythonp/apps/tokenfate/static:images",
+    ],
+    prefix = "static/images",
+)
 
 pkg_tar(
     name = "tokenfate_tar",
     srcs = [
         ":wsgi",
-        "//pythonp/apps/tokenfate/static:assets",
-       "//pythonp/apps/tokenfate/static:images",
+        ":static_assets",
+        ":static_images",
+        ".env",
     ],  #
     extension = "tar.gz",
-    package_dir = "./TokenFate/",
+    package_dir = "TokenFate",
+    include_runfiles = True,
 )
