@@ -1,5 +1,7 @@
 # BUILD file in the static directory
 
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
 filegroup(
     name = "assets",
     srcs = glob([
@@ -15,5 +17,13 @@ filegroup(
         "images/*.png",
         "images/*.jpg",
     ]),
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "static",
+    srcs = [
+        "static.py",
+    ],
     visibility = ["//visibility:public"],
 )
