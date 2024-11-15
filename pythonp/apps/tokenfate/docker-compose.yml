@@ -33,7 +33,8 @@ services:
     ports:
       - "0.0.0.0:${PORT:-5000}:${PORT:-5000}"
     volumes:
-      - "./log/:${LOG_DIR:-/tmp/logs}"
+      - "./log/:${LOG_DIR:-/opt/TokenFate/logs}"
+      - "./.env/:/opt/TokenFate/.env"
     networks:
       - telebot
     depends_on:

@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 USER root
 
@@ -24,16 +24,11 @@ RUN apt-get update && \
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
     update-alternatives --config python3
 
-# 升级pip
-RUN python3.10 -m ensurepip --upgrade && \
-    python3.10 -m pip install --upgrade pip
-
 WORKDIR /opt
 
 COPY . /opt
 
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+COPY tokenfate_tar.tar.gz /opt/tokenfate_tar.tar.gz
+RUN tar -xzvf /opt/tokenfate_tar.tar.gz -C /opt
 
-
-CMD ["python3", "/opt/wsgi.py"]
+CMD ["/opt/TokenFate/wsgi"]
