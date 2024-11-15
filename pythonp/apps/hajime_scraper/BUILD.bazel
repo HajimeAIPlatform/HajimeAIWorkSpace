@@ -17,8 +17,8 @@ py_binary(
     srcs = ["run_scraper_dexscreener.py"],
     data = ["scrapy.cfg"],
     deps = [
-        requirement("selenium"),
-        requirement("undetected-chromedriver"),
+        requirement("zenrows"),
+        requirement("bs4"),
     ],
 )
 

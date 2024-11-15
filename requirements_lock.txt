@@ -130,15 +130,17 @@ attrs==24.2.0 \
     # via
     #   aiohttp
     #   aiohttp-sse-client
-    #   outcome
     #   pytest
     #   service-identity
-    #   trio
     #   twisted
 automat==24.8.1 \
     --hash=sha256:b34227cf63f6325b8ad2399ede780675083e439b20c323d376373d8ee6306d88 \
     --hash=sha256:bf029a7bc3da1e2c24da2343e7598affaa9f10bf0ab63ff808566ce90551e02a
     # via twisted
+beautifulsoup4==4.12.3 \
+    --hash=sha256:74e3d1928edc070d21748185c46e3fb33490f22f52a3addee9aee0f4f7781051 \
+    --hash=sha256:b80878c9f40111313e55da8ba20bdba06d8fa3969fc68304167741bbf9e082ed
+    # via bs4
 bitarray==3.0.0 \
     --hash=sha256:000df24c183011b5d27c23d79970f49b6762e5bb5aacd25da9c3e9695c693222 \
     --hash=sha256:0027b8f3bb2bba914c79115e96a59b9924aafa1a578223a7c4f0a7242d349842 \
@@ -285,9 +287,11 @@ bitstring==4.0.2 \
 blinker==1.8.2 \
     --hash=sha256:1779309f71bf239144b9399d06ae925637cf6634cf6bd131104184531bf67c01 \
     --hash=sha256:8f77b09d3bf7c795e969e9486f39c2c5e9c39d4ee07424be2bc594ece9642d83
-    # via
-    #   flask
-    #   quart
+    # via flask
+bs4==0.0.2 \
+    --hash=sha256:a48685c58f50fe127722417bae83fe6badf500d54b55f7e39ffe43b798653925 \
+    --hash=sha256:abf8742c0805ef7f662dce4b51cca104cffe52b835238afc169142ab9b3fbccc
+    # via -r requirements.in
 certifi==2024.8.30 \
     --hash=sha256:922820b53db7a7257ffbda3f597266d435245903d80737e34f8a45ff3e3230d8 \
     --hash=sha256:bec941d2aa8195e248a60b31ff9f0558284cf01a52591ceda73ea9afffd69fd9
@@ -295,7 +299,6 @@ certifi==2024.8.30 \
     #   httpcore
     #   httpx
     #   requests
-    #   selenium
 cffi==1.17.1 \
     --hash=sha256:045d61c734659cc045141be4bae381a41d89b741f795af1dd018bfb532fd0df8 \
     --hash=sha256:0984a4925a435b1da406122d4d7968dd861c1385afe3b45ba82b750f229811e2 \
@@ -507,11 +510,7 @@ defusedxml==0.7.1 \
 exceptiongroup==1.2.2 \
     --hash=sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b \
     --hash=sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc
-    # via
-    #   -r requirements.in
-    #   anyio
-    #   trio
-    #   trio-websocket
+    # via anyio
 filelock==3.16.1 \
     --hash=sha256:2082e5703d51fbf98ea75855d9d5527e33d8ff23099bec374a134febee6946b0 \
     --hash=sha256:c249fbfcd5db47e5e2d6d62198e565475ee65e4831e2561c8e313fa7eb961435
@@ -804,7 +803,6 @@ h11==0.14.0 \
     #   httpcore
     #   hypercorn
     #   uvicorn
-    #   wsproto
 httpcore==1.0.6 \
     --hash=sha256:27b59625743b85577a8c0e10e55b50b5368a4f2cfe8cc7bcfa9cf00829c2682f \
     --hash=sha256:73f6dbd6eb8c21bbf7ef8efad555481853f5f6acdeaff1edb0694289269ee17f
@@ -844,7 +842,6 @@ idna==3.10 \
     #   hyperlink
     #   requests
     #   tldextract
-    #   trio
     #   yarl
 incremental==24.7.2 \
     --hash=sha256:8cb2c3431530bec48ad70513931a760f446ad6c25e8333ca5d95e24b0ed7b8fe \
@@ -1420,10 +1417,6 @@ numpy==2.1.3 \
     # via
     #   contourpy
     #   matplotlib
-outcome==1.3.0.post0 \
-    --hash=sha256:9dcf02e65f2971b80047b377468e72a268e15c0af3cf1238e6ff14f7f91143b8 \
-    --hash=sha256:e771c5ce06d1415e356078d3bdd68523f284b4ce5419828922b6871e65eda82b
-    # via trio
 packaging==24.1 \
     --hash=sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002 \
     --hash=sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124
@@ -1925,11 +1918,6 @@ pypng==0.20220715.0 \
     --hash=sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c \
     --hash=sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1
     # via qrcode
-pysocks==1.7.1 \
-    --hash=sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299 \
-    --hash=sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5 \
-    --hash=sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0
-    # via urllib3
 pytest==7.1.2 \
     --hash=sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c \
     --hash=sha256:a06a0425453864a270bc45e71f783330a7428defb4230fb5e6a731fde06ecd45
@@ -2133,7 +2121,7 @@ requests==2.32.3 \
     #   pytoniq-core
     #   requests-file
     #   tldextract
-    #   undetected-chromedriver
+    #   zenrows
 requests-file==2.1.0 \
     --hash=sha256:0f549a3f3b0699415ac04d167e9cb39bccfb730cb832b4d20be3d9867356e658 \
     --hash=sha256:cf270de5a4c5874e84599fc5778303d496c10ae5e870bfa378818f35d21bda5c
@@ -2146,12 +2134,6 @@ scrapy==2.11.2 \
     --hash=sha256:4be353d6abbb942a9f7e7614ca8b5f3d9037381176ac8d8859c8cac676e74fa0 \
     --hash=sha256:dfbd565384fc3fffeba121f5a3a2d0899ac1f756d41432ca0879933fbfb3401d
     # via -r requirements.in
-selenium==4.26.1 \
-    --hash=sha256:1db3f3a0cd5bb07624fa8a3905a6fdde1595a42185a0617077c361dc53d104fb \
-    --hash=sha256:7640f3f08ae7f4e450f895678e8a10a55eb4e4ca18311ed675ecc4684b96b683
-    # via
-    #   -r requirements.in
-    #   undetected-chromedriver
 service-identity==24.2.0 \
     --hash=sha256:6b047fbd8a84fd0bb0d55ebce4031e400562b9196e1e0d3e0fe2b8a59f6d4a85 \
     --hash=sha256:b8683ba13f0d39c6cd5d625d2c5f65421d6d707b013b375c355751557cbe8e09
@@ -2170,11 +2152,10 @@ sniffio==1.3.1 \
     # via
     #   anyio
     #   httpx
-    #   trio
-sortedcontainers==2.4.0 \
-    --hash=sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88 \
-    --hash=sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0
-    # via trio
+soupsieve==2.6 \
+    --hash=sha256:e2e68417777af359ec65daac1057404a3c8a5455bb8abc36f1a9866ab1a51abb \
+    --hash=sha256:e72c4ff06e4fb6e4b5a9f0f55fe6e81514581fca1515028625d0f299c602ccc9
+    # via beautifulsoup4
 sqlalchemy==2.0.36 \
     --hash=sha256:03e08af7a5f9386a43919eda9de33ffda16b44eb11f3b313e6822243770e9763 \
     --hash=sha256:0572f4bd6f94752167adfd7c1bed84f4b240ee6203a95e05d1e208d488d0d436 \
@@ -2269,16 +2250,6 @@ tornado==6.4.1 \
     --hash=sha256:d9a566c40b89757c9aa8e6f032bcdb8ca8795d7c1a9762910c722b1635c9de4d \
     --hash=sha256:e2e20b9113cd7293f164dc46fffb13535266e713cdb87bd2d15ddb336e96cfc4
     # via python-telegram-bot
-trio==0.27.0 \
-    --hash=sha256:1dcc95ab1726b2da054afea8fd761af74bad79bd52381b84eae408e983c76831 \
-    --hash=sha256:68eabbcf8f457d925df62da780eff15ff5dc68fd6b367e2dde59f7aaf2a0b884
-    # via
-    #   selenium
-    #   trio-websocket
-trio-websocket==0.11.1 \
-    --hash=sha256:18c11793647703c158b1f6e62de638acada927344d534e3c7628eedcb746839f \
-    --hash=sha256:520d046b0d030cf970b8b2b2e00c4c2245b3807853ecd44214acd33d74581638
-    # via selenium
 twisted==24.10.0 \
     --hash=sha256:02951299672595fea0f70fa2d5f7b5e3d56836157eda68859a6ad6492d36756e \
     --hash=sha256:67aa7c8aa94387385302acf44ade12967c747858c8bcce0f11d38077a11c5326
@@ -2293,7 +2264,6 @@ typing-extensions==4.12.2 \
     #   pydantic
     #   pydantic-core
     #   qrcode
-    #   selenium
     #   sqlalchemy
     #   twisted
     #   uvicorn
@@ -2382,15 +2352,10 @@ ujson==5.10.0 \
     --hash=sha256:f8ccb77b3e40b151e20519c6ae6d89bfe3f4c14e8e210d910287f778368bb3d1 \
     --hash=sha256:fbd8fd427f57a03cff3ad6574b5e299131585d9727c8c366da4624a9069ed746
     # via python-binance
-undetected-chromedriver==3.5.5 \
-    --hash=sha256:9f945e1435005247abe17de316bcfda85b284a4177fd5f25167c78ced33b65ec
-    # via -r requirements.in
-urllib3[socks]==1.26.20 \
+urllib3==1.26.20 \
     --hash=sha256:0ed14ccfbf1c30a9072c7ca157e4319b70d65f623e91e7b32fadb2853431016e \
     --hash=sha256:40c2dc0c681e47eb8f90e7e27bf6ff7df2e677421fd46756da1161c39ca70d32
-    # via
-    #   requests
-    #   selenium
+    # via requests
 uvicorn==0.30.6 \
     --hash=sha256:4b15decdda1e72be08209e860a1e10e92439ad5b97cf44cc945fcbee66fc5788 \
     --hash=sha256:65fd46fe3fda5bdc1b03b94eb634923ff18cd35b2f084813ea79d1f103f711b5
@@ -2405,10 +2370,6 @@ w3lib==2.2.1 \
     # via
     #   parsel
     #   scrapy
-websocket-client==1.8.0 \
-    --hash=sha256:17b44cc997f5c498e809b22cdf2d9c7a9e71c02c8cc2b6c56e7c2d1239bfa526 \
-    --hash=sha256:3239df9f44da632f96012472805d40a23281a991027ce11d2f45a6f24ac4c3da
-    # via selenium
 websockets==13.1 \
     --hash=sha256:004280a140f220c812e65f36944a9ca92d766b6cc4560be652a0a3883a79ed8a \
     --hash=sha256:035233b7531fb92a76beefcbf479504db8c72eb3bff41da55aecce3a0f729e54 \
@@ -2496,17 +2457,11 @@ websockets==13.1 \
     --hash=sha256:f1c3cf67185543730888b20682fb186fc8d0fa6f07ccc3ef4390831ab4b388d9 \
     --hash=sha256:f48c749857f8fb598fb890a75f540e3221d0976ed0bf879cf3c7eef34151acee \
     --hash=sha256:f779498eeec470295a2b1a5d97aa1bc9814ecd25e1eb637bd9d1c73a327387f6
-    # via
-    #   python-binance
-    #   undetected-chromedriver
+    # via python-binance
 werkzeug==3.1.1 \
     --hash=sha256:8cd39dfbdfc1e051965f156163e2974e52c210f130810e9ad36858f0fd3edad4 \
     --hash=sha256:a71124d1ef06008baafa3d266c02f56e1836a5984afd6dd6c9230669d60d9fb5
     # via flask
-wsproto==1.2.0 \
-    --hash=sha256:ad565f26ecb92588a3e43bc3d96164de84cd9902482b130d0ddbaa9664a85065 \
-    --hash=sha256:b9acddd652b585d75b20477888c56642fdade28bdfd3579aa24a4d2c037dd736
-    # via trio-websocket
 x25519==0.0.2 \
     --hash=sha256:5c0833260a548bea9137a5a1b5c30334b751a59d148a62832df0c9e7b919ce99 \
     --hash=sha256:ed91d0aba7f4f4959ed8b37118c11d94f56d36c38bb6f2e6c20d0438d75b1556
@@ -2597,10 +2552,10 @@ yarl==1.17.1 \
     # via
     #   aiohttp
     #   aiohttp-sse-client
-zope-event==5.0 \
-    --hash=sha256:2832e95014f4db26c47a13fdaef84cef2f4df37e66b59d8f1f4a8f319a632c26 \
-    --hash=sha256:bac440d8d9891b4068e2b5a2c5e2c9765a9df762944bda6955f96bb9b91e67cd
-    # via gevent
+zenrows==1.4.0 \
+    --hash=sha256:2224ee4b4a285e7ab20883bcb9b4d90df2dcce724a05743ac37167c551bde606 \
+    --hash=sha256:61907f95b7cb433e64fb8b95db4cbba062079f3cf18fe06d4a76d452620c8af5
+    # via -r requirements.in
 zope-interface==7.1.1 \
     --hash=sha256:0de23bcb93401994ea00bc5c677ef06d420340ac0a4e9c10d80e047b9ce5af3f \
     --hash=sha256:179ad46ece518c9084cb272e4a69d266b659f7f8f48e51706746c2d8a426433e \
