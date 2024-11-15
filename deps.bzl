@@ -8,6 +8,12 @@ def go_dependencies():
         version = "v0.4.1",
     )
     go_repository(
+        name = "com_github_blocto_solana_go_sdk",
+        importpath = "github.com/blocto/solana-go-sdk",
+        sum = "h1:GEh4GDjYk1lMhV/hqJDCyuDeCuc5dianbN33yxL88NU=",
+        version = "v1.30.0",
+    )
+    go_repository(
         name = "com_github_bytedance_sonic",
         importpath = "github.com/bytedance/sonic",
         sum = "h1:oUp34TzMlL+OY1OUWxHqsdkgC/Zfc85zGqw9siXjrc0=",
@@ -18,6 +24,12 @@ def go_dependencies():
         importpath = "github.com/bytedance/sonic/loader",
         sum = "h1:c+e5Pt1k/cy5wMveRDyk2X4B9hF4g7an8N3zCYjJFNM=",
         version = "v0.1.1",
+    )
+    go_repository(
+        name = "com_github_carlmjohnson_requests",
+        importpath = "github.com/carlmjohnson/requests",
+        sum = "h1:JDakhAmTIKL/qL/1P7Kkc2INGBJIkIFP6xUeUmPzLso=",
+        version = "v0.24.2",
     )
     go_repository(
         name = "com_github_cloudwego_base64x",
@@ -476,6 +488,12 @@ def go_dependencies():
         version = "v1.0.2",
     )
     go_repository(
+        name = "com_github_mr_tron_base58",
+        importpath = "github.com/mr-tron/base58",
+        sum = "h1:T/HDJBh4ZCPbU39/+c3rRvE0uKBQlU27+QI8LJ4t64o=",
+        version = "v1.2.0",
+    )
+    go_repository(
         name = "com_github_nats_io_nats_go",
         importpath = "github.com/nats-io/nats.go",
         sum = "h1:fnxnPCNiwIG5w08rlMcEKTUw4AV/nKyGCOJE8TdhSPk=",
@@ -492,6 +510,12 @@ def go_dependencies():
         importpath = "github.com/nats-io/nuid",
         sum = "h1:5iA8DT8V7q8WK2EScv2padNa/rTESc1KdnPw4TC2paw=",
         version = "v1.0.1",
+    )
+    go_repository(
+        name = "com_github_near_borsh_go",
+        importpath = "github.com/near/borsh-go",
+        sum = "h1:lFN7TVecCMbCHVNfEofDqqaVsuAlkFyDmmO7EF4nXj4=",
+        version = "v0.3.2-0.20220516180422-1ff87d108454",
     )
     go_repository(
         name = "com_github_pelletier_go_toml_v2",
@@ -516,6 +540,18 @@ def go_dependencies():
         importpath = "github.com/pmezard/go-difflib",
         sum = "h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=",
         version = "v1.0.1-0.20181226105442-5d4384ee4fb2",
+    )
+    go_repository(
+        name = "com_github_reiver_go_oi",
+        importpath = "github.com/reiver/go-oi",
+        sum = "h1:nvECWD7LF+vOs8leNGV/ww+F2iZKf3EYjYZ527turzM=",
+        version = "v1.0.0",
+    )
+    go_repository(
+        name = "com_github_reiver_go_telnet",
+        importpath = "github.com/reiver/go-telnet",
+        sum = "h1:quuzZLi72kkJjl+f5AQ93FMcadG19WkS7MO6TXFOSas=",
+        version = "v0.0.0-20180421082511-9ff0b2ab096e",
     )
     go_repository(
         name = "com_github_rogpeppe_go_internal",

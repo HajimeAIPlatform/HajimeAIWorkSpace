@@ -69,7 +69,7 @@ func (dc *DifyClient) GetUserToken(role string) (token string, err error) {
 			logging.Warning("failed to login: %v\n", err)
 			return "", err
 		}
-	} else if role == constants.RoleDeveloper {
+	} else if role == constants.RoleEditor {
 		result, err = dc.UserLogin(config.DifyEditorEmail, config.DifyEditorPassword)
 		if err != nil {
 			logging.Warning("failed to login: %v\n", err)

@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "node",
+    srcs = glob(["**/*.go"]),
+    importpath = "hajime/golangp/common/node",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//golangp/common/logging:logger",
+        "@com_github_blocto_solana_go_sdk//types:go_default_library",
+        "@com_github_carlmjohnson_requests//:go_default_library",
+        "@com_github_mr_tron_base58//:go_default_library",
+        "@com_github_reiver_go_telnet//:go_default_library",
+    ],
+)
