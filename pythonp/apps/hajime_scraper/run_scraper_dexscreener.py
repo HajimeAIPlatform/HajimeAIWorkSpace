@@ -12,8 +12,27 @@ import undetected_chromedriver as uc
 def get_dex_info(driver):
     print(f"Processing page: {driver.current_url}")
 
+     # 检查复选框是否存在并点击
+    try:
+        # 等待复选框元素加载
+        checkbox = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'checkbox'))  # 查找复选框元素
+        )
+        
+        # 检查复选框是否未被选中，如果是，则点击它
+        if checkbox.is_selected():
+            print("Checkbox is already selected.")
+        else:
+            # 如果复选框未选中，则模拟点击它
+            ActionChains(driver).move_to_element(checkbox).click().perform()
+            print("Checkbox clicked successfully")
+            
+    except Exception as e:
+        print(f"Error finding or clicking the checkbox: {e}")
+
     # 等待页面加载数据
     time.sleep(5)
+    
 
     # 获取表格标题
     headers = [
