@@ -15,9 +15,10 @@ def get_dex_info(driver):
      # 检查复选框是否存在并点击
     try:
         # 等待复选框元素加载
-        checkbox = WebDriverWait(driver, 20).until(
+        checkbox = WebDriverWait(driver, 80).until(
             EC.presence_of_element_located((By.XPATH, '//input[@type="checkbox"]'))  # 查找复选框元素
         )
+        print(f"html: {By.XPATH}")
         
         # 检查复选框是否未被选中，如果是，则点击它
         if checkbox.is_selected():
