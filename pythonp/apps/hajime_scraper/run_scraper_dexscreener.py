@@ -139,14 +139,21 @@ def run_selenium_spider(url):
     options.add_argument('--headless')  # 无头模式
     options.add_argument('--no-sandbox')  # 避免沙盒问题
     options.add_argument('--disable-dev-shm-usage')  # 解决共享内存问题
-    options.add_argument('--disable-gpu')  # 禁用GPU加速
-    driver = uc.Chrome(options=options)
+    options.add_argument('--disable-gpu')
+    options.add_argument("--verbose")
+    options.binary_location = '/usr/bin/google-chrome'
+    # 设置 ChromeDriver 路径
+    service = Service('/usr/bin/chromedriver')  # 确保这是 ChromeDriver 的实际路径
+    driver = uc.Chrome(service=service,options=options)
 
     try:
+        print(f"Page title: {url}")
+
         driver.get(url)
+        print(f"Page title: {url}{driver.title}")
 
         # 等待页面加载完成
-        WebDriverWait(driver, 1000).until(EC.title_is('DEX Screener'))
+        WebDriverWait(driver, 20).until(EC.title_is('DEX Screener'))
         print(f"Page title: {driver.title}")
         print(f"Page URL: {driver.current_url}")
 
