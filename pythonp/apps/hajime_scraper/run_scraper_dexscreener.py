@@ -15,10 +15,11 @@ def get_dex_info(driver):
      # 检查复选框是否存在并点击
     try:
         # 等待复选框元素加载
+        WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Cloudflare')]")))
+
         checkbox = WebDriverWait(driver, 80).until(
             EC.presence_of_element_located((By.XPATH, '//input[@type="checkbox"]'))  # 查找复选框元素
         )
-        print(f"html: {By.XPATH}")
         
         # 检查复选框是否未被选中，如果是，则点击它
         if checkbox.is_selected():
@@ -162,11 +163,19 @@ def run_selenium_spider(url):
     options.add_argument('--disable-dev-shm-usage')  # 解决共享内存问题
     options.add_argument('--disable-gpu')
     options.add_argument("--verbose")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--incognito")
     options.binary_location = '/usr/bin/google-chrome'
     # 设置 ChromeDriver 路径
     service = Service('/usr/bin/chromedriver')  # 确保这是 ChromeDriver 的实际路径
     driver = uc.Chrome(service=service,options=options)
+    # 获取当前页面的cookies
+    cookies = driver.get_cookies()
 
+    # 在之后的请求中设置cookies
+    for cookie in cookies:
+        driver.add_cookie(cookie)
     try:
 
         driver.get(url)
