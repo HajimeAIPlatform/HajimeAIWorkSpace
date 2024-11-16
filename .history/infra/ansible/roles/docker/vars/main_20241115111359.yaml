@@ -1,0 +1,4 @@
+---
+nexus_private_docker_registry_port: 19983
+
+nexus_private_docker_registry: "{{ 'dev.' if deploy_type == 'dev' else '' }}nexus.{{ fqdn_suffix }}:{{ nexus_private_docker_registry_port }}"

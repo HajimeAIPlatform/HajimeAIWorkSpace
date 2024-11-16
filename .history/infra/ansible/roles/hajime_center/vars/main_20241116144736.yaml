@@ -1,0 +1,3 @@
+---
+install_bazel : false
+install_docker : false

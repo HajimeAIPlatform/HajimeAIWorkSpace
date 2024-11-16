@@ -1,0 +1,10 @@
+---
+- name: Hajime Center Deploy
+  hosts: hajime_center
+  become: yes
+  tasks:
+    - name:  Execute hajime_center deploy task from hajime_center role
+      include_role:
+        name: hajime_center
+      vars:
+        install_bazel: true

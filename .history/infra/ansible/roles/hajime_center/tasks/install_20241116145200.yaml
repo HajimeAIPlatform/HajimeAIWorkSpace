@@ -1,0 +1,12 @@
+- name: Setup docker installation
+  import_role:
+    name: docker
+    tasks_from: install.yaml
+  when: install_bazel is defined and install_bazel
+
+- name: Setup docker installation
+  import_role:
+    name: bazel
+    tasks_from: install.yaml
+  when: install_bazel is defined and install_bazel
+

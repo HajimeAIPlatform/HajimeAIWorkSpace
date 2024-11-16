@@ -1,0 +1,10 @@
+---
+- name: Srt service
+  hosts: jancsitech_build
+  become: yes
+  tasks:
+    - name:  Execute srt build task from srt role
+      include_role:
+        name: srt
+      vars:
+        srt_build: true

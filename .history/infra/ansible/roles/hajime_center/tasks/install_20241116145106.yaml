@@ -1,0 +1,5 @@
+- name: Setup docker installation
+  import_role:
+    name: docker
+    tasks_from: setup.yaml
+
