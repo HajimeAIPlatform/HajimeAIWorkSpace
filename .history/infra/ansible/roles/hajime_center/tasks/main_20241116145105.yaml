@@ -1,3 +1,0 @@
-- name: Install the required software
-  include_tasks: install.yaml
-

@@ -1,2 +1,0 @@
-- name: Setup docker installation
-  include_tasks: install.yaml
