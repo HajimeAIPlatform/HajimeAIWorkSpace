@@ -1,0 +1,19 @@
+- name: Check if Bazel is installed
+  command: bazel version
+  register: bazel_check
+  ignore_errors: true
+
+- name: Fail if Bazel is not installed
+  fail:
+    msg: "Bazel is not installed."
+  when: bazel_check.rc != 0
+
+- name: Check if Docker Compose is installed
+  command: docker compose version
+  register: docker_compose_check
+  ignore_errors: true
+
+- name: Fail if Docker Compose is not installed
+  fail:
+    msg: "Docker Compose is not installed."
+  when: docker_compose_check.rc != 0
