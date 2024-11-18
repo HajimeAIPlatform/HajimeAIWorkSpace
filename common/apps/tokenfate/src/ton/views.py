@@ -20,6 +20,7 @@ import mock_service.mock_connector as mock_connector
 import mock_service.mock_ton_server as mock_ton_server
 from os import getenv
 from src.bot.i18n_helper import I18nHelper
+from models.transaction import UserPoints
 
 # 初始化语言
 i18n = I18nHelper()
@@ -199,13 +200,14 @@ async def send_transaction(update, telegram_app, symbol, amount, side):
         return f"{e}"
 
 
-async def check_connected(update, telegram_app, timeout=30, send_address=False):
+async def check_connected(update, telegram_app, send_address=False):
     if update.message:
         chat_id = update.message.chat_id
     elif update.callback_query:
         chat_id = update.callback_query.message.chat_id
     logging.info(f"Checking wallet connection for chat_id: {chat_id}")
-
+    lang = UserPoints.get_language_by_user_id(chat_id)
+    i18n = I18nHelper(lang)
     # Get connector instance
     connector = get_connector(chat_id)
     logging.info(f"Connector: {connector}")
@@ -218,20 +220,20 @@ async def check_connected(update, telegram_app, timeout=30, send_address=False):
         return None
     connected = None
     # Attempt to restore connection
-    try:
-        connected = await asyncio.wait_for(connector.restore_connection(), timeout)
-    except asyncio.TimeoutError:
-        logging.error("Connection restoration timed out")
-        await telegram_app.bot.send_message(
-            chat_id=chat_id,
-            text='The request has timed out. Please try again later.',
-            parse_mode='HTML'
-        )
-        return None
     # try:
-    #     connected = await connector.restore_connection()
-    # except Exception as e:
-    #     logging.error(f"Error restoring connection: {e}")
+    #     connected = await asyncio.wait_for(connector.restore_connection(), timeout)
+    # except asyncio.TimeoutError:
+    #     logging.error("Connection restoration timed out")
+    #     await telegram_app.bot.send_message(
+    #         chat_id=chat_id,
+    #         text='The request has timed out. Please try again later.',
+    #         parse_mode='HTML'
+    #     )
+    #     return None
+    try:
+        connected = await connector.restore_connection()
+    except Exception as e:
+        logging.error(f"Error restoring connection: {e}")
     logging.info(f"connected == {connected}")
     if not connected:
         return None
@@ -240,8 +242,7 @@ async def check_connected(update, telegram_app, timeout=30, send_address=False):
         wallet_address = convert_address_to_hex(connector.account.address)
         await telegram_app.bot.send_message(
             chat_id=chat_id,
-            text=
-            f'You are connected with address <code>{wallet_address}</code>',
+            text=i18n.get_dialog('connected_address').format(address=wallet_address),
             parse_mode='HTML')
     return True
 
@@ -296,6 +297,9 @@ async def handle_ton_command(telegram_app, update):
     # if command.startswith('/connect'):
     if update.message is None:
         return None
+    user_id = update.message.from_user.id
+    lang = UserPoints.get_language_by_user_id(user_id)
+    i18n = I18nHelper(lang)
     command = update.message.text
     if command == '/connect':
         is_connected = await check_connected(update, telegram_app, send_address=True)
