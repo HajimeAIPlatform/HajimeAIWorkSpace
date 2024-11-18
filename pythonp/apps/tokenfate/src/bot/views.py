@@ -12,10 +12,9 @@ from flask import Blueprint, jsonify, request
 from md2tgmd import escape
 from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, \
     InlineQueryResultsButton, InputMediaPhoto, Message, CallbackQuery
-import PIL as Pillow
 from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
 
-from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming, chat_workflow
+from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming, chat_workflow, chat_decode
 from pythonp.apps.tokenfate.src.binance.views import handle_binance_command
 from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
 import pythonp.apps.tokenfate.src.ton.views as ton_module
@@ -155,6 +154,7 @@ async def webhook():
             return jsonify({'status': 'ok'}), 200
         # 处理update.message和update.callback_query.message
         chat_id = await get_chat_id(update) # 获取chat_id
+        print(UserPoints)
         lang = UserPoints.get_language_by_user_id(chat_id)
 
         if update.callback_query and update.callback_query.data.startswith("lang"):
@@ -176,6 +176,7 @@ async def webhook():
         await handle_daily_checkin(update)
         if update.callback_query:
             await set_handlers(update, telegram_app)
+            user_id = update.callback_query['from']['id']
             if update.callback_query.data == "for_your_information_button":
                 await update.callback_query.answer()
                 
@@ -202,7 +203,7 @@ async def webhook():
                 # 发送新的消息
                 await update.callback_query.message.reply_text(
                     escape(dialog),
-                    parse_mode='HTML'
+                    parse_mode='MarkdownV2'
                 )
                 return jsonify({'status': 'ok'}), 200
             
@@ -214,7 +215,6 @@ async def webhook():
             if update.callback_query.data == "connect_wallet_button":
                 await update.callback_query.answer()
                 # connect to wallet
-                user_id = update.callback_query['from']['id']
                 connected_wallets = await user_activity_tracker.get_connected_wallets(user_id)
                 
                 if connected_wallets:
@@ -222,13 +222,12 @@ async def webhook():
                     wallet_list = "\n".join(connected_wallets)
                     dialog = i18n.get_dialog("connected_wallets")
                     dialog = dialog.format(wallet_list=wallet_list)
-                    await update.callback_query.message.reply_text(escape(dialog))
+                    await update.callback_query.message.reply_text(escape(dialog), parse_mode="MarkdownV2")
                 await ton_module.wallet_menu_callback.on_choose_wallet_click(update)
                 return jsonify({'status': 'ok'}), 200
             
             if update.callback_query.data == "aura_action_daily_checkin":
                 await update.callback_query.answer()
-                user_id = update.callback_query['from']['id']
                 if await user_activity_tracker.is_checked_in_today(user_id=user_id):
                     await update.callback_query.message.reply_text(i18n.get_dialog("aura_action_daily_checkin_again"))
                 return jsonify({'status': 'ok'}), 200
@@ -272,142 +271,145 @@ async def webhook():
                 await decode_lot(update, token)
                 return jsonify({'status': 'ok'}), 200
 
+        if update.message:
         # Process update with the application
-        await telegram_app.process_update(update)
-        result = ChatStatus.get_transaction_status(update.message.chat_id)
-        print(result, 'result', update.message.chat_id)
-        if result:
-            return jsonify({'status': 'ok'}), 200
-        if update.message.text == '/cancel' or update.message.text == '/buy' or update.message.text == '/sell':
-            return jsonify({'status': 'ok'}), 200
+            await telegram_app.process_update(update)
+            result = ChatStatus.get_transaction_status(update.message.chat_id)
+            print(result, 'result', update.message.chat_id)
+            if result:
+                return jsonify({'status': 'ok'}), 200
+            if update.message.text == '/cancel' or update.message.text == '/buy' or update.message.text == '/sell':
+                return jsonify({'status': 'ok'}), 200
 
-        ton_response = await ton_command_handle(update)
-        if ton_response:
-            if isinstance(ton_response, dict) and "text" in ton_response:
+            ton_response = await ton_command_handle(update)
+            if ton_response:
+                if isinstance(ton_response, dict) and "text" in ton_response:
+                    return {
+                        "method": "sendMessage",
+                        "chat_id": update.message.chat_id,
+                        "text": ton_response["text"],
+                    }
+                print(ton_response, 'return')
+                return jsonify({'status': 'ok'}), 200
+
+            chat_id = update.message.chat_id
+            binance_response = handle_binance_command(update.message.text)
+            if binance_response:
                 return {
                     "method": "sendMessage",
-                    "chat_id": update.message.chat_id,
-                    "text": ton_response["text"],
+                    "chat_id": chat_id,
+                    "text": binance_response,
                 }
-            print(ton_response, 'return')
-            return jsonify({'status': 'ok'}), 200
 
-        chat_id = update.message.chat_id
-        binance_response = handle_binance_command(update.message.text)
-        if binance_response:
-            return {
-                "method": "sendMessage",
-                "chat_id": chat_id,
-                "text": binance_response,
-            }
+            if update.message.text == '/start':
+                await start(update)
+                return jsonify({'status': 'ok'}), 200
 
-        if update.message.text == '/start':
-            await start(update)
-            return jsonify({'status': 'ok'}), 200
-
-        if update.message.text == '/quest':
-            dialog = i18n.get_dialog('quest')
-            await update.message.reply_text(
-                text=dialog,
-                parse_mode='HTML'
-            )
-            return jsonify({'status': 'ok'}), 200
-        
-        if update.message.text == '/aura':
-            await show_aura_rules(update)
-            return jsonify({'status': 'ok'}), 200
-
-        if update.message.text == '/language':
-            await set_language(update)
-            return jsonify({'status': 'ok'}), 200
-
-        if update.message.text.startswith('$'):
-            chat_id = update.message.chat_id
-            Token = update.message.text
-            print(Token, 'Token')
-            # 当收到以 $ 开头的消息时，发送新的消息并附带 Connect Wallet 按钮
-            is_connected = await ton_module.check_connected(update, telegram_app)
+            if update.message.text == '/quest':
+                dialog = i18n.get_dialog('quest')
+                await update.message.reply_text(
+                    text=escape(dialog),
+                    parse_mode='MarkdownV2'
+                )
+                return jsonify({'status': 'ok'}), 200
             
-            if not is_connected:
-                # 临时保存 Token
-                ChatStatus.set_tmp_token(chat_id, Token)
+            if update.message.text == '/aura':
+                await show_aura_rules(update)
+                return jsonify({'status': 'ok'}), 200
+
+            if update.message.text == '/language':
+                await set_language(update)
+                return jsonify({'status': 'ok'}), 200
+
+            if update.message.text.startswith('$'):
+                chat_id = update.message.chat_id
+                Token = update.message.text
+                print(Token, 'Token')
+                # 当收到以 $ 开头的消息时，发送新的消息并附带 Connect Wallet 按钮
+                is_connected = await ton_module.check_connected(update, telegram_app)
                 
-                # 获取未连接钱包时的对话文本
-                dialog = i18n.get_dialog('unconnected')                
-                # 创建按钮：连接钱包或直接揭示
-                reply_markup = keyboard_factory.create_keyboard("unconnected", token=Token)
-                await update.message.reply_text(escape(dialog), parse_mode="HTML", reply_markup=reply_markup)
+                if not is_connected:
+                    # 临时保存 Token
+                    ChatStatus.set_tmp_token(chat_id, Token)
+                    
+                    # 获取未连接钱包时的对话文本
+                    dialog = i18n.get_dialog('unconnected')                
+                    # 创建按钮：连接钱包或直接揭示
+                    reply_markup = keyboard_factory.create_keyboard("unconnected", token=Token)
+                    await update.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+                else:
+                    # 获取已连接钱包时的对话文本
+                    dialog = i18n.get_dialog('connected')                
+                    # 创建新的按钮：揭示代币命运
+                    reply_markup = keyboard_factory.create_keyboard("connected", token=Token)
+                    
+                    # 发送新的消息
+                    await update.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+                return jsonify({'status': 'ok'}), 200
+
+            if update.message.photo:
+                file_id = update.message.photo[-1].file_id
+                logging.info(f"Images file id is {file_id}")
+                file = await telegram_app.bot.get_file(file_id)
+                logging.info("Image file found")
+                bytes_array = await file.download_as_bytearray()
+                bytesIO = BytesIO(bytes_array)
+                logging.info("Images file as bytes")
+                image = Image.open(bytesIO)
+                logging.info("Image opened")
+
+                prompt = 'Describe the image'
+
+                if update.message.caption:
+                    prompt = update.message.caption
+                logging.info(f"Prompt is {prompt}")
+
+                text = "test"
+
+                return {
+                    "method": "sendMessage",
+                    "chat_id": chat_id,
+                    "text": escape(text),
+                    "parse_mode": "MarkdownV2"
+                }
             else:
-                # 获取已连接钱包时的对话文本
-                dialog = i18n.get_dialog('connected')                
-                # 创建新的按钮：揭示代币命运
-                reply_markup = keyboard_factory.create_keyboard("connected", token=Token)
-                
-                # 发送新的消息
-                await update.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
-            return jsonify({'status': 'ok'}), 200
+                api_responseponse = chat_blocking({
+                    "query": update.message.text,
+                    "user": chat_id
+                })
+                # await handle_streaming_chat(chat_id, update.message.text)
+                text = api_responseponse
+                result = process_recommendation(api_responseponse)
+                if isinstance(result, tuple):
+                    token, action, amount = result
+                    # 创建按钮
+                    button_text = f"{action} {token}:{amount}"
 
-        if update.message.photo:
-            file_id = update.message.photo[-1].file_id
-            logging.info(f"Images file id is {file_id}")
-            file = await telegram_app.bot.get_file(file_id)
-            logging.info("Image file found")
-            bytes_array = await file.download_as_bytearray()
-            bytesIO = BytesIO(bytes_array)
-            logging.info("Images file as bytes")
-            image = Image.open(bytesIO)
-            logging.info("Image opened")
+                    # 构建小程序的 URL
+                    miniapp_url = f"{WEB_MINI_APP_URL}/transaction?action={urllib.parse.quote(action)}&token={urllib.parse.quote(token)}&amount={urllib.parse.quote(str(amount))}"
+                    print(miniapp_url, 'miniapp_url')
+                    web_app_info = WebAppInfo(url=miniapp_url)
+                    button = InlineKeyboardButton(text=f"{action.upper()} {token}:{amount}", web_app=web_app_info)
+                    keyboard = InlineKeyboardMarkup([[button]])
 
-            prompt = 'Describe the image'
-
-            if update.message.caption:
-                prompt = update.message.caption
-            logging.info(f"Prompt is {prompt}")
-
-            text = "test"
-
-            return {
-                "method": "sendMessage",
-                "chat_id": chat_id,
-                "text": escape(text),
-                "parse_mode": "MarkdownV2"
-            }
-        else:
-            api_responseponse = chat_blocking({
-                "query": update.message.text,
-                "user": chat_id
-            })
-            # await handle_streaming_chat(chat_id, update.message.text)
-            text = api_responseponse
-            result = process_recommendation(api_responseponse)
-            if isinstance(result, tuple):
-                token, action, amount = result
-                # 创建按钮
-                button_text = f"{action} {token}:{amount}"
-
-                # 构建小程序的 URL
-                miniapp_url = f"{WEB_MINI_APP_URL}/transaction?action={urllib.parse.quote(action)}&token={urllib.parse.quote(token)}&amount={urllib.parse.quote(str(amount))}"
-                print(miniapp_url, 'miniapp_url')
-                web_app_info = WebAppInfo(url=miniapp_url)
-                button = InlineKeyboardButton(text=f"{action.upper()} {token}:{amount}", web_app=web_app_info)
-                keyboard = InlineKeyboardMarkup([[button]])
-
-                await update.message.reply_text(escape(text), parse_mode="MarkdownV2", reply_markup=keyboard)
-            else:
-                await update.message.reply_text(escape(text), parse_mode="MarkdownV2")
-            return jsonify({'status': 'ok'}), 200
+                    await update.message.reply_text(escape(text), parse_mode="MarkdownV2", reply_markup=keyboard)
+                else:
+                    await update.message.reply_text(escape(text), parse_mode="MarkdownV2")
+                return jsonify({'status': 'ok'}), 200
+        return jsonify({'status': 'ok'}), 200
 
     except Exception as error:
+        logging.info(f"update: {update}")
         logging.error(f"Error Occurred: {error}")
-        # return {
-        #     "method":
-        #         "sendMessage",
-        #     "chat_id":
-        #         chat_id,
-        #     "text":
-        #         'Sorry, I am not able to generate content for you right now. Please try again later.'
-        # }
-        return 'OK'
+        return {
+            "method":
+                "sendMessage",
+            "chat_id":
+                chat_id,
+            "text":
+                'Sorry, I am not able to generate content for you right now. Please try again later.'
+        }
+        # return 'OK'
 
 
 def get_image_path(image_name):
@@ -622,17 +624,15 @@ async def show_aura_rules(update):
         dialog = i18n.get_dialog('aura_rules')
         points = UserPoints.get_points_by_user_id(user_id=user_id)
         dialog = dialog.format(points=points)
-        image_path = get_image_path("吾之灵气.png")
-        with open(image_path, 'rb') as image_file:
-            await target.reply_photo(
-                photo=image_file,
-                caption=escape(dialog),
-                parse_mode="MarkdownV2",
-            )
+        await target.reply_text(
+            text = escape(dialog),
+            parse_mode="MarkdownV2"
+        )
 
         # Send interactive elements
         reply_markup = keyboard_factory.create_keyboard("aura")
-        image_path = get_image_path('ways-to-impact-aura.png')
+        image_name = f'{lang}-ways-to-impact-aura.png'
+        image_path = get_image_path(image_name)
         with open(image_path, 'rb') as image_file:
             await target.reply_photo(
                 photo=image_file,
@@ -779,8 +779,8 @@ async def set_language(update, i18n=I18nHelper()):
     dialog = i18n.get_dialog('setting_lang')
     reply_markup = keyboard_factory.create_keyboard("lang")
     await update.message.reply_text(
-        text=dialog,
-        parse_mode='HTML',
+        text=escape(dialog),
+        parse_mode="MarkdownV2",
         reply_markup=reply_markup
     )
 
