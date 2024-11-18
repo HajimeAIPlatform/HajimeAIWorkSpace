@@ -38,7 +38,7 @@ async def send_callback(chat_id, connector, telegram_app):
     finally:
         TaskState.remove_waiting_task(chat_id)
 
-async def wait_for_connection(connector, telegram_app, chat_id, timeout=180):
+async def wait_for_connection(connector, telegram_app, chat_id, timeout=120):
     # 根据用户ID获取语言组件
     i18n = await get_i18n(chat_id)
     keyboard_factory = KeyboardFactory(i18n)
@@ -91,7 +91,7 @@ async def wait_for_connection(connector, telegram_app, chat_id, timeout=180):
                         await telegram_app.bot.send_message(
                             chat_id=chat_id,
                             text=escape(dialog),
-                            parse_mode='HTML',
+                            parse_mode='MarkDownV2',
                             reply_markup=reply_markup
                         )
                     return 
@@ -192,13 +192,15 @@ async def on_open_universal_qr_click(update: Update, telegram_app):
 
 
 async def on_wallet_click(update: Update, telegram_app):
-    chat_id = await get_chat_id(update)
-    i18n = await get_i18n(chat_id)
+    # chat_id = await get_chat_id(update)
+    # i18n = await get_i18n(chat_id)
     try:
+        logging.info(update)
         query = update.callback_query
         data = query.data.split(":")[1] # wallet app_name
         chat_id = query.message.chat_id
-        
+        logging.info(f"on_wallet_click: {data} {chat_id}")
+        i18n = await get_i18n(chat_id)
         connector = get_connector(chat_id)
         wallets = get_wallets()
         selected_wallet = await get_wallet_info(data)
@@ -223,7 +225,7 @@ async def on_wallet_click(update: Update, telegram_app):
 
         keyboard = [[
             InlineKeyboardButton(i18n.get_button('back'), callback_data="choose_wallet"),
-            InlineKeyboardButton(f"打开 {selected_wallet['name']}",
+            InlineKeyboardButton(i18n.get_button('open_wallet').format(wallet_name=selected_wallet['name']),
                                  url=button_link)
         ]]
         reply_markup = InlineKeyboardMarkup(keyboard)
