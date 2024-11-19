@@ -615,9 +615,13 @@ async def show_aura_rules(update):
         i18n = I18nHelper(lang)
         keyboard_factory = KeyboardFactory(i18n)
         # Send aura rules information
-        dialog = i18n.get_dialog('aura_rules')
         points = UserPoints.get_points_by_user_id(user_id=user_id)
-        dialog = dialog.format(points=points)
+        daily_recommended_points = UserPoints.get_daily_recommended_points(user_id=user_id)
+        aura_status_amount = i18n.get_dialog('aura_status_amount').format(points=points)
+        aura_status_daily = i18n.get_dialog('aura_status_daily').format(daily_recommended_points=daily_recommended_points)
+        aura_rules = i18n.get_dialog('aura_rules')
+        dialog = aura_status_amount + aura_status_daily + aura_rules
+        print(dialog)
         await target.reply_text(
             text = escape(dialog),
             parse_mode="MarkdownV2"
