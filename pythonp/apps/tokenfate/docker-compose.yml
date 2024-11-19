@@ -34,7 +34,7 @@ services:
       - "0.0.0.0:${PORT:-5000}:${PORT:-5000}"
     volumes:
       - "./logs/:${LOG_DIR:-/opt/TokenFate/logs}"
-      - "./.env/:/opt/TokenFate/.env"
+      - "./.env/:/opt/TokenFate/wsgi.runfiles/_main/pythonp/apps/tokenfate/.env"
     networks:
       - telebot
     depends_on:
