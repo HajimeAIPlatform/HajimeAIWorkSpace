@@ -32,7 +32,7 @@ class ImageToolKit:
 
 if __name__ == '__main__':
     # 使用示例
-    project_root = '/home/zpc/Projs/TelegramTokenFate'
+    project_root = 'pythonp/apps/tokenfate'
     image_combiner = ImageToolKit(project_root)
     image_names = ["Preserver.png", "Stabilizer.png", "Enterpriser.png", "Adventurer.png"]
     combined_image_path = image_combiner.create_combined_image(image_names, output_name='risk_preference_combined.png')

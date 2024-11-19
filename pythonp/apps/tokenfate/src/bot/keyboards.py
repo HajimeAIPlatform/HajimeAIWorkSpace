@@ -111,12 +111,12 @@ class KeyboardFactory:
                     callback_data='aura_action_daily_checkin'
                 ),
                 InlineKeyboardButton(
-                    self.i18n.get_button('aura_action_fate_reveal', context=context),
-                    callback_data='launch_to_reveal_button'
-                ),
-                InlineKeyboardButton(
                     self.i18n.get_button('aura_action_recommend_click', context=context),
                     callback_data='aura_action_recommend_click'
+                ),
+                InlineKeyboardButton(
+                    self.i18n.get_button('aura_action_fate_reveal', context=context),
+                    callback_data='launch_to_reveal_button'
                 ),
             ],
         ]
