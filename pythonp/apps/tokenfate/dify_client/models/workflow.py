@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
-from pythonp.apps.tokenfate.dify_client.models.base import ResponseMode, File
+from dify_client.models.base import ResponseMode, File
 
 
 class WorkflowStatus(StrEnum):

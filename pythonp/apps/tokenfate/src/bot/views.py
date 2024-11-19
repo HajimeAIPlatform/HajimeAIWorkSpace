@@ -1,28 +1,32 @@
 import logging
 import asyncio
+from io import BytesIO
+from os import getenv
+import urllib.parse
+import time
+import json
+import os
+from typing import List, Dict, Union
+
 from flask import Blueprint, jsonify, request
 from md2tgmd import escape
 from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, \
-    InlineQueryResultsButton, InputMediaPhoto
-from io import BytesIO
-from PIL import Image
+    InlineQueryResultsButton, InputMediaPhoto, Message, CallbackQuery
+import PIL as Pillow
 from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
-from os import getenv
+
 from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming, chat_workflow
 from pythonp.apps.tokenfate.src.binance.views import handle_binance_command
 from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
 import pythonp.apps.tokenfate.src.ton.views as ton_module
 from pythonp.apps.tokenfate.src.bot.commands import set_bot_commands_handler
 from pythonp.apps.tokenfate.src.bot.wallet_menu_callback import set_handlers
-from typing import List, Dict, Union
 import pythonp.apps.tokenfate.src.bot.state as ChatStatus
 from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
 from pythonp.apps.tokenfate.src.bot.keyboards import KeyboardFactory
-import urllib.parse
-import time
-import json
-import os
-from pythonp.apps.tokenfate.src.ton.tc_storage import DailyFortune
+from pythonp.apps.tokenfate.src.ton.tc_storage import DailyFortune, UserActivityTracker
+from pythonp.apps.tokenfate.models.transaction import UserPoints
+
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')
@@ -35,13 +39,9 @@ persistence = DictPersistence()
 telegram_app = ApplicationBuilder().token(telegram_bot_token).persistence(
     persistence).build()
 
-# 初始化数据库连接
-# db = FortunesDatabase()
+# 初始化redis数据库连接
 daily_fortune = DailyFortune()
-
-# 初始化语言和键盘工厂
-i18n = I18nHelper()
-keyboard_factory = KeyboardFactory(i18n)
+user_activity_tracker = UserActivityTracker()
 
 level_photo = {
     '上签': '决而能和.png',
@@ -123,23 +123,23 @@ async def binance_price():
     return get_all_prices(10000, "USDT")
 
 
-async def start(update):
-    # 创建没有参数的按钮
-    web_app_info = WebAppInfo(url=WEB_MINI_APP_URL + "/#/", api_kwargs={"aa": "11"})
-    button = InlineQueryResultsButton(text="Open Wallet", web_app=web_app_info)
+# async def start(update):
+#     # 创建没有参数的按钮
+#     web_app_info = WebAppInfo(url=WEB_MINI_APP_URL + "/#/", api_kwargs={"aa": "11"})
+#     button = InlineQueryResultsButton(text="Open Wallet", web_app=web_app_info)
 
-    # 创建带有参数的按钮
-    action = "buy"
-    token = "ORN"
-    amount = 100
-    timestamp = int(time.time())  # 添加时间戳
-    web_app_url_with_params = f"{WEB_MINI_APP_URL}/#/transaction?action={urllib.parse.quote(action)}&token={urllib.parse.quote(token)}&amount={urllib.parse.quote(str(amount))}&t={timestamp}"
-    web_app_info2 = WebAppInfo(url=web_app_url_with_params, api_kwargs={"aa": "22"})
-    button2 = InlineQueryResultsButton(text="111 Wallet", web_app=web_app_info2)
+#     # 创建带有参数的按钮
+#     action = "buy"
+#     token = "ORN"
+#     amount = 100
+#     timestamp = int(time.time())  # 添加时间戳
+#     web_app_url_with_params = f"{WEB_MINI_APP_URL}/#/transaction?action={urllib.parse.quote(action)}&token={urllib.parse.quote(token)}&amount={urllib.parse.quote(str(amount))}&t={timestamp}"
+#     web_app_info2 = WebAppInfo(url=web_app_url_with_params, api_kwargs={"aa": "22"})
+#     button2 = InlineQueryResultsButton(text="111 Wallet", web_app=web_app_info2)
 
-    keyboard = InlineKeyboardMarkup([[button], [button2]])
+#     keyboard = InlineKeyboardMarkup([[button], [button2]])
 
-    await update.message.reply_text("Click a button to open Web App", reply_markup=keyboard)
+#     await update.message.reply_text("Click a button to open Web App", reply_markup=keyboard)
 
 
 @bot.route('/webhook', methods=['POST'])
@@ -150,9 +150,30 @@ async def webhook():
         body = request.get_json()
         update = Update.de_json(body, telegram_app.bot)
         logging.debug(f"Received update: {update}")
+        
         if update.edited_message:
-            return 'OK'
+            return jsonify({'status': 'ok'}), 200
+        # 处理update.message和update.callback_query.message
+        chat_id = await get_chat_id(update) # 获取chat_id
+        lang = UserPoints.get_language_by_user_id(chat_id)
 
+        if update.callback_query and update.callback_query.data.startswith("lang"):
+            data = update.callback_query.data
+            logging.info(f"data: {data}")
+            details = data.split(":")
+            lang = details[1]
+            await update_default_language(update, lang=lang)
+            return jsonify({'status': 'ok'}), 200
+
+        if not lang:
+            await set_language(update)
+            return jsonify({'status': 'ok'}), 200
+        
+        # 初始化语言和键盘工厂
+        i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
+
+        await handle_daily_checkin(update)
         if update.callback_query:
             await set_handlers(update, telegram_app)
             if update.callback_query.data == "for_your_information_button":
@@ -170,7 +191,7 @@ async def webhook():
                     parse_mode="MarkdownV2",
                     reply_markup=reply_markup
                 )
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
             
             if update.callback_query.data == "launch_to_reveal_button":
                 await update.callback_query.answer()
@@ -183,34 +204,82 @@ async def webhook():
                     escape(dialog),
                     parse_mode='HTML'
                 )
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data == "show_aura_rules":
+                await update.callback_query.answer()
+                await show_aura_rules(update)
+                return jsonify({'status': 'ok'}), 200
 
             if update.callback_query.data == "connect_wallet_button":
                 await update.callback_query.answer()
                 # connect to wallet
+                user_id = update.callback_query['from']['id']
+                connected_wallets = await user_activity_tracker.get_connected_wallets(user_id)
+                
+                if connected_wallets:
+                    # Format the set into a list with each wallet on a new line
+                    wallet_list = "\n".join(connected_wallets)
+                    dialog = i18n.get_dialog("connected_wallets")
+                    dialog = dialog.format(wallet_list=wallet_list)
+                    await update.callback_query.message.reply_text(escape(dialog))
                 await ton_module.wallet_menu_callback.on_choose_wallet_click(update)
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data == "aura_action_daily_checkin":
+                await update.callback_query.answer()
+                user_id = update.callback_query['from']['id']
+                if await user_activity_tracker.is_checked_in_today(user_id=user_id):
+                    await update.callback_query.message.reply_text(i18n.get_dialog("aura_action_daily_checkin_again"))
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data == "aura_action_recommend_click":
+                await update.callback_query.answer()
+                await send_recommendations(update)
+                return jsonify({'status': 'ok'}), 200
 
             if update.callback_query.data.startswith("reveal_fate"):
                 data = update.callback_query.data
                 logging.info(f"data: {data}")
-                token = data.split(":")[1]
-                is_connected = await ton_module.check_connected(update, telegram_app)
-                # 现在不强制检查钱包连接状态，直接揭示命运
-                # if not is_connected:
-                #     await update.callback_query.message.reply_text("You haven't connected the wallet")
-                #     return 'OK'
+                details = data.split(":")
+                token = details[1]
+                await risk_preference(update, token)
+                return jsonify({'status': 'ok'}), 200
+
+            if update.callback_query.data.startswith("recommend"):
+                data = update.callback_query.data
+                logging.info(f"data: {data}")
+                details = data.split(":")
+                token = details[1]
+                if handle_recommendation_click(chat_id):
+                    await get_aura_status(update, "aura_action_recommend_click")
+                await risk_preference(update, token)
+                return jsonify({'status': 'ok'}), 200
+
+            if update.callback_query.data.startswith("risk"):
+                data = update.callback_query.data
+                logging.info(f"data: {data}")
+                details = data.split(":")
+                token = details[1]
                 await reveal_fate(update, token)
-                return 'OK'
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data.startswith("decode"):
+                data = update.callback_query.data
+                logging.info(f"data: {data}")
+                details = data.split(":")
+                token = details[1]
+                await decode_lot(update, token)
+                return jsonify({'status': 'ok'}), 200
 
         # Process update with the application
         await telegram_app.process_update(update)
         result = ChatStatus.get_transaction_status(update.message.chat_id)
         print(result, 'result', update.message.chat_id)
         if result:
-            return 'OK'
+            return jsonify({'status': 'ok'}), 200
         if update.message.text == '/cancel' or update.message.text == '/buy' or update.message.text == '/sell':
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
 
         ton_response = await ton_command_handle(update)
         if ton_response:
@@ -221,7 +290,7 @@ async def webhook():
                     "text": ton_response["text"],
                 }
             print(ton_response, 'return')
-            return 'OK'
+            return jsonify({'status': 'ok'}), 200
 
         chat_id = update.message.chat_id
         binance_response = handle_binance_command(update.message.text)
@@ -233,17 +302,8 @@ async def webhook():
             }
 
         if update.message.text == '/start':
-            reply_markup = keyboard_factory.create_keyboard("start")
-            dialog = i18n.get_dialog('start')
-            image_path = get_image_path('Welcome.png')
-            with open(image_path, 'rb') as image_file:
-                await update.message.reply_photo(
-                    photo=image_file, 
-                    caption=escape(dialog), 
-                    parse_mode="MarkdownV2", 
-                    reply_markup=reply_markup
-                )  
-            return "OK"
+            await start(update)
+            return jsonify({'status': 'ok'}), 200
 
         if update.message.text == '/quest':
             dialog = i18n.get_dialog('quest')
@@ -251,7 +311,15 @@ async def webhook():
                 text=dialog,
                 parse_mode='HTML'
             )
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
+        
+        if update.message.text == '/aura':
+            await show_aura_rules(update)
+            return jsonify({'status': 'ok'}), 200
+
+        if update.message.text == '/language':
+            await set_language(update)
+            return jsonify({'status': 'ok'}), 200
 
         if update.message.text.startswith('$'):
             chat_id = update.message.chat_id
@@ -277,8 +345,7 @@ async def webhook():
                 
                 # 发送新的消息
                 await update.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
-                return 'OK'
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
 
         if update.message.photo:
             file_id = update.message.photo[-1].file_id
@@ -328,24 +395,19 @@ async def webhook():
                 await update.message.reply_text(escape(text), parse_mode="MarkdownV2", reply_markup=keyboard)
             else:
                 await update.message.reply_text(escape(text), parse_mode="MarkdownV2")
-            return "OK"
+            return jsonify({'status': 'ok'}), 200
 
-        return {
-            "method": "sendMessage",
-            "chat_id": chat_id,
-            "text": escape(text),
-            "parse_mode": "MarkdownV2"
-        }
     except Exception as error:
         logging.error(f"Error Occurred: {error}")
-        return {
-            "method":
-                "sendMessage",
-            "chat_id":
-                chat_id,
-            "text":
-                'Sorry, I am not able to generate content for you right now. Please try again later.'
-        }
+        # return {
+        #     "method":
+        #         "sendMessage",
+        #     "chat_id":
+        #         chat_id,
+        #     "text":
+        #         'Sorry, I am not able to generate content for you right now. Please try again later.'
+        # }
+        return 'OK'
 
 
 def get_image_path(image_name):
@@ -354,21 +416,6 @@ def get_image_path(image_name):
     # 构建图片的绝对路径
     image_path = os.path.join(project_root, 'static', 'images', image_name)
     return image_path
-
-
-def send_start_image(update, context):
-    # 获取图片路径
-    image_path = get_image_path('start.png')
-
-    # 检查图片路径是否存在
-    if not os.path.exists(image_path):
-        update.message.reply_text('Image not found.')
-        return
-
-    # 发送图片
-    with open(image_path, 'rb') as image_file:
-        update.message.reply_photo(photo=image_file)
-
 
 def validate_token_data(response_data: Dict[str, Union[str, list]]) -> List[Dict[str, str]]:
     if not isinstance(response_data, dict) or 'data' not in response_data:
@@ -402,24 +449,8 @@ def parse_token_response(response: str) -> Dict[str, Union[str, list]]:
 
 def fetch_trending_tokens():
     try:
-        # 构建查询请求
-        query = """请推荐5个当前最热门的加密货币交易对。
-                    请用JSON格式返回，包含token名称和推荐理由，格式如下：
-                    {
-                        "status": "success",
-                        "data": [
-                            {"token": "BTC", "reason": "市场领导者"},
-                            {"token": "ETH", "reason": "智能合约平台"}
-                        ]
-                    }
-                """
-        
-        data = {
-            "query": query,
-        }
-
         # Fetch recommendations from Dify API
-        api_response = chat_workflow(data)
+        api_response = chat_workflow({})
         logging.info("Raw API response: %s", api_response)
         parsed_response = parse_token_response(api_response)
         logging.info(f"parsed_response: {parsed_response}")
@@ -428,74 +459,404 @@ def fetch_trending_tokens():
     except Exception as e:
         logging.error("Failed to fetch trending tokens: %s", e)
         return []
-
-
+    
 def create_token_keyboard(tokens):
     keyboard = []
     row = []
 
-    for token_info in tokens:
+    for index, token_info in enumerate(tokens):
         token_name = token_info.get('token', '')
-        if token_name:
+        if token_name and index < 4:  # 只处理前四个token
             button = InlineKeyboardButton(
                 text=f"${token_name}",
-                callback_data=f"select_token_{token_name}"
+                callback_data=f"recommend:${token_name}"
             )
             row.append(button)
 
-            if len(row) == 5:  # 5 tokens per row
+            if len(row) == 2:  # 每行2个按钮
                 keyboard.append(row)
                 row = []
 
-    if row:  # Handle remaining buttons
-        keyboard.append(row)
-
     return InlineKeyboardMarkup(keyboard)
 
+async def send_recommendations(update):
+    if update.message:
+        target = update
+        user_id = update.message['from']['id']
+    # 处理回调查询
+    elif update.callback_query:
+        target = update.callback_query
+        user_id = update.callback_query['from']['id']
+    else:
+        return
+    lang = UserPoints.get_language_by_user_id(user_id)
+    i18n = I18nHelper(lang)
+
+    """发送推荐的tokens给用户"""
+    recommended_tokens = fetch_trending_tokens()
+    if not recommended_tokens:
+        logging.error("Failed to get token recommendations")
+        return
+
+    reply_markup = create_token_keyboard(recommended_tokens)
+    dialog = i18n.get_dialog("recommended")
+    await target.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
 
 async def reveal_fate(update, token):
     try:
-        await update.callback_query.answer()
+        # 处理普通消息
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        # 处理回调查询
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
+
         if not token:
-            await update.callback_query.message.reply_text("Please Enter Your Token.")
-            return 'OK'
+            await target.message.reply_text("请输入你的符币代码。")
+            return jsonify({'status': 'ok'}), 200
+
         # 随机抽签
-        chat_id = update.callback_query.message.chat_id
-        result_of_draw = await daily_fortune.get_daily_lot(chat_id, token)
+        cached_lot = await daily_fortune.get_cached_lot(user_id, token)
+        is_cached = cached_lot is not None
+        if is_cached:
+            result_of_draw = cached_lot
+        else:
+            result_of_draw = await daily_fortune.get_daily_lot(user_id, token)
         logging.info(f"result_of_draw: {result_of_draw}")
+
+        if is_cached:
+            # 用户积分无需更新
+            await get_aura_status(update, "aura_action_cached_hit")
+        else:
+            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=-5)
+            if not sql_status:
+                logging.error("Failed to update user points")
+                await get_aura_status(update, "aura_action_invalid")
+            await get_aura_status(update, "aura_action_fate_reveal")
+
         sign_level = result_of_draw["sign_level"]
         sign_from = result_of_draw["sign_from"]
         sign_text = result_of_draw["sign_text"]
-
         # 发送抽签结果
-        words = f"**{token} Today**\n\n{sign_text}\n\n摘自：《{sign_from}》\n"
-        escaped_words = escape(words)
         image_path = get_image_path(level_photo[sign_level])
+        dialog = i18n.get_dialog("lot_daily_content")
+        dialog = dialog.format(token=token, sign_from=sign_from, sign_text=sign_text)
+        reply_markup = keyboard_factory.create_keyboard("lot", token=token)
+        with open(image_path, 'rb') as image_file:
+            await target.message.reply_photo(
+                photo=image_file,
+                caption=escape(dialog),
+                parse_mode="MarkdownV2",
+                reply_markup=reply_markup,
+            )
+        # 发送推荐的tokens
+        await send_recommendations(update)
+
+        return jsonify({'status': 'ok'}), 200
+    
+    except Exception as e:
+        logging.error(f"Error in reveal_fate: {e}")
+        await target.message.reply_text(
+            "Sorry, something went wrong while revealing your fate."
+        )
+        return
+    
+async def risk_preference(update, token):
+    chat_id = await get_chat_id(update) # 获取chat_id
+    lang = UserPoints.get_language_by_user_id(chat_id)
+    i18n = I18nHelper(lang)
+    try:
+        keyboard_factory = KeyboardFactory(i18n)
+        await update.callback_query.answer()
+        if not token:
+            await update.callback_query.message.reply_text("Please Enter Your Token.")
+            return jsonify({'status': 'ok'}), 200
+        
+        # 发送文本信息
+        dialog = i18n.get_dialog('risk')
+        await update.callback_query.message.reply_text(
+            text=dialog,
+            parse_mode="MarkdownV2"
+        )
+
+        # 发送图片及选择项
+        reply_markup = keyboard_factory.create_keyboard("risk", token=token)
+        image_path = get_image_path('risk_preference_combined.png')
         with open(image_path, 'rb') as image_file:
             await update.callback_query.message.reply_photo(
                 photo=image_file,
-                caption=escaped_words,
                 parse_mode="MarkdownV2",
+                reply_markup=reply_markup
             )
+        return jsonify({'status': 'ok'}), 200
 
-        # 新的键盘布局：推荐tokens
-        recommended_tokens = fetch_trending_tokens()
-        if not recommended_tokens:
-            logging.error("Failed to get token recommendations")
-            return 'OK'
-        reply_markup = create_token_keyboard(recommended_tokens)
-
-        # 发送推荐的token
-        dialog = i18n.get_dialog("recommended")
-        await update.callback_query.message.reply_text(
-            escape(dialog), 
-            parse_mode="MarkdownV2", 
-            reply_markup=reply_markup
-        )
-        return 'OK'
     except Exception as e:
         logging.error(f"Error in reveal_fate: {e}")
         await update.callback_query.message.reply_text(
-            "Sorry, something went wrong while processing your request."
+            "Sorry, something went wrong while showing risk preference."
         )
         return
+    
+async def show_aura_rules(update):    
+    try:
+        if update.callback_query:
+            await update.callback_query.answer()
+            target = update.callback_query.message
+            user_id = update.callback_query['from']['id']
+        elif update.message:
+            target = update.message
+            user_id = update.message['from']['id']
+        else:
+            return
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
+        # Send aura rules information
+        dialog = i18n.get_dialog('aura_rules')
+        points = UserPoints.get_points_by_user_id(user_id=user_id)
+        dialog = dialog.format(points=points)
+        image_path = get_image_path("吾之灵气.png")
+        with open(image_path, 'rb') as image_file:
+            await target.reply_photo(
+                photo=image_file,
+                caption=escape(dialog),
+                parse_mode="MarkdownV2",
+            )
+
+        # Send interactive elements
+        reply_markup = keyboard_factory.create_keyboard("aura")
+        image_path = get_image_path('ways-to-impact-aura.png')
+        with open(image_path, 'rb') as image_file:
+            await target.reply_photo(
+                photo=image_file,
+                reply_markup=reply_markup
+            )
+        return jsonify({'status': 'ok'}), 200
+
+    except Exception as e:
+        logging.error(f"Error in show_aura_rules: {e}")
+        await target.reply_text("Sorry, something went wrong while showing the aura rules.")
+        return
+    
+async def decode_lot(update, token):
+    try:
+        # 处理普通消息
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        # 处理回调查询
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        # 获取今日缓存的签
+        result_of_draw = await daily_fortune.get_cached_lot(user_id, token)
+        if result_of_draw is None:
+            await target.message.reply_text("昨日之签无法解读。")
+            return
+        # 检查是否获取过签解不论语言，进而决定是否扣除积分
+        decode_status = await daily_fortune.get_decode_status(user_id, token)
+        if not decode_status:
+            await get_aura_status(update, "aura_action_decode")
+
+        # 先有签再有签解，获取今日缓存的签解
+        cached_decode = await daily_fortune.get_cached_decode(user_id, token, lang)
+        if cached_decode is None:
+            # 签解为空，进行签解并缓存
+            sign_text = result_of_draw['sign_text']
+            data = {
+                "query": sign_text,
+                "inputs": {
+                    "lot": sign_text,
+                    "lang": lang
+                },
+            }
+            cached_decode = chat_decode(data)
+            await daily_fortune.set_decode_cache(user_id, token, lang, cached_decode)
+
+        # 发送签解
+        dialog = i18n.get_dialog("lot_decoded_content")
+        dialog = dialog.format(token=token, cached_decode=cached_decode)
+        await target.message.reply_text(
+            escape(dialog), parse_mode="MarkdownV2"
+        )
+        return jsonify({'status': 'ok'}), 200
+
+    except Exception as e:
+        logging.error(f"Error in decode_lot: {e}")
+        await target.message.reply_text("Sorry, something went wrong while decode your lot.")
+        return
+    
+async def get_aura_status(update, action: str):
+    try:
+        # 处理普通消息
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        # 处理回调查询
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        dialog = i18n.get_dialog(action)
+        dialog = dialog.format(user_id=user_id)
+        button = i18n.get_button("aura")
+        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=button, callback_data="show_aura_rules")]])
+        await target.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+        return jsonify({'status': 'ok'}), 200
+
+    except Exception as e:
+        logging.error(f"Error in get_aura_status: {e}")
+        await target.message.reply_text("Sorry, something went wrong while getting your aura status.")
+        return
+    
+async def handle_daily_checkin(update):
+    try:
+        # 获取用户ID
+        if update.message:
+            user_id = update.message['from']['id']
+        elif update.callback_query:
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+
+        # 检查用户是否已打卡
+        if await user_activity_tracker.is_checked_in_today(user_id=user_id):
+            return
+
+        # 执行打卡操作
+        if await user_activity_tracker.daily_checkin(user_id=user_id):
+            # 更新用户积分
+            sql_status = UserPoints.update_points_by_user_id(user_id=user_id, points=20)
+            if not sql_status:
+                logging.error("Failed to update user points")
+                await get_aura_status(update, "aura_action_invalid")
+                return
+
+            # 发送打卡成功消息
+            await get_aura_status(update, "aura_action_daily_checkin")
+        else:
+            logging.error("Failed to check in user")
+
+    except Exception as e:
+        logging.error(f"Error in handle_daily_checkin: {str(e)}")
+        await get_aura_status(update, "aura_action_invalid")
+
+async def update_default_language(update, lang: str):
+    try:
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        UserPoints.update_language_by_user_id(user_id=user_id, language=lang)
+        await start(update)
+        return 
+    except Exception as e:
+        logging.error(f"Error in update_default_language: {e}")
+        await target.message.reply_text("Sorry, something went wrong while setting your language.")
+        return
+    
+async def set_language(update, i18n=I18nHelper()):
+    keyboard_factory = KeyboardFactory(i18n)
+    dialog = i18n.get_dialog('setting_lang')
+    reply_markup = keyboard_factory.create_keyboard("lang")
+    await update.message.reply_text(
+        text=dialog,
+        parse_mode='HTML',
+        reply_markup=reply_markup
+    )
+
+async def get_chat_id(update):
+    try:
+        if update.message:
+            user_id = update.message['from']['id']
+        elif update.callback_query:
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        return user_id
+    except Exception as e:
+        logging.error(f"Error in get_chat_id: {e}")
+        # await target.message.reply_text("Sorry, something went wrong while getting your chat ID.")
+        return
+    
+async def start(update):
+    try:
+        # 处理普通消息
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        # 处理回调查询
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
+        # 创建键盘
+        reply_markup = keyboard_factory.create_keyboard("start")
+        
+        # 获取对话内容
+        dialog = i18n.get_dialog('start')
+        
+        # 获取图片路径
+        image_path = get_image_path('Welcome.png')
+        
+        # 检查文件是否存在
+        if not os.path.exists(image_path):
+            logging.error(f"Image file {image_path} does not exist.")
+            await target.message.reply_text(text="There was an error loading the welcome image.", reply_markup=reply_markup)
+            return ('Error', 500)
+        
+        # 发送图片和对话
+        with open(image_path, 'rb') as image_file:
+            await target.message.reply_photo(
+                photo=image_file,
+                caption=escape(dialog),
+                parse_mode="MarkdownV2",
+                reply_markup=reply_markup
+            )
+        
+        return ('OK', 200)
+    
+    except Exception as e:
+        logging.error(f"An error occurred in the start command: {e}")
+        await target.message.reply_text(text="An unexpected error occurred.")
+        return ('Error', 500)
+    
+def handle_recommendation_click(user_id):
+    points_to_add = 10
+    if UserPoints.check_daily_recommended_points(user_id):
+        if UserPoints.update_points_by_user_id(user_id, points_to_add, description="Recommendation click"):
+            if UserPoints.update_daily_recommended_points(user_id, points_to_add):
+                logging.info(f"User {user_id} successfully added {points_to_add} points for recommendation click.")
+                return True
+            else:
+                logging.info(f"User {user_id} successfully added {points_to_add} points for recommendation click, but failed to update daily recommended points.")
+                return False
+        else:
+            logging.info(f"User {user_id} successfully added {points_to_add} points for recommendation click, but failed to update user points.")
+            return False
+    else:
+        logging.info(f"User {user_id} has already reached the daily limit for recommendation clicks.")
+        return False

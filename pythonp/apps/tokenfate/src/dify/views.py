@@ -2,27 +2,41 @@ import uuid
 import json
 import logging
 from typing import Dict
-from pythonp.apps.tokenfate.dify_client import Client, models
 from os import getenv
-from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices
-from flask import Blueprint, jsonify, request, Response
-from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
 
-dify_api_key = getenv('DIFY_API_KEY')
+from flask import Blueprint, jsonify, request, Response
+
+from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
+from pythonp.apps.tokenfate.dify_client import Client, models
+from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices
+
+dify_api_key_workflow = getenv('DIFY_API_KEY_WORKFLOW')
+dify_api_key_message = getenv('DIFY_API_KEY_MESSAGE')
+dify_api_key_decode = getenv('DIFY_API_KEY_DECODE')
 dify_api_key_2 = getenv('DIFY_API_KEy_2')
 dify_api_base = getenv('DIFY_BASE_HOST')
-if not dify_api_base or not dify_api_key or not dify_api_key_2:
+if not dify_api_base or not dify_api_key_workflow or not dify_api_key_2 or not dify_api_key_message or not dify_api_key_decode:
     raise ValueError(
         "Dify API key and base host are not set in the environment")
 
 # Initialize the client with your API key
 client = Client(
-    api_key=dify_api_key,
+    api_key=dify_api_key_workflow,
     api_base=dify_api_base,
 )
 
 client2 = Client(
     api_key=dify_api_key_2,
+    api_base=dify_api_base,
+)
+
+client3 = Client(
+    api_key=dify_api_key_message,
+    api_base=dify_api_base,
+)
+
+client4 = Client(
+    api_key=dify_api_key_decode,
     api_base=dify_api_base,
 )
 
@@ -36,7 +50,7 @@ def chat_blocking(data):
         today_market_data = get_random_usdt_historical_prices()
 
         print(len(json.dumps(today_market_data)),'today_market_data')
-
+        logging.info("Received data: %s", data)
         # Create a blocking chat request
         blocking_chat_req = models.ChatRequest(
             query=data.get("query"),
@@ -50,7 +64,7 @@ def chat_blocking(data):
         logging.info("Sending blocking chat request: %s", blocking_chat_req)
 
         # Send the chat message
-        chat_response = client.chat_messages(blocking_chat_req, timeout=60.)
+        chat_response = client3.chat_messages(blocking_chat_req, timeout=60.)
         chat_response_dict = json.loads(
             json.dumps(chat_response,
                        default=lambda o: o.__dict__))  # Convert to dictionary
@@ -142,6 +156,40 @@ def chat_workflow(data: Dict):
         logging.error("Error during chat_workflow: %s", e)
         return f"An unexpected error occurred,{e}"
 
+
+def chat_decode(data):
+    try:
+        user = str(uuid.uuid4())
+        logging.info("Generated user ID: %s", user)
+        logging.info("Received data: %s", data)
+        # Create a blocking chat request
+        blocking_chat_req = models.ChatRequest(
+            query=data.get("query", ""),
+            inputs=data.get("inputs", {}),
+            user=str(data.get("user", user)),
+            response_mode=models.ResponseMode.BLOCKING,
+        )
+
+        logging.info("Sending blocking chat request: %s", blocking_chat_req)
+
+        # Send the chat message
+        chat_response = client4.chat_messages(blocking_chat_req, timeout=60)
+        logging.info("Received chat response: %s", chat_response)
+        chat_response_dict = json.loads(
+            json.dumps(chat_response,
+                       default=lambda o: o.__dict__))  # Convert to dictionary
+
+        logging.info("Received chat response: %s", chat_response_dict)
+
+        # Extract the answer from the chat response
+        answer = chat_response_dict.get('answer', 'No answer found')
+        logging.info("Answer: %s", answer)
+        # 处理推荐结果
+        return answer
+
+    except Exception as e:
+        logging.error("Error during chat_blocking: %s", e)
+        return "An error occurred"
 
 def chat_streaming(data):
     try:

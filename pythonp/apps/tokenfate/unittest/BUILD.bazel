@@ -1,14 +1,65 @@
-load("@rules_python//python:defs.bzl", "py_test")
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
 
 py_test(
-    name = "tokenfate_unittest",
-    srcs = ["tokenfate_unittest.py"],
+    name = "binance_test",
+    srcs = ["binance_test.py"],
     deps = [
-        "//pythonp/apps/tokenfate:common_deps",
-        "//pythonp/apps/tokenfate:dify_client",
-        "//pythonp/apps/tokenfate:mock_service",
-        "//pythonp/apps/tokenfate:models",
-        "//pythonp/apps/tokenfate:src",
-        "//pythonp/common/logging:logger",
+        "//pythonp/apps/tokenfate/src",
+        requirement("pytest"),
+        requirement("python-dotenv"),
+    ],
+)
+
+py_test(
+    name = "connect_test",
+    srcs = ["connect_test.py"],
+    deps = [
+        "//pythonp/apps/tokenfate/src",
+        requirement("pytest"),
+        requirement("python-dotenv"),
+        requirement("pytonconnect"),
+        requirement("redis"),
+    ],
+)
+
+py_test(
+    name = "connect_ton_test",
+    srcs = ["connect_ton_test.py"],
+    deps = [
+        "//pythonp/apps/tokenfate/src",
+        requirement("pytest"),
+        requirement("pytoncenter"),
+    ],
+)
+
+py_test(
+    name = "database_ops_test",
+    srcs = ["database_ops_test.py"],
+    deps = [
+        "//pythonp/apps/tokenfate/models",
+        requirement("pytest"),
+    ],
+)
+
+py_test(
+    name = "dify_test",
+    srcs = ["dify_test.py"],
+    deps = [
+        "//pythonp/apps/tokenfate/src",
+        "//pythonp/apps/tokenfate/dify_client",
+        requirement("pytest"),
+        requirement("python-dotenv"),
+        requirement("pydantic"),
+    ],
+)
+
+py_test(
+    name = "transcation_test",
+    srcs = ["transcation_test.py"],
+    deps = [
+        requirement("pytest"),
+        requirement("tonutils"),
     ],
 )

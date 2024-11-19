@@ -7,11 +7,13 @@ import asyncio
 import json
 import os
 import logging
+import time
+
 from pytonconnect import TonConnect
 from pytonconnect.storage import IStorage
 import redis.asyncio as redis
-import time
-from src.ton.messages import get_comment_message
+
+from pythonp.apps.tokenfate.src.ton.messages import get_comment_message
 
 
 

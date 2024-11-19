@@ -2,8 +2,8 @@ from typing import Dict, List, Optional, Any
 
 from pydantic import BaseModel, Field
 
-from pythonp.apps.tokenfate.dify_client.models.base import ResponseMode, File
-from pythonp.apps.tokenfate.dify_client.models.completion import CompletionResponse
+from dify_client.models.base import ResponseMode, File
+from dify_client.models.completion import CompletionResponse
 
 
 class ChatRequest(BaseModel):

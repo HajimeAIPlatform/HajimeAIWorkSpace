@@ -2,23 +2,29 @@
 import time
 import asyncio
 import logging
+from os import getenv
+
 from pytoniq_core import Cell
 import pytonconnect.exceptions
 from telegram import Update
 from telegram.ext import ConversationHandler
-from src.ton.messages import get_comment_message
-from src.ton.connector import get_connector
-import src.bot.wallet_menu_callback as wallet_menu_callback
-from models.transaction import save_ton_transaction_to_db, UserAsset
-from src.ton.utils import calculate_fee, get_bot_ton_address, convert_address_to_hex, estimate_gas_fee
-import src.bot.state as ChatStatus
-from src.binance.views import convert_currency
-from src.binance.transaction_queue import put_transaction_into_queue
-from src.binance.utils import is_min_trade_quantity_limit
-import src.ton.ton_server as ton_server
-import mock_service.mock_connector as mock_connector
-import mock_service.mock_ton_server as mock_ton_server
-from os import getenv
+
+import pythonp.apps.tokenfate.src.bot.state as ChatStatus
+import pythonp.apps.tokenfate.src.bot.wallet_menu_callback as wallet_menu_callback
+import pythonp.apps.tokenfate.mock_service.mock_connector as mock_connector
+import pythonp.apps.tokenfate.mock_service.mock_ton_server as mock_ton_server
+import pythonp.apps.tokenfate.src.ton.ton_server as ton_server
+from pythonp.apps.tokenfate.models.transaction import save_ton_transaction_to_db, UserAsset
+from pythonp.apps.tokenfate.src.ton.utils import calculate_fee, get_bot_ton_address, convert_address_to_hex, estimate_gas_fee
+from pythonp.apps.tokenfate.src.binance.views import convert_currency
+from pythonp.apps.tokenfate.src.binance.transaction_queue import put_transaction_into_queue
+from pythonp.apps.tokenfate.src.binance.utils import is_min_trade_quantity_limit
+from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
+from pythonp.apps.tokenfate.src.ton.messages import get_comment_message
+from pythonp.apps.tokenfate.src.ton.connector import get_connector
+
+# 初始化语言
+i18n = I18nHelper()
 
 MOCK_SERVER = getenv('MOCK_SERVER', 'False').lower() in ('true', '1', 't')
 
@@ -195,7 +201,7 @@ async def send_transaction(update, telegram_app, symbol, amount, side):
         return f"{e}"
 
 
-async def check_connected(update, telegram_app):
+async def check_connected(update, telegram_app, timeout=30, send_address=False):
     if update.message:
         chat_id = update.message.chat_id
     elif update.callback_query:
@@ -215,20 +221,30 @@ async def check_connected(update, telegram_app):
     connected = None
     # Attempt to restore connection
     try:
-        connected = await connector.restore_connection()
-    except Exception as e:
-        logging.error(f"Error restoring connection: {e}")
+        connected = await asyncio.wait_for(connector.restore_connection(), timeout)
+    except asyncio.TimeoutError:
+        logging.error("Connection restoration timed out")
+        await telegram_app.bot.send_message(
+            chat_id=chat_id,
+            text='The request has timed out. Please try again later.',
+            parse_mode='HTML'
+        )
+        return None
+    # try:
+    #     connected = await connector.restore_connection()
+    # except Exception as e:
+    #     logging.error(f"Error restoring connection: {e}")
     logging.info(f"connected == {connected}")
     if not connected:
         return None
 
-    # if connector.account and connector.account.address:
-    #     wallet_address = convert_address_to_hex(connector.account.address)
-    #     await telegram_app.bot.send_message(
-    #         chat_id=chat_id,
-    #         text=
-    #         f'You are connected with address <code>{wallet_address}</code>',
-    #         parse_mode='HTML')
+    if connector.account and connector.account.address and send_address:
+        wallet_address = convert_address_to_hex(connector.account.address)
+        await telegram_app.bot.send_message(
+            chat_id=chat_id,
+            text=
+            f'You are connected with address <code>{wallet_address}</code>',
+            parse_mode='HTML')
     return True
 
 
@@ -237,7 +253,7 @@ async def get_my_wallet(update, telegram_app):
     connector = get_connector(chat_id)
     connected = await connector.restore_connection()
     if not connected:
-        return {"method": "sendMessage", "text": 'Connect wallet first!'}
+        return {"method": "sendMessage", "text": i18n.get_dialog('connect_first')}
 
     if connector.account and connector.account.address:
         wallet_address = convert_address_to_hex(connector.account.address)
@@ -261,7 +277,7 @@ async def get_my_wallet(update, telegram_app):
 
         return True
     else:
-        return {"method": "sendMessage", "text": 'No wallet connected!'}
+        return {"method": "sendMessage", "text": '尚未连接钱包'}
 
 
 async def send_tx(update, context):
@@ -270,7 +286,7 @@ async def send_tx(update, context):
     connected = await connector.restore_connection()
     if not connected:
         await update.message.reply_text(
-            "Connect wallet first!")
+            i18n.get_dialog('connect_first'))
         return ConversationHandler.END
     ChatStatus.set_transaction_status(chat_id, 'transition')
     await update.message.reply_text(
@@ -284,7 +300,7 @@ async def handle_ton_command(telegram_app, update):
         return None
     command = update.message.text
     if command == '/connect':
-        is_connected = await check_connected(update, telegram_app)
+        is_connected = await check_connected(update, telegram_app, send_address=True)
         if is_connected:
             return True
         isTrue = await wallet_menu_callback.on_choose_wallet_click(update)
@@ -297,12 +313,12 @@ async def handle_ton_command(telegram_app, update):
         if not connected:
             return {
                 "method": "sendMessage",
-                "text": "Connect wallet first!"
+                "text": i18n.get_dialog('connect_first')
             }
         await disconnect_wallet(update)
         return {
             "method": "sendMessage",
-            "text": 'You have been successfully disconnected!'
+            "text": i18n.get_dialog('disconnected_success')
         }
 
     elif command == '/my_wallet':
