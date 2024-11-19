@@ -406,14 +406,6 @@ async def webhook():
         }
         # return 'OK'
 
-
-# def get_images_path(image_name):
-#     # 获取项目根目录
-#     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-#     # 构建图片的绝对路径
-#     image_path = os.path.join(project_root, 'static', 'images', image_name)
-#     return image_path
-
 def validate_token_data(response_data: Dict[str, Union[str, list]]) -> List[Dict[str, str]]:
     if not isinstance(response_data, dict) or 'data' not in response_data:
         logging.error("Invalid response format: missing 'data' field")
@@ -821,7 +813,7 @@ async def start(update):
         dialog = i18n.get_dialog('start')
         
         # 获取图片路径
-        image_path = get_images_path('Welcome.png')
+        image_path = get_images_path(f"{lang}_welcome.png")
         
         # 检查文件是否存在
         if not os.path.exists(image_path):
