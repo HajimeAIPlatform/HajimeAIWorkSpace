@@ -42,12 +42,6 @@ telegram_app = ApplicationBuilder().token(telegram_bot_token).persistence(
 daily_fortune = DailyFortune()
 user_activity_tracker = UserActivityTracker()
 
-level_photo = {
-    '上签': '决而能和.png',
-    '中签': '应时而变.png',
-    '下签': '蓄养待进.png',
-}
-
 WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
 
 
@@ -547,7 +541,7 @@ async def reveal_fate(update, token):
         sign_from = result_of_draw["sign_from"]
         sign_text = result_of_draw["sign_text"]
         # 发送抽签结果
-        image_path = get_image_path(level_photo[sign_level])
+        image_path = get_image_path(f'{sign_level}.png')
         dialog = i18n.get_dialog("lot_daily_content")
         dialog = dialog.format(token=token, sign_from=sign_from, sign_text=sign_text)
         reply_markup = keyboard_factory.create_keyboard("lot", token=token)
@@ -749,8 +743,10 @@ async def handle_daily_checkin(update):
 
             # 发送打卡成功消息
             await get_aura_status(update, "aura_action_daily_checkin")
+            logging.info(f"User {user_id} checked in successfully")
         else:
-            logging.error("Failed to check in user")
+            logging.error("User {user_id} failed to check in")
+            
 
     except Exception as e:
         logging.error(f"Error in handle_daily_checkin: {str(e)}")

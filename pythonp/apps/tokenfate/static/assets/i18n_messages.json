@@ -29,6 +29,8 @@
       "aura_action_recommend_click": "Click Today's Recommended Token: Aura Gain 10",
       "aura_action_invalid": "Invalid action: Insufficient aura to reveal the token's fortune",
       "aura_action_cached_hit": "This fortune has already been revealed today: No change in aura",
+      "aura_status_amount": "**Current aura value: {points}**\n",
+      "aura_status_daily": "**Points Earned Daily By**\n\n - Daily recommended points: {daily_recommended_points}/50\n",
       "setting_lang": "🌐...",
       "setting_lang_success": "Language set successfully!"
     },
@@ -51,7 +53,7 @@
       "connected_wallets": "已连接过的钱包类型:\n{wallet_list}",
       "disconnected_success": "你已成功断开连接！",
       "lot_daily_content": "**{token}的今日运势**\n\n{sign_text}\n\n摘自：《{sign_from}》\n",
-      "lot_decoded_content": "**{token}的今日解签**\n\n{cached_decode}\n", 
+      "lot_decoded_content": "**{token}的今日解签**\n\n{cached_decode}\n",
       "aura_rules": "**当前灵气值：{points}**\n\n以下四行举止，将触动汝之灵气：\n- **钱包之连结**：增益二百 / 连结一次\n- **日日签到**：增益二十 / 日\n- **探问汝之代币命运**：减损五 / 探问一次\n - **解签**: 减损十五 / 解签一次\n- **点击今日推荐之符码代币**：增益十 / 点击一次\n\n",
       "aura_action_wallet_connect": "钱包连结: 灵气增益二百",
       "aura_action_daily_checkin": "每日打卡: 灵气增益二十",

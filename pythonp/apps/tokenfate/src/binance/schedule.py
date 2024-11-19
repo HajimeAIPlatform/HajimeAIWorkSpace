@@ -9,6 +9,8 @@ import json
 from pythonp.apps.tokenfate.src.binance.utils import get_binance_client
 import os
 
+data_source = 'pythonp/apps/tokenfate/static/assets/usdt_historical_prices.json'
+
 def get_symbol_historical_prices(symbol, days):
     """
     获取特定交易对最近几天的价格数据。
@@ -63,7 +65,7 @@ def fetch_and_store_usdt_historical_prices(days=7):
             result[symbol] = get_symbol_historical_prices(symbol, days)
 
         # 存储到本地文件
-        with open('usdt_historical_prices.json', 'w') as f:
+        with open(data_source, 'w') as f:
             json.dump(result, f)
 
         logging.info("Historical prices fetched and stored successfully.")
@@ -80,12 +82,12 @@ def get_random_usdt_historical_prices(sample_size=30):
     """
     try:
         # 检查文件是否存在
-        if not os.path.exists('usdt_historical_prices.json'):
+        if not os.path.exists(data_source):
             logging.error("Historical prices file does not exist.")
             return {"error": "Historical prices file does not exist."}
 
         # 读取本地文件
-        with open('usdt_historical_prices.json', 'r') as f:
+        with open(data_source, 'r') as f:
             data = json.load(f)
 
         # 随机选择sample_size个symbol
