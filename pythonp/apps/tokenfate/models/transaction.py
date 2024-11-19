@@ -1,7 +1,7 @@
 import time
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import Column, DateTime, String, BigInteger, Float, Boolean, ForeignKey,JSON, func, Integer
+from sqlalchemy import Column, Date, DateTime,String, BigInteger, Float, Boolean, ForeignKey,JSON, func, Integer
 from datetime import datetime, timezone, timedelta
 import uuid
 import logging
@@ -283,7 +283,7 @@ class UserPoints(db.Model):
     points = Column(Integer, nullable=False, default=0)
     language = Column(String(2), nullable=False, default='') 
     daily_recommended_points = Column(Integer, nullable=False, default=0)
-    last_reset_date = Column(DateTime, nullable=False, default=datetime.today().date())
+    last_reset_date = Column(Date, nullable=False, default=datetime.today().date())
 
     def to_dict(self):
         return {
@@ -300,6 +300,13 @@ class UserPoints(db.Model):
         user_points = db.session.query(cls).filter_by(user_id=user_id).first()
         if user_points:
             return user_points.points
+        return 0
+
+    @classmethod
+    def get_daily_recommended_points(cls, user_id):
+        user_points = db.session.query(cls).filter_by(user_id=user_id).first()
+        if user_points:
+            return user_points.daily_recommended_points
         return 0
 
     @classmethod
@@ -366,10 +373,14 @@ class UserPoints(db.Model):
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
             if user_points:
                 today = datetime.today().date()
+                logging.info(user_points.last_reset_date)
+                logging.info(today)
                 if user_points.last_reset_date != today:
                     user_points.daily_recommended_points = 0
                     user_points.last_reset_date = today
+                    logging.info(user_points.last_reset_date)
                     db.session.commit()
+                    logging.info(user_points.last_reset_date)
                 
                 # 检查点击推荐积分是否超过上限
                 if user_points.daily_recommended_points < 50:
@@ -387,6 +398,7 @@ class UserPoints(db.Model):
         try:
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
             if user_points:
+                logging.info(user_points.daily_recommended_points)
                 user_points.daily_recommended_points += points
                 db.session.commit()
                 return True
