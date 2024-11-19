@@ -7,9 +7,10 @@ from binance import Client
 import logging
 import json
 from pythonp.apps.tokenfate.src.binance.utils import get_binance_client
+from pythonp.apps.tokenfate.static.static import get_assets_path
 import os
 
-data_source = 'pythonp/apps/tokenfate/static/assets/usdt_historical_prices.json'
+data_source = get_assets_path("usdt_historical_prices.json")
 
 def get_symbol_historical_prices(symbol, days):
     """
