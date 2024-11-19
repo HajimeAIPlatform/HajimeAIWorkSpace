@@ -129,7 +129,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
-		if isPathExcluded(r.URL.Path, excludedPaths) || strings.HasPrefix(r.URL.Path, "/dify/console/api/installed-apps") {
+		if isPathExcluded(r.URL.Path, excludedPaths) || isPathPrefix(r.URL.Path, excludedPathsPrefix) {
 			Token, err := difyClient.GetUserToken("admin")
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())

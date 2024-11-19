@@ -18,7 +18,7 @@ class I18nHelper:
         """加载语言配置文件"""
         config_path = Path(__file__).parent / 'i18n_messages.json'
         try:
-            with open(config_path, 'r', encoding='utf-8') as f:
+            with open(config_path, 'r', encoding='utf-8 ') as f:
                 return json.load(f)
         except Exception as e:
             print(f"Error loading language file: {e}")

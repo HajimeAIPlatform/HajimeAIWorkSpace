@@ -40,6 +40,8 @@ func HandleGetSingleApp(resp *http.Response, body []byte, appID string) error {
 		return err
 	}
 
+	fmt.Printf(" app: %v", app)
+
 	appData, err := StructToMap(app)
 	if err != nil {
 		return err
