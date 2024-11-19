@@ -303,6 +303,13 @@ class UserPoints(db.Model):
         return 0
 
     @classmethod
+    def get_daily_recommended_points(cls, user_id):
+        user_points = db.session.query(cls).filter_by(user_id=user_id).first()
+        if user_points:
+            return user_points.daily_recommended_points
+        return 0
+
+    @classmethod
     def update_points_by_user_id(cls, user_id, points, description=""):
         try:
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
