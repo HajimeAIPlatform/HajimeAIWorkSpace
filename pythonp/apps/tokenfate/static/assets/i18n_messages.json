@@ -56,7 +56,7 @@
       "lot_decoded_content": "**{token}的今日解签**\n\n{cached_decode}\n",
       "aura_rules": "**以下四行举止，将触动汝之灵气：**\n- **钱包之连结**：增益二百 / 连结一次\n- **日日签到**：增益二十 / 日\n- **探问汝之代币命运**：减损五 / 探问一次\n- **解签**: 减损十五 / 解签一次\n- **点击今日推荐之符码代币**：增益十 / 点击一次\n\n",
       "aura_status_amount": "**当前灵气值：{points}**\n\n",
-      "aura_status_daily": "**今天获得的灵气值：**\n - 今天登录: 20/20\n - 今日点击推荐：{daily_recommended_points}/50\n\n",
+      "aura_status_daily": "**今日获得的灵气值：**\n - 今天登录: 20/20\n - 今日点击推荐：{daily_recommended_points}/50\n\n",
       "aura_action_wallet_connect": "钱包连结: 灵气增益二百",
       "aura_action_daily_checkin": "每日打卡: 灵气增益二十",
       "aura_action_recommend_click": "点击推荐: 灵气增益十",
