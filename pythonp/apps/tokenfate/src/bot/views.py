@@ -25,6 +25,7 @@ from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
 from pythonp.apps.tokenfate.src.bot.keyboards import KeyboardFactory
 from pythonp.apps.tokenfate.src.ton.tc_storage import DailyFortune, UserActivityTracker
 from pythonp.apps.tokenfate.models.transaction import UserPoints
+from pythonp.apps.tokenfate.static.static import get_images_path
 
 
 # 获取Telegram Bot Token
@@ -405,14 +406,6 @@ async def webhook():
         }
         # return 'OK'
 
-
-def get_image_path(image_name):
-    # 获取项目根目录
-    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    # 构建图片的绝对路径
-    image_path = os.path.join(project_root, 'static', 'images', image_name)
-    return image_path
-
 def validate_token_data(response_data: Dict[str, Union[str, list]]) -> List[Dict[str, str]]:
     if not isinstance(response_data, dict) or 'data' not in response_data:
         logging.error("Invalid response format: missing 'data' field")
@@ -541,7 +534,7 @@ async def reveal_fate(update, token):
         sign_from = result_of_draw["sign_from"]
         sign_text = result_of_draw["sign_text"]
         # 发送抽签结果
-        image_path = get_image_path(f'{sign_level}.png')
+        image_path = get_images_path(f'{sign_level}.png')
         dialog = i18n.get_dialog("lot_daily_content")
         dialog = dialog.format(token=token, sign_from=sign_from, sign_text=sign_text)
         reply_markup = keyboard_factory.create_keyboard("lot", token=token)
@@ -584,7 +577,7 @@ async def risk_preference(update, token):
 
         # 发送图片及选择项
         reply_markup = keyboard_factory.create_keyboard("risk", token=token)
-        image_path = get_image_path('risk_preference_combined.png')
+        image_path = get_images_path('risk_preference_combined.png')
         with open(image_path, 'rb') as image_file:
             await update.callback_query.message.reply_photo(
                 photo=image_file,
@@ -630,7 +623,7 @@ async def show_aura_rules(update):
         # Send interactive elements
         reply_markup = keyboard_factory.create_keyboard("aura")
         image_name = f'{lang}-ways-to-impact-aura.png'
-        image_path = get_image_path(image_name)
+        image_path = get_images_path(image_name)
         with open(image_path, 'rb') as image_file:
             await target.reply_photo(
                 photo=image_file,
@@ -820,7 +813,7 @@ async def start(update):
         dialog = i18n.get_dialog('start')
         
         # 获取图片路径
-        image_path = get_image_path('Welcome.png')
+        image_path = get_images_path(f"{lang}_welcome.png")
         
         # 检查文件是否存在
         if not os.path.exists(image_path):

@@ -1,4 +1,4 @@
-bz# HajimeAIWorkSpace
+# HajimeAIWorkSpace
 The mono repo for HajimeAIWorkSpace
 
 The workspace is managed by Bazel.
@@ -17,6 +17,8 @@ bazel run //pythonp/apps/python_example_app:hello_hajime
 ```
 
 Dependent Compilation
+
+- python
 
 pip-tools generates requirements.txt through requirements.in
 ```shell
@@ -59,6 +61,3 @@ yapf -r -i ./pythonp/apps/
 -i means inplace
 
 We will enforce yapf check in CI/CD.
-
-
-

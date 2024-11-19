@@ -4,8 +4,6 @@ import os
 import random
 from typing import List, Dict, Any
 from pythonp.apps.tokenfate.models.weight_random import WeightRandom
-import os
-
 from pythonp.apps.tokenfate.static.static import get_assets_path
 
 data_source = get_assets_path('refined_lots.json')

@@ -16,6 +16,7 @@ py_library(
         requirement("nest-asyncio"),
         requirement("python-dotenv"),
         requirement("uvicorn"),
+        requirement("psycopg2-binary"), 
     ],
 )
 
