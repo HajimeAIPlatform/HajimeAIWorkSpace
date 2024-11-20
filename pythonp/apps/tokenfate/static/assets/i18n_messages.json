@@ -22,7 +22,7 @@
       "lot_decoded_content": "**Today's Fate Analysis for {token}**\n\n{cached_decode}\n",
       "aura_rules": "**The following actions will affect your aura:**\n- **Wallet Connection**: Gain 200 / Connect once\n- **Daily Sign-in**: Gain 20 / Day\n- **Inquire about Your Token's Fortune**: Lose 5 / Inquire once\n- **Decode the Fate**: Lose 15 / Decode once\n- **Click Today's Recommended Token**: Gain 10 / Click once\n\n",
       "aura_status_amount": "**Current aura value: {points}**\n\n",
-      "aura_status_daily": "**Points Earned Today:**\n - Daily sign-in points: 20/20\n - Daily recommended points: {daily_recommended_points}/50\n\n",
+      "aura_status_daily": "**Aura Earned Today:**\n - Daily sign-in points: 20/20\n - Daily recommended points: {daily_recommended_points}/50\n\n",
       "aura_action_wallet_connect": "Wallet Connection: Aura Gain 200",
       "aura_action_daily_checkin": "Daily Sign-in: Aura Gain 20",
       "aura_action_fate_reveal": "Reveal Your Token's Fortune: Aura Loss 5",
@@ -32,7 +32,13 @@
       "aura_action_invalid": "Invalid action: Insufficient aura to reveal the token's fortune",
       "aura_action_cached_hit": "This fortune has already been revealed today: No change in aura",
       "setting_lang": "🌐...",
-      "setting_lang_success": "Language set successfully!"
+      "setting_lang_success": "Language set successfully!",
+      "description_start": "Start TokenFate",
+      "description_quest": "Fate Quest",
+      "description_connect": "Connect Wallet",
+      "description_disconnect": "Disconnect Wallet",
+      "description_aura": "Check Aura",
+      "description_language": "Set Language"
     },
     "zh": {
       "start": "阁下，欢迎来到命运之符 Token Fate。\n请输入您的符码代号 (Token Ticker, 如 $BTC)，揭示您的命理。从神圣的宇宙和大数据中获得指引。\n今日，您的符之命运如何？",
@@ -66,7 +72,13 @@
       "aura_action_invalid": "无效操作: 灵气不足，无法揭示符命",
       "aura_action_cached_hit": "此符命今日已揭示: 灵气毫无波动",
       "setting_lang": "🌐...",
-      "setting_lang_success": "语言设置成功!"
+      "setting_lang_success": "语言设置成功!",
+      "description_start": "开始使用 TokenFate",
+      "description_quest": "探问符命",
+      "description_connect": "连接钱包",
+      "description_disconnect": "断开钱包",
+      "description_aura": "探查灵气",
+      "description_language": "语言设置"
     },
     "ja": {
       "start": "皆様、運命のご神符（Token Fate）へようこそ\n汝のトークンコード（Token Ticker例えば、$BTC）を入力すると、運命を明らかにします。神聖な宇宙とビッグデータからの導きを得ます。\n今日、汝のトークンによる運命はいかがでしょうか？",
@@ -100,7 +112,13 @@
       "aura_action_invalid": "無効な操作: 霊気不足、運命を明らかにできません",
       "aura_action_cached_hit": "今日はすでに運命を明らかにしました: 霊気は変化しません",
       "setting_lang": "🌐...",
-      "setting_lang_success": "言語設定が完了しました!"
+      "setting_lang_success": "言語設定が完了しました!",
+      "description_start": "TokenFate起動",
+      "description_quest": "運命の探求者",
+      "description_connect": "財布を接続",
+      "description_disconnect": "財布を切断",
+      "description_aura": "霊気の確認",
+      "description_language": "言語設定"
     }
   },
   "buttons": {
