@@ -57,3 +57,4 @@ MODULE.bazel.lock
 
 *.tar.gz
 pythonp/apps/tokenfate/docker-data/postgres_data/
+pythonp/apps/tokenfate/docker-data/postgres_data/
