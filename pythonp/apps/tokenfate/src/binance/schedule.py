@@ -7,6 +7,7 @@ from binance import Client
 import logging
 import json
 from pythonp.apps.tokenfate.src.binance.utils import get_binance_client
+from pythonp.apps.hajime_scraper.run_scraper_dexscreener import fetch_dex_data
 from pythonp.apps.tokenfate.static.static import get_assets_path
 import os
 
@@ -49,7 +50,32 @@ def get_symbol_historical_prices(symbol, days):
         return []
 
 
-def fetch_and_store_usdt_historical_prices(days=7):
+# def fetch_and_store_usdt_historical_prices(days=7):
+#     """
+#     获取所有USDT交易对最近几天的价格数据，并存储到本地文件。
+
+#     :param days: int, 获取数据的天数，默认是7天
+#     """
+#     try:
+#         # 获取所有交易对的价格
+#         binance_client = get_binance_client()
+#         prices = binance_client.get_all_tickers()
+#         usdt_symbols = [p['symbol'] for p in prices if p['symbol'].endswith('USDT')]
+
+#         result = {}
+#         for symbol in usdt_symbols:
+#             result[symbol] = get_symbol_historical_prices(symbol, days)
+
+#         # 存储到本地文件
+#         with open(data_source, 'w') as f:
+#             json.dump(result, f)
+
+#         logging.info("Historical prices fetched and stored successfully.")
+#     except Exception as e:
+#         logging.error(f"Error fetching historical prices for USDT pairs: {e}")
+
+
+def fetch_and_store_dex_historical_data(days=7):
     """
     获取所有USDT交易对最近几天的价格数据，并存储到本地文件。
 

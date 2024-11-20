@@ -18,7 +18,7 @@ from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming,
 from pythonp.apps.tokenfate.src.binance.views import handle_binance_command
 from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
 import pythonp.apps.tokenfate.src.ton.views as ton_module
-from pythonp.apps.tokenfate.src.bot.commands import setup_bot, set_user_specific_commands
+from pythonp.apps.tokenfate.src.bot.commands import set_commands
 from pythonp.apps.tokenfate.src.bot.wallet_menu_callback import set_handlers
 import pythonp.apps.tokenfate.src.bot.state as ChatStatus
 from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
@@ -47,7 +47,7 @@ WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
 
 
 async def run_bot():
-    setup_bot(telegram_app)
+    await set_commands(telegram_app.bot)
     # await set_bot_commands_handler(telegram_app)
     await telegram_app.initialize()
     await telegram_app.start()
@@ -158,7 +158,7 @@ async def webhook():
             logging.info(f"data: {data}")
             details = data.split(":")
             lang = details[1]
-            await set_user_specific_commands(telegram_app.bot, chat_id, lang)
+            await set_commands(telegram_app.bot, chat_id, lang)
             await update_default_language(update, lang=lang)
             return jsonify({'status': 'ok'}), 200
 
