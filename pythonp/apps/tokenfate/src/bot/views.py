@@ -52,8 +52,8 @@ async def run_bot():
     await telegram_app.initialize()
     await telegram_app.start()
 
-
-asyncio.run(run_bot())
+loop = asyncio.get_event_loop()
+loop.run_until_complete(run_bot())
 
 # 创建Flask Blueprint
 bot = Blueprint('bot', __name__)
@@ -816,7 +816,7 @@ async def start(update):
         
         # 获取图片路径
         image_path = get_images_path(f"{lang}_welcome.png")
-        
+
         # 检查文件是否存在
         if not os.path.exists(image_path):
             logging.error(f"Image file {image_path} does not exist.")
