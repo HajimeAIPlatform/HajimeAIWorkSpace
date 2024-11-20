@@ -6,9 +6,9 @@ import uvicorn
 from flask import Flask
 from asgiref.wsgi import WsgiToAsgi
 from pythonp.common.logging.logger import setup_logging
-import nest_asyncio
+# import nest_asyncio
 
-nest_asyncio.apply()
+# nest_asyncio.apply()
 
 load_dotenv()
 

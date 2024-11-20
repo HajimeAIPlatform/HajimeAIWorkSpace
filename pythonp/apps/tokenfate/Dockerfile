@@ -21,11 +21,9 @@ RUN apt-get update && \
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
     update-alternatives --config python3
 
-WORKDIR /opt
-
-COPY . /opt
-
 COPY tokenfate_tar.tar.gz /opt/tokenfate_tar.tar.gz
 RUN tar -xzvf /opt/tokenfate_tar.tar.gz -C /opt
+
+WORKDIR /opt/TokenFate
 
 CMD ["/opt/TokenFate/wsgi"]

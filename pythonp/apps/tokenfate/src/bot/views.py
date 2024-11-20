@@ -816,7 +816,7 @@ async def start(update):
         
         # 获取图片路径
         image_path = get_images_path(f"{lang}_welcome.png")
-        
+
         # 检查文件是否存在
         if not os.path.exists(image_path):
             logging.error(f"Image file {image_path} does not exist.")
