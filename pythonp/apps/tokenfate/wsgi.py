@@ -36,11 +36,14 @@ def run_gunicorn():
   
 
     options = {
-        'bind': f'{host}:{port}',
-        'workers': int(workers),
-        'worker_class': UvicornWorker,
-        'lifespan': 'off',  # 禁用 lifespan
-    }
+    'bind': f'{host}:{port}',
+    'workers': int(workers),
+    'worker_class': UvicornWorker,
+    'lifespan': 'off',
+    'preload_app': True,  # Preload application to improve worker stability
+    'max_requests': 1000,  # Restart workers periodically to prevent memory leaks
+    'max_requests_jitter': 50,  # Random variance to prevent worker restart thundering herd
+}
 
     # 假设你的 Flask 应用在 `wsgi.py` 中定义为 `app`
     from app import app

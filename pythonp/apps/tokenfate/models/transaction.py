@@ -5,9 +5,24 @@ from sqlalchemy import Column, Date, DateTime,String, BigInteger, Float, Boolean
 from datetime import datetime, timezone, timedelta
 import uuid
 import logging
+from functools import wraps
 
 db = SQLAlchemy()
 
+def session_manager(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+            db.session.commit()
+            return result
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error in {func.__name__}: {e}")
+            raise e
+        finally:
+            db.session.remove()
+    return wrapper
 
 def get_current_time(time_delta=8):
     """
@@ -176,14 +191,14 @@ class Paylink(db.Model):
             'trace_link': self.trace_link
         }
 
-
+@session_manager
 def save_paylink_to_db(chat_id, amount, trace_link):
     paylink = Paylink(chat_id=chat_id, amount=amount, trace_link=trace_link)
     db.session.add(paylink)
     db.session.commit()
     return paylink.id
 
-
+@session_manager
 def save_ton_transaction_to_db(user_id, chat_id, symbol, side, status, address,
                                amount, trace_link, fee):
     symbol = symbol.upper()
@@ -208,7 +223,7 @@ def save_ton_transaction_to_db(user_id, chat_id, symbol, side, status, address,
 
     return transaction_pair_id
 
-
+@session_manager
 def save_binance_transaction_to_db(side, status, symbol, amount,cummulative_quote_qty, fee, type,
                                    transaction_pair_id, order_id, timestamp,
                                    full_data):
@@ -228,7 +243,7 @@ def save_binance_transaction_to_db(side, status, symbol, amount,cummulative_quot
     db.session.add(binance_transaction)
     db.session.commit()
 
-
+@session_manager
 def save_user_asset_to_db(user_id, symbol, amount, side):
     symbol = symbol.upper()
     user_asset = UserAsset.query.filter_by(user_id=user_id,
@@ -296,6 +311,7 @@ class UserPoints(db.Model):
         }
 
     @classmethod
+    @session_manager
     def get_points_by_user_id(cls, user_id):
         user_points = db.session.query(cls).filter_by(user_id=user_id).first()
         if user_points:
@@ -303,13 +319,16 @@ class UserPoints(db.Model):
         return 0
 
     @classmethod
+    @session_manager
     def get_daily_recommended_points(cls, user_id):
+        cls.reset_daily_points_if_needed(user_id) # 检查时间（如果有需要则更新时间并重置今日推荐积分）
         user_points = db.session.query(cls).filter_by(user_id=user_id).first()
         if user_points:
             return user_points.daily_recommended_points
         return 0
 
     @classmethod
+    @session_manager
     def update_points_by_user_id(cls, user_id, points, description=""):
         try:
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
@@ -344,6 +363,7 @@ class UserPoints(db.Model):
             return False
     
     @classmethod
+    @session_manager
     def get_language_by_user_id(cls, user_id):
         user_points = db.session.query(cls).filter_by(user_id=user_id).first()
         if user_points:
@@ -351,6 +371,7 @@ class UserPoints(db.Model):
         return ''
     
     @classmethod
+    @session_manager
     def update_language_by_user_id(cls, user_id, language):
         try:
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
@@ -368,7 +389,8 @@ class UserPoints(db.Model):
             return False
         
     @classmethod
-    def check_daily_recommended_points(cls, user_id):
+    @session_manager
+    def reset_daily_points_if_needed(cls, user_id):
         try:
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
             if user_points:
@@ -381,29 +403,28 @@ class UserPoints(db.Model):
                     logging.info(user_points.last_reset_date)
                     db.session.commit()
                     logging.info(user_points.last_reset_date)
-                
-                # 检查点击推荐积分是否超过上限
-                if user_points.daily_recommended_points < 50:
-                    return True
-                else:
-                    return False
-            else:
-                return True  # 新用户可以直接增加积分
+            return True  # 新用户可以直接增加积分
         except SQLAlchemyError as e:
             logging.error(f"Error checking daily recommended points: {e}")
             db.session.rollback()
             return False
+    
     @classmethod
+    @session_manager
     def update_daily_recommended_points(cls, user_id, points=10):
         try:
+            cls.reset_daily_points_if_needed(user_id)
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
             if user_points:
                 logging.info(user_points.daily_recommended_points)
-                user_points.daily_recommended_points += points
+                new_points = user_points.daily_recommended_points + points
+                if new_points > 50:
+                    return False  # 达到上限，不允许更新
+                user_points.daily_recommended_points = new_points
                 db.session.commit()
                 return True
             else:
-            # 新用户首次点击推荐
+                # 新用户首次点击推荐
                 user_points = UserPoints(user_id=user_id, daily_recommended_points=points, last_reset_date=datetime.today().date())
                 db.session.add(user_points)
                 db.session.commit()

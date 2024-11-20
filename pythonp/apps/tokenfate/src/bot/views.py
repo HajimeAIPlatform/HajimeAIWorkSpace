@@ -616,7 +616,7 @@ async def show_aura_rules(update):
         aura_status_daily = i18n.get_dialog('aura_status_daily').format(daily_recommended_points=daily_recommended_points)
         aura_rules = i18n.get_dialog('aura_rules')
         dialog = aura_status_amount + aura_status_daily + aura_rules
-        logging.info(dialog)
+        # logging.info(dialog)
         await target.reply_text(
             text = escape(dialog),
             parse_mode="MarkdownV2"
@@ -841,14 +841,10 @@ async def start(update):
     
 def handle_recommendation_click(user_id):
     points_to_add = 10
-    if UserPoints.check_daily_recommended_points(user_id):
+    if UserPoints.update_daily_recommended_points(user_id, points_to_add):
         if UserPoints.update_points_by_user_id(user_id, points_to_add, description="Recommendation click"):
-            if UserPoints.update_daily_recommended_points(user_id, points_to_add):
-                logging.info(f"User {user_id} successfully added {points_to_add} points for recommendation click.")
-                return True
-            else:
-                logging.info(f"User {user_id} successfully added {points_to_add} points for recommendation click, but failed to update daily recommended points.")
-                return False
+            logging.info(f"User {user_id} successfully added {points_to_add} points for recommendation click, and successed toupdate user points.")
+            return True
         else:
             logging.info(f"User {user_id} successfully added {points_to_add} points for recommendation click, but failed to update user points.")
             return False
