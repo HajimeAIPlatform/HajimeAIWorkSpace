@@ -1,68 +1,60 @@
-from telegram import BotCommand,InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo,MenuButtonWebApp
+from telegram import BotCommand
 from telegram.ext import (
     CommandHandler,
     MessageHandler,
     ConversationHandler,
     ContextTypes,
     filters,
+    Application
 )
 from os import getenv
+from typing import List, Optional
 from pythonp.apps.tokenfate.src.ton.views import send_tx, sell_transaction, buy_transaction, WAITING_FOR_INPUT, cancel
 from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
+from pythonp.apps.tokenfate.models.transaction import UserPoints
+from telegram import BotCommand, BotCommandScopeChat, BotCommandScopeDefault, Update
 
-WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
+# 命令名称常量
+CMD_START = "start"
+CMD_QUEST = "quest"
+CMD_CONNECT = "connect"
+CMD_DISCONNECT = "disconnect"
+CMD_AURA = "aura"
+CMD_LANGUAGE = "language"
 
-i18n = I18nHelper()
-async def set_menu_button(telegram_app):
-    # 创建一个MenuButtonWebApp对象
-    miniapp_url = f"{WEB_MINI_APP_URL}"
-    web_app_info = WebAppInfo(url=miniapp_url)
-    menu_button = MenuButtonWebApp(text="Wallet", web_app=web_app_info)
+DEFAULT_COMMANDS = [
+    (CMD_START, "description_start"),
+    (CMD_QUEST, "description_quest"),
+    (CMD_CONNECT, "description_connect"),
+    (CMD_DISCONNECT, "description_disconnect"),
+    (CMD_AURA, "description_aura"),
+    (CMD_LANGUAGE, "description_language"),
+]
 
-    # 设置主菜单按钮
-    await telegram_app.bot.set_chat_menu_button(menu_button=menu_button)
+def get_command_list(i18n, commands: List[tuple]) -> List[BotCommand]:
+    """生成命令列表"""
+    return [BotCommand(command, i18n.get_dialog(description)) for command, description in commands]
 
+async def set_commands(bot, user_id: Optional[int] = None, lang: Optional[str] = None):
+    """设置命令，支持全局命令和特定用户命令"""
+    if user_id is not None:
+        lang = lang or UserPoints.get_language_by_user_id(user_id) or 'zh'
+        i18n = I18nHelper(lang)
+        commands = get_command_list(i18n, DEFAULT_COMMANDS)
+        try:
+            await bot.set_my_commands(commands=commands, scope=BotCommandScopeChat(chat_id=user_id))
+        except Exception as e:
+            # 错误处理
+            print(f"Failed to set commands for user {user_id}: {e}")
+    else:
+        # 全局命令默认使用中文
+        commands = get_command_list(I18nHelper('zh'), DEFAULT_COMMANDS)
+        await bot.set_my_commands(commands=commands)
 
-async def set_bot_commands(telegram_app):
-    commands = [
-        BotCommand("start", "开始使用 TokenFate"),
-        BotCommand("quest", "探问符命"),
-        BotCommand("connect", "连接钱包"),
-        # BotCommand("buy", "Buy transaction"),
-        # BotCommand("sell", "Sell transaction"),
-        BotCommand("disconnect", "断开钱包连接"),
-        # BotCommand("my_wallet", "Show connected wallet"),
-        BotCommand("aura", "符命，灵能感应！"),
-        BotCommand("language", "语言设置"),
-    ]
-    await telegram_app.bot.set_my_commands(commands)
-    # await set_menu_button(telegram_app)
+# async def on_startup(application: Application):
+#     """Bot启动时设置默认命令"""
+#     await set_commands(application.bot)
 
-
-async def set_bot_send_ex_handler(telegram_app):
-    buy_handler = ConversationHandler(
-        entry_points=[CommandHandler('buy', send_tx)],
-        states={
-            WAITING_FOR_INPUT:
-            [MessageHandler(filters.TEXT & ~filters.COMMAND, buy_transaction)],
-        },
-        fallbacks=[CommandHandler('cancel', cancel)],
-    )
-
-    sell_handler = ConversationHandler(
-        entry_points=[CommandHandler('sell', send_tx)],
-        states={
-            WAITING_FOR_INPUT: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND,
-                               sell_transaction)
-            ],
-        },
-        fallbacks=[CommandHandler('cancel', cancel)],
-    )
-
-    telegram_app.add_handler(buy_handler)
-    telegram_app.add_handler(sell_handler)
-
-
-async def set_bot_commands_handler(telegram_app):
-    await set_bot_commands(telegram_app)
+# def setup_bot(application: Application):
+#     # 注册启动回调
+#     application.post_init = on_startup
