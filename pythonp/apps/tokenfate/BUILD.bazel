@@ -18,7 +18,6 @@ py_library(
         requirement("uvicorn"),
         requirement("psycopg2-binary"), 
         requirement("gunicorn"),
-        requirement("aiohttp"),
     ],
 )
 
