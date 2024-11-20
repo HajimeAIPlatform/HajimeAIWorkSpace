@@ -5,9 +5,24 @@ from sqlalchemy import Column, Date, DateTime,String, BigInteger, Float, Boolean
 from datetime import datetime, timezone, timedelta
 import uuid
 import logging
+from functools import wraps
 
 db = SQLAlchemy()
 
+def session_manager(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+            db.session.commit()
+            return result
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error in {func.__name__}: {e}")
+            raise e
+        finally:
+            db.session.remove()
+    return wrapper
 
 def get_current_time(time_delta=8):
     """
@@ -176,14 +191,14 @@ class Paylink(db.Model):
             'trace_link': self.trace_link
         }
 
-
+@session_manager
 def save_paylink_to_db(chat_id, amount, trace_link):
     paylink = Paylink(chat_id=chat_id, amount=amount, trace_link=trace_link)
     db.session.add(paylink)
     db.session.commit()
     return paylink.id
 
-
+@session_manager
 def save_ton_transaction_to_db(user_id, chat_id, symbol, side, status, address,
                                amount, trace_link, fee):
     symbol = symbol.upper()
@@ -208,7 +223,7 @@ def save_ton_transaction_to_db(user_id, chat_id, symbol, side, status, address,
 
     return transaction_pair_id
 
-
+@session_manager
 def save_binance_transaction_to_db(side, status, symbol, amount,cummulative_quote_qty, fee, type,
                                    transaction_pair_id, order_id, timestamp,
                                    full_data):
@@ -228,7 +243,7 @@ def save_binance_transaction_to_db(side, status, symbol, amount,cummulative_quot
     db.session.add(binance_transaction)
     db.session.commit()
 
-
+@session_manager
 def save_user_asset_to_db(user_id, symbol, amount, side):
     symbol = symbol.upper()
     user_asset = UserAsset.query.filter_by(user_id=user_id,
