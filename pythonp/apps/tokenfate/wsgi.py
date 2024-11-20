@@ -34,15 +34,17 @@ def run_gunicorn():
     else:
         workers = multiprocessing.cpu_count() * 2 + 1
   
+
     options = {
         'bind': f'{host}:{port}',
-        'workers': int(workers * 2 + 1),
+        'workers': int(workers),
         'worker_class': UvicornWorker,
         'lifespan': 'off',  # 禁用 lifespan
     }
 
     # 假设你的 Flask 应用在 `wsgi.py` 中定义为 `app`
     from app import app
+    logging.info(f"current pwd: {os.getcwd()}")
     logging.info(f"Working config: using {workers} workers")
     StandaloneApplication(app, options).run()
 
