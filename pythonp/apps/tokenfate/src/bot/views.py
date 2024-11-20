@@ -18,7 +18,7 @@ from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming,
 from pythonp.apps.tokenfate.src.binance.views import handle_binance_command
 from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
 import pythonp.apps.tokenfate.src.ton.views as ton_module
-from pythonp.apps.tokenfate.src.bot.commands import set_bot_commands_handler
+from pythonp.apps.tokenfate.src.bot.commands import setup_bot, set_user_specific_commands
 from pythonp.apps.tokenfate.src.bot.wallet_menu_callback import set_handlers
 import pythonp.apps.tokenfate.src.bot.state as ChatStatus
 from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
@@ -47,7 +47,8 @@ WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
 
 
 async def run_bot():
-    await set_bot_commands_handler(telegram_app)
+    setup_bot(telegram_app)
+    # await set_bot_commands_handler(telegram_app)
     await telegram_app.initialize()
     await telegram_app.start()
 
@@ -157,6 +158,7 @@ async def webhook():
             logging.info(f"data: {data}")
             details = data.split(":")
             lang = details[1]
+            await set_user_specific_commands(telegram_app.bot, chat_id, lang)
             await update_default_language(update, lang=lang)
             return jsonify({'status': 'ok'}), 200
 
@@ -614,7 +616,7 @@ async def show_aura_rules(update):
         aura_status_daily = i18n.get_dialog('aura_status_daily').format(daily_recommended_points=daily_recommended_points)
         aura_rules = i18n.get_dialog('aura_rules')
         dialog = aura_status_amount + aura_status_daily + aura_rules
-        print(dialog)
+        logging.info(dialog)
         await target.reply_text(
             text = escape(dialog),
             parse_mode="MarkdownV2"
