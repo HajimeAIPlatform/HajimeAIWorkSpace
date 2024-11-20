@@ -1,59 +1,42 @@
 import os
-import logging
-
 from dotenv import load_dotenv
-import uvicorn
-from flask import Flask
-from asgiref.wsgi import WsgiToAsgi
-from pythonp.common.logging.logger import setup_logging
-import nest_asyncio
+from gunicorn.app.base import BaseApplication
+from uvicorn.workers import UvicornWorker
 
-nest_asyncio.apply()
-
+# 加载环境变量
 load_dotenv()
 
-from pythonp.apps.tokenfate.src import blueprint as api
-from pythonp.apps.tokenfate.models import setup_db
-from pythonp.apps.tokenfate.src.binance.transaction_queue import start_transaction_processor
-from pythonp.apps.tokenfate.src.binance.schedule import start_schedule_thread
+class StandaloneApplication(BaseApplication):
+    def __init__(self, app, options=None):
+        self.options = options or {}
+        self.application = app
+        super().__init__()
 
+    def load_config(self):
+        config = {key: value for key, value in self.options.items()
+                  if key in self.cfg.settings and value is not None}
+        for key, value in config.items():
+            self.cfg.set(key.lower(), value)
 
-def create_app():
-    backend_app = Flask(__name__)
-    setup_db(backend_app)
-    backend_app.register_blueprint(api)
-    backend_app.config.DEBUG = False
+    def load(self):
+        return self.application
 
-    @backend_app.get('/')
-    def hello_world():
-        return 'Hello, World!'
+def run_gunicorn():
+    # 从环境变量获取配置
+    workers = os.getenv('WORKERS', '4')
+    host = os.getenv('HOST', '0.0.0.0')
+    port = os.getenv('PORT', '5000')
 
-    start_transaction_processor(backend_app)
-    start_schedule_thread()
+    options = {
+        'bind': f'{host}:{port}',
+        'workers': int(workers),
+        'worker_class': UvicornWorker,
+        'lifespan': 'off',  # 禁用 lifespan
+    }
 
-    return WsgiToAsgi(backend_app)
-
-# 从环境变量中获取端口号，如果没有设置则使用默认的5000
-port = int(os.getenv("PORT", 5000))
-env = os.getenv("ENV", "dev")
-
-log_dir = os.getenv("LOG_DIR", "./logs")
-setup_logging(log_dir=log_dir)
-if env == "prod":
-    logging.disable(logging.DEBUG)
-    logging.info("Running in production mode")
-else:
-    logging.disable(logging.DEBUG)
-    logging.info("Running in development mode")
-
-app = create_app()
-
+    # 假设你的 Flask 应用在 `wsgi.py` 中定义为 `app`
+    from app import app
+    StandaloneApplication(app, options).run()
 
 if __name__ == "__main__":
-    # 运行 Flask 应用
-    logging.info(f"Starting backend server on port {port}...")
-    uvicorn.run(app,
-                host="0.0.0.0",
-                port=port,
-                log_level="info",
-                access_log=False)
+    run_gunicorn()

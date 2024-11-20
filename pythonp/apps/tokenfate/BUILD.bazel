@@ -17,13 +17,14 @@ py_library(
         requirement("python-dotenv"),
         requirement("uvicorn"),
         requirement("psycopg2-binary"), 
+        requirement("gunicorn"),
     ],
 )
 
 
 py_binary(
     name = "wsgi",
-    srcs = glob(["wsgi.py"]),
+    srcs = glob(["wsgi.py","app.py"]),
     data = [".env"],
     main = "wsgi.py",
     deps = [
@@ -33,6 +34,7 @@ py_binary(
         "//pythonp/common/logging:logger",
     ],
 )
+
 
 # build
 pkg_files(
