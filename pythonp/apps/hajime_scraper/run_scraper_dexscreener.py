@@ -1,16 +1,11 @@
 import time
 import csv
-from zenrows import ZenRowsClient
 from bs4 import BeautifulSoup
 import os
+import requests
 
-# 初始化ZenRowsClient
-client = ZenRowsClient("31692dad13a2f39f41427fe581f9cfb01d604833")
-url = "https://dexscreener.com/?rankBy=trendingScoreH24&order=desc" 
-params = {"js_render":"true"}
-
-# 使用ZenRowsClient获取网页内容
-response = client.get(url, params=params)
+payload = { 'api_key': '0d0b52c02a37a758af91d9d83856f094', 'url': 'https://dexscreener.com/?rankBy=trendingScoreH24&order=desc' }
+response = requests.get('https://api.scraperapi.com/', params=payload)
 
 # 检查响应状态码
 if response.status_code == 200:
