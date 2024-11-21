@@ -14,10 +14,11 @@ RUN mkdir -p /srv/HajimeCenter/logs /srv/storage
 
 # 复制并解压 hajime_center_tar.tar.gz
 COPY hajime_center_tar.tar.gz /tmp/hajime_center_tar.tar.gz
-RUN tar -xzvf /tmp/hajime_center_tar.tar.gz -C /tmp && \
-    mv /tmp/Hajime /srv/HajimeCenter
+RUN tar -xzvf /tmp/hajime_center_tar.tar.gz -C /tmp && mv /tmp/Hajime/* /srv/HajimeCenter/
+
 
 # 使用 dos2unix 转换配置文件格式
+RUN cp /srv/HajimeCenter//HajimeCenter.conf  /etc/supervisor/conf.d/HajimeCenter.conf
 RUN dos2unix /etc/supervisor/conf.d/HajimeCenter.conf
 
 # 设置可执行权限
