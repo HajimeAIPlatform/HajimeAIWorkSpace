@@ -4,6 +4,7 @@ from gunicorn.app.base import BaseApplication
 from uvicorn.workers import UvicornWorker
 import multiprocessing
 import logging
+from models import setup_db, db  # 导入 SQLAlchemy 实例
 
 # 加载环境变量
 load_dotenv()
@@ -40,11 +41,9 @@ def run_gunicorn():
     'workers': int(workers),
     'worker_class': UvicornWorker,
     'lifespan': 'off',
-    'preload_app': True,  # Preload application to improve worker stability
     'max_requests': 1000,  # Restart workers periodically to prevent memory leaks
     'max_requests_jitter': 50,  # Random variance to prevent worker restart thundering herd
 }
-
     # 假设你的 Flask 应用在 `wsgi.py` 中定义为 `app`
     from app import app
     logging.info(f"current pwd: {os.getcwd()}")
