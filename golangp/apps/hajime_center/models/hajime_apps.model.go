@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/common/logging"
 	"time"
 )
@@ -43,7 +44,8 @@ type HajimeApps struct {
 }
 
 // CreateHajimeApp 创建一个新的 HajimeApps
-func CreateHajimeApp(db *gorm.DB, app HajimeApps) error {
+func CreateHajimeApp(app HajimeApps) error {
+	db := initializers.DB
 	if err := db.Create(&app).Error; err != nil {
 		return err
 	}
@@ -52,7 +54,8 @@ func CreateHajimeApp(db *gorm.DB, app HajimeApps) error {
 }
 
 // GetHajimeAppByID 根据ID获取HajimeApps
-func GetHajimeAppByID(db *gorm.DB, id string) (HajimeApps, error) {
+func GetHajimeAppByID(id string) (HajimeApps, error) {
+	db := initializers.DB
 	var app HajimeApps
 	if err := db.First(&app, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -64,8 +67,9 @@ func GetHajimeAppByID(db *gorm.DB, id string) (HajimeApps, error) {
 }
 
 // UpdateHajimeApp 更新HajimeApps
-func UpdateHajimeApp(db *gorm.DB, app HajimeApps) error {
+func UpdateHajimeApp(app HajimeApps) error {
 	// Find the existing app by ID
+	db := initializers.DB
 	var existingApp HajimeApps
 	if err := db.First(&existingApp, "id = ?", app.ID).Error; err != nil {
 		logging.Warning("Failed to find app: " + err.Error())
@@ -87,7 +91,8 @@ func UpdateHajimeApp(db *gorm.DB, app HajimeApps) error {
 }
 
 // DeleteHajimeApp 删除HajimeApps
-func DeleteHajimeApp(db *gorm.DB, id string) error {
+func DeleteHajimeApp(id string) error {
+	db := initializers.DB
 	if err := db.Delete(&HajimeApps{}, "id = ?", id).Error; err != nil {
 		return err
 	}
@@ -96,7 +101,8 @@ func DeleteHajimeApp(db *gorm.DB, id string) error {
 }
 
 // GetAllHajimeApps 获取所有 HajimeApps
-func GetAllHajimeApps(db *gorm.DB) ([]HajimeApps, error) {
+func GetAllHajimeApps() ([]HajimeApps, error) {
+	db := initializers.DB
 	var apps []HajimeApps
 	if err := db.Find(&apps).Error; err != nil {
 		return nil, err
@@ -104,7 +110,8 @@ func GetAllHajimeApps(db *gorm.DB) ([]HajimeApps, error) {
 	return apps, nil
 }
 
-func GetAllHajimeAppsNoAuth(db *gorm.DB) ([]HajimeApps, error) {
+func GetAllHajimeAppsNoAuth() ([]HajimeApps, error) {
+	db := initializers.DB
 	var apps []HajimeApps
 	if err := db.Where("is_publish = ?", true).Find(&apps).Error; err != nil {
 		return nil, err

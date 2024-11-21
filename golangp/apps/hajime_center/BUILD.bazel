@@ -22,6 +22,15 @@ go_binary(
 
 exports_files(["app.dev.env"])
 
+pkg_files(
+    name = "hajime_templates_tar",
+    srcs = [
+        "//golangp/apps/hajime_center/templates:hajime_templates",
+    ],
+    prefix = "templates",
+)
+
+
 pkg_tar(
     # data files cannot be included along with the binary following dependency rules, so we need to include them
     # separately in the tar.
@@ -30,7 +39,8 @@ pkg_tar(
         ":hajime_center",
         "//golangp/apps/hajime_center:HajimeCenter.conf",
         "//golangp/apps/hajime_center:app.dev.env",
+        ":hajime_templates_tar"
     ],  # Include the binary
     extension = "tar.gz",
-    package_dir = "./Hajime/",  # Flatten everything in the tarball to the root
+    package_dir = "Hajime",  # Flatten everything in the tarball to the root
 )

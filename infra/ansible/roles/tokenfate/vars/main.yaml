@@ -1,0 +1,13 @@
+---
+install_bazel : false
+install_docker : false
+
+# build
+git:
+  workspace_repo: HajimeAIWorkSpace
+  workspace_repo_branch: main
+
+service_name: "TokenFate"
+service_path: "/srv/{{ service_name }}"
+work_space_dir: "{{ service_path }}/{{ git.workspace_repo }}/"
+

@@ -21,7 +21,7 @@ class I18nHelper:
         config_path = get_assets_path("i18n_messages.json")
 
         try:
-            with open(config_path, 'r', encoding='utf-8') as f:
+            with open(config_path, 'r', encoding='utf-8 ') as f:
                 return json.load(f)
         except Exception as e:
             print(f"Error loading language file: {e}")

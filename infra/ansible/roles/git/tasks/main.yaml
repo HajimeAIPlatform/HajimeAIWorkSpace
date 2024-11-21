@@ -1,0 +1,26 @@
+- name: Copy {{ git_repo }} deploy key
+  copy:
+    src: "{{ role_path }}/files/{{ git_repo }}_id_rsa"
+    dest: "{{ workspace }}/{{ git_repo }}_id_rsa"
+    mode: 0700
+
+- name: Config git repo safe.directory
+  shell:
+    cmd: |
+      git config --global --add safe.directory "*"
+
+- name: Clone {{ git_repo }}
+  ignore_errors: true
+  git:
+    repo:  git@github.com:HajimeAIPlatform/{{ git_repo }}.git
+    dest: "{{ workspace }}/{{ git_repo }}"
+    clone: yes
+    update: yes
+    key_file: "{{ workspace }}/{{ git_repo }}_id_rsa"
+    version: "{{ repo_branch if repo_branch is defined else omit }}"
+
+- name: Change the owner of the cloned repository to the connected user
+  ansible.builtin.file:
+    path: "{{ workspace }}/{{ git_repo }}"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"

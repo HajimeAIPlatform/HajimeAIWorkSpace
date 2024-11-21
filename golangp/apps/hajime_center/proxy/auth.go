@@ -6,49 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
-	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/dify"
-	"hajime/golangp/apps/hajime_center/initializers"
-	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/apps/hajime_center/proxy/middleware"
 	"hajime/golangp/common/logging"
-	"hajime/golangp/common/utils"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
 )
-
-func DeserializeUser(r *http.Request) (*models.User, error) {
-	authorizationHeader := r.Header.Get("Authorization")
-	fields := strings.Fields(authorizationHeader)
-
-	if len(fields) < 2 || fields[0] != "Bearer" {
-		return nil, errors.New("you are not logged in")
-	}
-
-	accessToken := fields[1]
-
-	config, err := initializers.LoadEnv(".")
-	if err != nil {
-		return nil, fmt.Errorf("failed to load environment variables: %w", err)
-	}
-
-	sub, err := utils.ValidateToken(accessToken, config.AccessTokenPublicKey)
-	if err != nil {
-		return nil, fmt.Errorf("invalid token: %w", err)
-	}
-
-	var user models.User
-	result := initializers.DB.First(&user, "id = ?", fmt.Sprint(sub))
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return nil, errors.New("the user belonging to this token no longer exists")
-		}
-		return nil, fmt.Errorf("database error: %w", result.Error)
-	}
-
-	return &user, nil
-}
 
 func writeErrorResponse(w http.ResponseWriter, code, message string, status int) {
 	w.Header().Set("Content-Type", "application/json")
@@ -70,18 +35,32 @@ func isPathExcluded(path string, excludedPaths []string) bool {
 	return false
 }
 
+func isPathPrefix(path string, excludedPaths []string) bool {
+	for _, excludedPath := range excludedPaths {
+		if strings.HasPrefix(path, excludedPath) {
+			return true
+		}
+	}
+	return false
+}
+
+// Check if the path is /dify/console/api/setup
+var excludedPaths = []string{
+	"/dify/console/api/setup",
+	"/dify/console/api/system-features",
+	"/dify/console/api/installed-apps",
+	"/dify/console/api/features",
+	"/dify/console/api/datasets/retrieval-setting",
+}
+var excludedPathsPrefix = []string{
+	"/dify/api",
+	"/dify/console/api/installed-apps",
+	"/dify/console/api/apps/",
+}
+
 // AuthMiddleware adds authentication headers to the request
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Check if the path is /dify/console/api/setup
-		excludedPaths := []string{
-			"/dify/console/api/setup",
-			"/dify/console/api/system-features",
-			"/dify/console/api/installed-apps",
-			"/dify/console/api/features",
-			"/dify/console/api/datasets/retrieval-setting",
-			"/dify/console/api/apps",
-		}
 
 		difyClient, err := dify.GetDifyClient()
 		if err != nil {
@@ -90,11 +69,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if !isPathExcluded(r.URL.Path, excludedPaths) && !strings.HasPrefix(r.URL.Path, "/dify/api") && !strings.HasPrefix(r.URL.Path, "/dify/console/api/installed-apps") {
-			user, err := DeserializeUser(r)
+		if !isPathExcluded(r.URL.Path, excludedPaths) && !isPathPrefix(r.URL.Path, excludedPathsPrefix) {
+			user, err := middleware.DeserializeUser(r)
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
-				writeErrorResponse(w, "email_or_password_mismatch", err.Error(), http.StatusBadRequest)
+				writeErrorResponse(w, "401", err.Error(), http.StatusBadRequest)
 				return
 			}
 
@@ -114,7 +93,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
-		if isPathExcluded(r.URL.Path, excludedPaths) || strings.HasPrefix(r.URL.Path, "/dify/console/api/installed-apps") {
+		if isPathExcluded(r.URL.Path, excludedPaths) || isPathPrefix(r.URL.Path, excludedPathsPrefix) {
 			Token, err := difyClient.GetUserToken("admin")
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())
@@ -135,9 +114,12 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 	router := mux.NewRouter()
 
 	// Register handlers with middleware
-	router.HandleFunc("/dify/console/api/apps/no_auth", GetAllNoAuthApp).Methods("GET")
-	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", HandlePublish).Methods("POST")
+	router.HandleFunc("/dify/console/api/apps/no_auth", middleware.GetAllNoAuthApp).Methods("GET")
+	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", middleware.HandlePublish).Methods("POST")
+	router.HandleFunc("/dify/console/api/apps/unpublish/{app_id}", middleware.HandleUnpublish).Methods("POST")
 	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/datasets/{dataset_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+
 	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.PathPrefix("/dify/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))
 

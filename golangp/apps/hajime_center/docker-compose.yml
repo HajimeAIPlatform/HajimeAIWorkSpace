@@ -30,7 +30,6 @@ services:
       - ./app.env:/srv/HajimeCenter/app.env
       - ./logs:/srv/HajimeCenter/logs
       - ./storage:/srv/storage
-      - ./templates:/srv/HajimeCenter/templates
     networks:
       - hajime
     depends_on:

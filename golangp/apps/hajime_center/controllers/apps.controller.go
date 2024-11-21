@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/common/logging"
 	"net/http"
 	"time"
 )
@@ -30,6 +31,21 @@ type AppsListResponse struct {
 	Datasets  []struct {
 		Dataset dify.DatasetArray `json:"dataset"`
 	} `json:"datasets"`
+}
+
+func InitDifyClient() *dify.DifyClient {
+	client, err := dify.GetDifyClient()
+	if err != nil {
+		logging.Warning(err.Error())
+		return nil // 返回 nil 以符合返回类型
+	}
+
+	_, err = client.GetUserToken("")
+	if err != nil {
+		logging.Warning(err.Error())
+		return nil // 返回 nil 以符合返回类型
+	}
+	return client
 }
 
 func NewAppsController(DB *gorm.DB) AppsController {

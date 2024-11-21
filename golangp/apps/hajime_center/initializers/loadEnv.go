@@ -91,6 +91,8 @@ type Config struct {
 	Proxy         string   `mapstructure:"PROXY"`
 	AdminEmail    []string `mapstructure:"ADMIN_EMAIL"`
 	AdminPassword string   `mapstructure:"ADMIN_PASSWORD"`
+
+	MaxPublishAppAmount int64 `mapstructure:"MAX_PUBLISH_APP_AMOUNT"`
 }
 
 func LoadEnv(path string) (config Config, err error) {

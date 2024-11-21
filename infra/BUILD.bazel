@@ -1,0 +1,24 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files", "pkg_mkdirs", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+
+pkg_files(
+    name = "ansible_files",
+    srcs = [
+        "//infra/ansible",
+    ],
+    # Where it should be in the final package
+    prefix = "ansible/",
+    # Required, but why?: see #354
+    strip_prefix = strip_prefix.from_pkg(),
+)
+
+pkg_tar(
+    name = "ansible_tar",
+    srcs = [
+        "README.md",
+        ":ansible_files",
+    ],
+)
