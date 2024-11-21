@@ -1,0 +1,12 @@
+---
+- name: Hajime Test Connect
+  hosts: hajime_tokenfate
+  become: yes
+  tasks:
+    - name: Print current working directory
+      shell: pwd
+      register: result
+
+    - name: Display the result
+      debug:
+        var: result.stdout

@@ -1,17 +1,17 @@
 [hajime_center]
-43.207.57.207
+43.207.57.207  ansible_ssh_private_key_file=development/files/hajime_center.pem
 
 [hajime_tokenfate]
-52.195.9.90
+52.195.9.90 ansible_ssh_private_key_file=development/files/hajime_tokenfate.pem 
 
 [hajime_website]
-54.178.69.31
+54.178.69.31 ansible_ssh_private_key_file=development/files/hajime_website.pem
 
 
 [all:vars]
 ansible_connection=ssh
 ansible_port=22
 ansible_ssh_user=ubuntu
-ansible_ssh_pass=ubuntu
-ansible_become_pass=ubuntu
+# ansible_ssh_pass=ubuntu
+# ansible_become_pass=ubuntu
 deploy_type=dev

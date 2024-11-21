@@ -1,6 +1,6 @@
 ---
-install_bazel : false
-install_docker : false
+install_bazel: false
+install_docker: false
 
 # build
 git:
@@ -10,4 +10,4 @@ git:
 service_name: "TokenFate"
 service_path: "/srv/{{ service_name }}"
 work_space_dir: "{{ service_path }}/{{ git.workspace_repo }}/"
-
+service_code_dir: "pythonp/apps/tokenfate"

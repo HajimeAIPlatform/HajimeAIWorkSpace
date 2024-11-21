@@ -17,7 +17,7 @@
     name: git
     tasks_from: main.yaml
   vars:
-    gitlab_repo: "{{ item.name }}"
+    git_repo: "{{ item.name }}"
     workspace: "{{ service_path }}"
     repo_branch: "{{ item.branch }}"
   with_items:
