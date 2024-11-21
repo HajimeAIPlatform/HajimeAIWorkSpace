@@ -17,7 +17,7 @@ py_binary(
     srcs = ["run_scraper_dexscreener.py"],
     data = ["scrapy.cfg"],
     deps = [
-        requirement("zenrows"),
+        requirement("requests"),
         requirement("bs4"),
     ],
 )
