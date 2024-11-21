@@ -12,7 +12,7 @@ if response.status_code == 200:
     
     # 获取表格标题
     headers = [
-        "Rank", "Token", "Name", "Icon", "Price", "Age", "Txns", "Volume", "Makers", 
+        "Rank", "Token", "Price", "Volume", 
         "5M", "1H", "6H", "24H", "Liquidity", "MCAP"
     ]
 
@@ -36,47 +36,19 @@ if response.status_code == 200:
             except:
                 rank = "No Rank"
             try:
-                icon_url = pair.find('img', class_="ds-dex-table-row-chain-icon")['src']
-            except:
-                icon_url = "No Icon"
-            
-            try:
-                token_name = pair.find('span', class_="ds-dex-table-row-base-token-name-text").text
-            except:
-                token_name = "No Token"
-
-            try:
                 pair_name = pair.find('span', class_="ds-dex-table-row-base-token-symbol").text
                 quote_token = pair.find('span', class_="ds-dex-table-row-quote-token-symbol").text
                 trading_pair = f"{pair_name}/{quote_token}" if pair_name and quote_token else "无交易对信息"
             except:
                 trading_pair = "No Trading Pair"
-
             try:
                 price = pair.find('div', class_="ds-dex-table-row-col-price").text
             except:
                 price = "No Price"
-
-            try:
-                age = pair.find('div', class_="ds-dex-table-row-col-pair-age").text
-            except:
-                age = "No AGE"
-
-            try:
-                txns = pair.find('div', class_="ds-dex-table-row-col-txns").text
-            except:
-                txns = "No Txns"
-
             try:
                 volume = pair.find('div', class_="ds-dex-table-row-col-volume").text
             except:
                 volume = "No Volume"
-
-            try:
-                makers = pair.find('div', class_="ds-dex-table-row-col-makers").text
-            except:
-                makers = "No Makers"
-
             try:
                 price_change_5m = pair.find('div', class_="ds-dex-table-row-col-price-change-m5").text
             except:
@@ -110,14 +82,9 @@ if response.status_code == 200:
             # 填充数据
             pair_data = {
                 "Rank": rank,
-                "Icon": icon_url,
-                "Name": token_name,
                 "Token": trading_pair,
                 "Price": price,
-                "Age": age,
-                "Txns": txns,
                 "Volume": volume,
-                "Makers": makers,
                 "5M": price_change_5m,
                 "1H": price_change_1h,
                 "6H": price_change_6h,
