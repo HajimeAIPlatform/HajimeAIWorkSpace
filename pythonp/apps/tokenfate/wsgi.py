@@ -1,3 +1,8 @@
+'''
+Description: 
+Author: Devin
+Date: 2024-11-21 14:18:32
+'''
 import os
 from dotenv import load_dotenv
 from gunicorn.app.base import BaseApplication
@@ -36,14 +41,14 @@ def run_gunicorn():
   
 
     options = {
-    'bind': f'{host}:{port}',
-    'workers': int(workers),
-    'worker_class': UvicornWorker,
-    'lifespan': 'off',
-    'preload_app': True,  # Preload application to improve worker stability
-    'max_requests': 1000,  # Restart workers periodically to prevent memory leaks
-    'max_requests_jitter': 50,  # Random variance to prevent worker restart thundering herd
-}
+        'bind': f'{host}:{port}',
+        'workers': int(workers),
+        'worker_class': UvicornWorker,
+        'lifespan': 'off',
+        'preload_app': True,  # Preload application to improve worker stability
+        'max_requests': 1000,  # Restart workers periodically to prevent memory leaks
+        'max_requests_jitter': 50,  # Random variance to prevent worker restart thundering herd
+    }
 
     # 假设你的 Flask 应用在 `wsgi.py` 中定义为 `app`
     from app import app
