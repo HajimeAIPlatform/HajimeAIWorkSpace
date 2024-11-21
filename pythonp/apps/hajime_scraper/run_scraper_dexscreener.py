@@ -1,15 +1,25 @@
-import time
 import json
 from bs4 import BeautifulSoup
-import os
 import requests
 
-# ScraperAPI请求的参数
-payload = { 'api_key': '0d0b52c02a37a758af91d9d83856f094', 'url': 'https://dexscreener.com/?rankBy=trendingScoreH24&order=desc' }
-response = requests.get('https://api.scraperapi.com/', params=payload)
+def fetch_dex_data(api_key, url, output_path="/tmp/dex_info.json"):
+    """
+    参数：
+        api_key (str): ScraperAPI的API密钥。
+        url (str): 需要抓取数据的目标URL。
+        output_path (str): 保存JSON文件的路径，默认为/tmp/dex_info.json。
+    
+    返回：
+        str: 保存的JSON文件路径（成功）或错误信息（失败）。
+    """
+    # ScraperAPI请求的参数
+    payload = {'api_key': api_key, 'url': url}
+    response = requests.get('https://api.scraperapi.com/', params=payload)
 
-# 检查响应状态码
-if response.status_code == 200:
+    # 检查响应状态码
+    if response.status_code != 200:
+        return f"Failed to retrieve page, status code: {response.status_code}"
+
     # 获取交易对信息
     soup = BeautifulSoup(response.text, 'html.parser')
     pairs = soup.find_all('a', class_="ds-dex-table-row")
@@ -82,10 +92,23 @@ if response.status_code == 200:
         data_list.append(pair_data)
 
     # 保存为JSON文件
-    file_path = "/tmp/dex_info.json"
-    with open(file_path, mode='w', encoding='utf-8') as json_file:
+    with open(output_path, mode='w', encoding='utf-8') as json_file:
         json.dump(data_list, json_file, ensure_ascii=False, indent=4)
 
-    print(f"Data has been written to {file_path}")
-else:
-    print(f"Failed to retrieve page, status code: {response.status_code}")
+    return output_path
+
+
+if __name__ == "__main__":
+    # 定义参数
+    api_key = "0d0b52c02a37a758af91d9d83856f094"
+    url = "https://dexscreener.com/?rankBy=trendingScoreH24&order=desc"
+    output_path = "/tmp/dex_info.json"
+
+    # 调用函数
+    result = fetch_dex_data(api_key, url, output_path)
+    
+    # 打印结果
+    if result.endswith(".json"):
+        print(f"Data has been written to {result}")
+    else:
+        print(result)
