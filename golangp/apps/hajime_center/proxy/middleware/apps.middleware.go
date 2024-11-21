@@ -414,11 +414,13 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to update app", http.StatusInternalServerError)
 		return
 	}
-	err = models.UpdateAppPublishAmount(existingApp.Owner, 1)
-	if err != nil {
-		logging.Warning("Failed to update app: " + err.Error())
-		http.Error(w, "Failed to update app", http.StatusInternalServerError)
-		return
+	if user.Role != "admin" {
+		err = models.UpdateAppPublishAmount(existingApp.Owner, 1)
+		if err != nil {
+			logging.Warning("Failed to update app: " + err.Error())
+			http.Error(w, "Failed to update app", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// 设置响应头为 JSON
