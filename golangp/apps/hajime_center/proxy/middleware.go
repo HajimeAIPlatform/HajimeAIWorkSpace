@@ -13,13 +13,13 @@ func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 	if r.URL.Path == "/console/api/apps" || middleware.IsAppIDPath(r.URL.Path) {
 		switch r.Method {
 		case http.MethodGet:
-			return middleware.HandleGetRequest(w, r, db, user)
+			return middleware.HandleGetApp(w, r, db, user)
 		case http.MethodPost:
-			return middleware.HandlePostRequest(w, r, db, user)
+			return middleware.HandlePostApp(w, r, db, user)
 		case http.MethodPut:
-			return middleware.HandlePutRequest(w, r, db, user)
+			return middleware.HandlePutApp(w, r, db, user)
 		case http.MethodDelete:
-			return middleware.HandleDeleteRequest(w, r, db, user)
+			return middleware.HandleDeleteApp(w, r, db, user)
 		default:
 			return nil
 		}
@@ -28,7 +28,7 @@ func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 	if r.URL.Path == "/console/api/installed-apps" {
 		switch r.Method {
 		case http.MethodGet:
-			return middleware.HandleInstallGetRequest(w, r, db, user)
+			return middleware.HandleGetInstallApp(w, r, db, user)
 		default:
 			return nil
 		}

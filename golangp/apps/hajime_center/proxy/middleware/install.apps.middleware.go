@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func HandleInstallGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
+func HandleGetInstallApp(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	body, err := ReadResponseBody(resp)
 	if err != nil {
 		return err

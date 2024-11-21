@@ -1,7 +1,7 @@
 package constants
 
 const RoleAdmin = "admin"
-const RoleDeveloper = "editor"
+const RoleEditor = "editor"
 const RoleUser = "normal"
 
 // file

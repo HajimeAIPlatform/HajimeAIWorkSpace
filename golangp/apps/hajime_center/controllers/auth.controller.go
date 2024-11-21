@@ -49,7 +49,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		Name:      payload.Name,
 		Email:     strings.ToLower(payload.Email),
 		Password:  hashedPassword,
-		Role:      constants.RoleUser,
+		Role:      constants.RoleEditor,
 		Verified:  false,
 		Photo:     "test",
 		Provider:  "local",

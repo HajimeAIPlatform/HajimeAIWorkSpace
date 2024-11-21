@@ -1,0 +1,37 @@
+- name: Install the required software
+  include_tasks: install.yaml
+
+- name: Check the required software is installed
+  include_tasks: check_install.yaml
+
+- name: Create Workspace
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ service_path }}"
+
+- name: Clone repo from github
+  ignore_errors: true
+  include_role:
+    name: git
+    tasks_from: main.yaml
+  vars:
+    gitlab_repo: "{{ item.name }}"
+    workspace: "{{ service_path }}"
+    repo_branch: "{{ item.branch }}"
+  with_items:
+    - { name: "{{ git.workspace_repo }}", branch: "{{ git.workspace_repo_branch }}" }
+
+- name: Bazel build hajime_tokenfate
+  shell:
+    chdir: "{{ work_space_dir }}"
+    cmd: |
+      sudo -u {{ ansible_ssh_user }} bazel build //pythonp/apps/tokenfate:tokenfate_tar
+      cp bazel-bin/pythonp/apps/tokenfate/tokenfate_tar.tar.gz pythonp/apps/tokenfate/tokenfate_tar.tar.gz
+
+- name: Start hajime_tokenfate service
+  shell:
+    chdir: "{{ work_space_dir }}"
+    cmd: |
+      sudo docker compose up -d --build

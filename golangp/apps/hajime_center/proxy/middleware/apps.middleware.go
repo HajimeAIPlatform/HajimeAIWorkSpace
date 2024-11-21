@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-func HandleGetRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
+func HandleGetApp(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	vars := mux.Vars(r)
 	appID := vars["app_id"]
 
@@ -39,6 +39,8 @@ func HandleGetSingleApp(resp *http.Response, body []byte, appID string) error {
 	if err := json.Unmarshal(body, &originalData); err != nil {
 		return err
 	}
+
+	fmt.Printf(" app: %v", app)
 
 	appData, err := StructToMap(app)
 	if err != nil {
@@ -140,7 +142,7 @@ func HandleGetAllApps(resp *http.Response, r *http.Request, body []byte, user mo
 	return nil
 }
 
-func HandlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
+func HandlePostApp(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	body, err := ReadResponseBody(resp)
 	if err != nil {
 		logging.Warning("Failed to read response body: " + err.Error())
@@ -165,10 +167,14 @@ func HandlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB, user m
 	}
 	app.Owner = user.ID.String()
 
-	fmt.Println("user", app.Owner, user)
-
 	if err := models.CreateHajimeApp(app); err != nil {
 		logging.Warning("Failed to create app: " + err.Error())
+		return err
+	}
+
+	err = models.UpdateAppAmount(user.ID.String(), 1)
+	if err != nil {
+		logging.Warning("Failed to retrieve created app:: " + err.Error())
 		return err
 	}
 
@@ -196,7 +202,7 @@ func HandlePostRequest(resp *http.Response, r *http.Request, db *gorm.DB, user m
 	return nil
 }
 
-func HandlePutRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
+func HandlePutApp(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	body, err := ReadResponseBody(resp)
 	if err != nil {
 		logging.Warning("Failed to read response body: " + err.Error())
@@ -261,7 +267,7 @@ func HandlePutRequest(resp *http.Response, r *http.Request, db *gorm.DB, user mo
 	return nil
 }
 
-func HandleDeleteRequest(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
+func HandleDeleteApp(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
 	vars := mux.Vars(r)
 	appID, ok := vars["app_id"]
 	if !ok {
@@ -271,6 +277,11 @@ func HandleDeleteRequest(resp *http.Response, r *http.Request, db *gorm.DB, user
 
 	if err := models.DeleteHajimeApp(appID); err != nil {
 		logging.Warning("Failed to delete app: " + err.Error())
+		return err
+	}
+	err := models.UpdateAppAmount(user.ID.String(), -1)
+	if err != nil {
+		logging.Warning("Failed to retrieve created app:: " + err.Error())
 		return err
 	}
 
@@ -294,8 +305,21 @@ func GetAllNoAuthApp(w http.ResponseWriter, r *http.Request) {
 		RecommendedAPP: []RecommendedAPP{},
 	}
 
+	installedApps, err := FetchInstalledApps(r)
+	if err != nil {
+		logging.Warning("Failed to fetch installed apps: " + err.Error())
+		return
+	}
+	installedAppMap := make(map[string]string)
+	for _, installedApp := range installedApps {
+		installedAppMap[installedApp.App.ID] = installedApp.ID
+	}
+
 	// Iterate over apps and build the RecommendedAPP list
 	for index, app := range apps {
+		if id, exists := installedAppMap[app.ID]; exists {
+			app.InstallAppID = id
+		}
 		recommendedApp := RecommendedAPP{
 			App: struct {
 				Icon           string `json:"icon"`
@@ -348,6 +372,13 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r) // Assuming you're using Gorilla Mux
 	appID := vars["app_id"]
 
+	user, err := DeserializeUser(r)
+	if err != nil {
+		logging.Warning("Auth Failed: " + err.Error())
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	// Define the app structure
 	var existingApp models.HajimeApps // Replace 'App' with your actual model struct
 	db := initializers.DB
@@ -361,6 +392,21 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if user.Role != "admin" {
+		isGreater, err := models.IsAppPublishAmountGreaterThanTen(existingApp.Owner)
+		if err != nil {
+			logging.Warning("This app is not your own: " + err.Error())
+			http.Error(w, "This app is not your own", http.StatusInternalServerError)
+			return
+		}
+
+		if isGreater {
+			logging.Warning("You have exceeded the maximum number of publishes, which is 10.")
+			http.Error(w, "You have exceeded the maximum number of publishes, which is 10.", http.StatusForbidden)
+			return
+		}
+	}
+
 	// Update the app's isPublish status
 	existingApp.IsPublish = true // or whatever logic you need
 	if err := models.UpdateHajimeApp(existingApp); err != nil {
@@ -368,10 +414,68 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to update app", http.StatusInternalServerError)
 		return
 	}
+	err = models.UpdateAppPublishAmount(existingApp.Owner, 1)
+	if err != nil {
+		logging.Warning("Failed to update app: " + err.Error())
+		http.Error(w, "Failed to update app", http.StatusInternalServerError)
+		return
+	}
+
 	// 设置响应头为 JSON
 	w.Header().Set("Content-Type", "application/json")
 
 	// 返回成功状态和 JSON 响应
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"result": "success"})
+	json.NewEncoder(w).Encode(map[string]string{"result": "Publish success"})
+}
+
+func HandleUnpublish(w http.ResponseWriter, r *http.Request) {
+	// Extract the app_id from the URL
+	vars := mux.Vars(r) // Assuming you're using Gorilla Mux
+	appID := vars["app_id"]
+
+	// Define the app structure
+	var existingApp models.HajimeApps // Replace 'HajimeApps' with your actual model struct
+	db := initializers.DB
+
+	// Check if the app exists in the database
+	if err := db.Where("id = ?", appID).First(&existingApp).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "App not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	user, err := DeserializeUser(r)
+	if err != nil {
+		logging.Warning("Auth Failed: " + err.Error())
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	// Update the app's isPublish status to false
+	existingApp.IsPublish = false // or whatever logic you need
+	if err := models.UpdateHajimeApp(existingApp); err != nil {
+		logging.Warning("Failed to update app: " + err.Error())
+		http.Error(w, "Failed to update app", http.StatusInternalServerError)
+		return
+	}
+
+	if user.Role != "admin" {
+		err = models.UpdateAppPublishAmount(existingApp.Owner, -1)
+		if err != nil {
+			logging.Warning("Failed to update app: " + err.Error())
+			http.Error(w, "Failed to update app", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Set response header to JSON
+	w.Header().Set("Content-Type", "application/json")
+
+	// Return success status and JSON response
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"result": "Cancel publish success"})
 }

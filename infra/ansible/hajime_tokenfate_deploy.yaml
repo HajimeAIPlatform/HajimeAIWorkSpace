@@ -1,0 +1,11 @@
+---
+- name: Hajime TokenFate Deploy
+  hosts: hajime_tokenfate
+  become: yes
+  tasks:
+    - name:  Execute hajime_tokenfate deploy task from tokenfate role
+      include_role:
+        name: tokenfate
+      vars:
+        install_bazel : true
+        install_docker : true
