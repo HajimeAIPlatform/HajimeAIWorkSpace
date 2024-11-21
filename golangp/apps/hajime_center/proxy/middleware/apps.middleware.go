@@ -372,6 +372,13 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r) // Assuming you're using Gorilla Mux
 	appID := vars["app_id"]
 
+	user, err := DeserializeUser(r)
+	if err != nil {
+		logging.Warning("Auth Failed: " + err.Error())
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	// Define the app structure
 	var existingApp models.HajimeApps // Replace 'App' with your actual model struct
 	db := initializers.DB
@@ -385,17 +392,19 @@ func HandlePublish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isGreater, err := models.IsAppPublishAmountGreaterThanTen(existingApp.Owner)
-	if err != nil {
-		logging.Warning("This app is not your own: " + err.Error())
-		http.Error(w, "This app is not your own", http.StatusInternalServerError)
-		return
-	}
+	if user.Role != "admin" {
+		isGreater, err := models.IsAppPublishAmountGreaterThanTen(existingApp.Owner)
+		if err != nil {
+			logging.Warning("This app is not your own: " + err.Error())
+			http.Error(w, "This app is not your own", http.StatusInternalServerError)
+			return
+		}
 
-	if isGreater {
-		logging.Warning("You have exceeded the maximum number of publishes, which is 10.")
-		http.Error(w, "You have exceeded the maximum number of publishes, which is 10.", http.StatusForbidden)
-		return
+		if isGreater {
+			logging.Warning("You have exceeded the maximum number of publishes, which is 10.")
+			http.Error(w, "You have exceeded the maximum number of publishes, which is 10.", http.StatusForbidden)
+			return
+		}
 	}
 
 	// Update the app's isPublish status
@@ -439,6 +448,13 @@ func HandleUnpublish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, err := DeserializeUser(r)
+	if err != nil {
+		logging.Warning("Auth Failed: " + err.Error())
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	// Update the app's isPublish status to false
 	existingApp.IsPublish = false // or whatever logic you need
 	if err := models.UpdateHajimeApp(existingApp); err != nil {
@@ -446,11 +462,14 @@ func HandleUnpublish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to update app", http.StatusInternalServerError)
 		return
 	}
-	err := models.UpdateAppPublishAmount(existingApp.Owner, -1)
-	if err != nil {
-		logging.Warning("Failed to update app: " + err.Error())
-		http.Error(w, "Failed to update app", http.StatusInternalServerError)
-		return
+
+	if user.Role != "admin" {
+		err = models.UpdateAppPublishAmount(existingApp.Owner, -1)
+		if err != nil {
+			logging.Warning("Failed to update app: " + err.Error())
+			http.Error(w, "Failed to update app", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// Set response header to JSON
