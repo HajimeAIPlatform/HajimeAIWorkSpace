@@ -18,6 +18,7 @@ import (
 
 type AuthController struct {
 	DB *gorm.DB
+	cs *CreditSystem
 }
 
 func SendEmail(email string, data *mail_server.EmailData, emailTemp string) error {
@@ -39,8 +40,8 @@ func SendEmail(email string, data *mail_server.EmailData, emailTemp string) erro
 	return nil
 }
 
-func NewAuthController(DB *gorm.DB) AuthController {
-	return AuthController{DB}
+func NewAuthController(DB *gorm.DB, creditSystem *CreditSystem) AuthController {
+	return AuthController{DB, creditSystem}
 }
 
 // SignUpUser SignUp User
@@ -72,6 +73,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		Verified:  false,
 		Photo:     "test",
 		Provider:  "local",
+		Balance:   constants.GiftedPoints,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

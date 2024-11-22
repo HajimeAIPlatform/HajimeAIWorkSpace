@@ -264,3 +264,10 @@ func IsAppPublishAmountGreaterThanTen(uid string) (bool, error) {
 	// 判断是否大于 10
 	return user.AppPublishAmount > config.MaxPublishAppAmount, nil
 }
+
+func (u *User) PreCheckBalance() bool {
+	if u.Balance < 1 {
+		return false
+	}
+	return true
+}

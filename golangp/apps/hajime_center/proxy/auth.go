@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -11,38 +10,8 @@ import (
 	"hajime/golangp/common/logging"
 	"log"
 	"net/http"
-	"strings"
 	"sync"
 )
-
-func writeErrorResponse(w http.ResponseWriter, code, message string, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	response := map[string]interface{}{
-		"code":    code,
-		"message": message,
-		"status":  status,
-	}
-	json.NewEncoder(w).Encode(response)
-}
-
-func isPathExcluded(path string, excludedPaths []string) bool {
-	for _, excludedPath := range excludedPaths {
-		if path == excludedPath {
-			return true
-		}
-	}
-	return false
-}
-
-func isPathPrefix(path string, excludedPaths []string) bool {
-	for _, excludedPath := range excludedPaths {
-		if strings.HasPrefix(path, excludedPath) {
-			return true
-		}
-	}
-	return false
-}
 
 // Check if the path is /dify/console/api/setup
 var excludedPaths = []string{
@@ -69,11 +38,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if !isPathExcluded(r.URL.Path, excludedPaths) && !isPathPrefix(r.URL.Path, excludedPathsPrefix) {
+		if !middleware.IsPathExcluded(r.URL.Path, excludedPaths) && !middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix) {
 			user, err := middleware.DeserializeUser(r)
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
-				writeErrorResponse(w, "401", err.Error(), http.StatusBadRequest)
+				middleware.WriteErrorResponse(w, "401", err.Error(), http.StatusBadRequest)
 				return
 			}
 
@@ -93,7 +62,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
-		if isPathExcluded(r.URL.Path, excludedPaths) || isPathPrefix(r.URL.Path, excludedPathsPrefix) {
+		if middleware.IsPathExcluded(r.URL.Path, excludedPaths) || middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix) {
 			Token, err := difyClient.GetUserToken("admin")
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())
@@ -119,6 +88,10 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 	router.HandleFunc("/dify/console/api/apps/unpublish/{app_id}", middleware.HandleUnpublish).Methods("POST")
 	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.Handle("/dify/console/api/datasets/{dataset_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+
+	//chat
+	router.Handle("/dify/console/api/apps/{app_id}/chat-messages", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/installed-apps/{app_id}/chat-messages", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
 
 	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.PathPrefix("/dify/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))

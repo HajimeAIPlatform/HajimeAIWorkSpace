@@ -20,7 +20,10 @@ import (
 )
 
 var (
-	server              *gin.Engine
+	server *gin.Engine
+
+	CreditSystem *controllers.CreditSystem
+
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
@@ -37,8 +40,9 @@ func init() {
 
 	initializers.ConnectDB(&conf)
 	//initializers.ConnectDBDify(&conf)
+	CreditSystem = controllers.NewCreditSystem(initializers.DB)
 
-	AuthController = controllers.NewAuthController(initializers.DB)
+	AuthController = controllers.NewAuthController(initializers.DB, CreditSystem)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 
 	AppsController = controllers.NewAppsController(initializers.DB)

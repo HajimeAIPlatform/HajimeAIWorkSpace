@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-func HandleGetApp(resp *http.Response, r *http.Request, db *gorm.DB, user models.User) error {
+func HandleGetApp(resp *http.Response, r *http.Request, user models.User) error {
 	vars := mux.Vars(r)
 	appID := vars["app_id"]
 

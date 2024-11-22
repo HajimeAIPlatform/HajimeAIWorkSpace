@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 func IsAppIDPath(path string) bool {
@@ -59,4 +60,33 @@ func MapToStructApps(data models.HajimeApps, result interface{}) error {
 		return err
 	}
 	return json.Unmarshal(jsonData, result)
+}
+
+func WriteErrorResponse(w http.ResponseWriter, code, message string, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	response := map[string]interface{}{
+		"code":    code,
+		"message": message,
+		"status":  status,
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+func IsPathExcluded(path string, excludedPaths []string) bool {
+	for _, excludedPath := range excludedPaths {
+		if path == excludedPath {
+			return true
+		}
+	}
+	return false
+}
+
+func IsPathPrefix(path string, excludedPaths []string) bool {
+	for _, excludedPath := range excludedPaths {
+		if strings.HasPrefix(path, excludedPath) {
+			return true
+		}
+	}
+	return false
 }

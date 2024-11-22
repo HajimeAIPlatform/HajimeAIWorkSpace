@@ -13,7 +13,7 @@ func ModifyResponse(w *http.Response, r *http.Request, user models.User) error {
 	if r.URL.Path == "/console/api/apps" || middleware.IsAppIDPath(r.URL.Path) {
 		switch r.Method {
 		case http.MethodGet:
-			return middleware.HandleGetApp(w, r, db, user)
+			return middleware.HandleGetApp(w, r, user)
 		case http.MethodPost:
 			return middleware.HandlePostApp(w, r, db, user)
 		case http.MethodPut:

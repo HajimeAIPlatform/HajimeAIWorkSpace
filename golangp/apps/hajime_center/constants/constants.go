@@ -18,3 +18,15 @@ var (
 )
 
 const SizeMB = 1024 * 1024
+
+const (
+	TransactionTypeRecharge = "recharge"
+	TransactionTypeGifted   = "gifted"
+	TransactionTypeAdmin    = "admin"
+	TransactionTypeWallet   = "wallet"
+	TransactionTypeUseAgent = "use_agent"
+)
+
+const (
+	GiftedPoints = 100
+)

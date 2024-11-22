@@ -34,7 +34,6 @@ func DifyHandler(w http.ResponseWriter, r *http.Request) {
 	proxy.ModifyResponse = func(resp *http.Response) error {
 		return ModifyResponse(resp, r, user)
 	}
-
 	// Serve the request using the proxy
 	proxy.ServeHTTP(w, r)
 }
