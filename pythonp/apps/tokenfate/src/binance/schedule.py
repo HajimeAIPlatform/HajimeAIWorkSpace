@@ -63,7 +63,7 @@ def fetch_and_store_dex_historical_data(days=7):
         logging.error(f"Error fetching historical prices for USDT pairs: {e}")
 
 
-def get_random_usdt_historical_prices(sample_size=30):
+def get_random_dex_historical_prices(sample_size=30):
     """
     从本地文件中读取USDT交易对的价格数据，并随机选择30个symbol返回。
 
@@ -80,7 +80,7 @@ def get_random_usdt_historical_prices(sample_size=30):
         with open(data_source, 'r') as f:
             data = json.load(f)
 
-        print(f"get_random_usdt_historical_prices {len(data)} items in data")
+        print(f"get_random_dex_historical_prices {len(data)} items in data")
 
         # 随机选择sample_size个symbol
         selected_indexes = random.sample(list(range(len(data))), sample_size)

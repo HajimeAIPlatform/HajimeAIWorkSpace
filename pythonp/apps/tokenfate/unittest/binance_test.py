@@ -9,7 +9,7 @@ from pythonp.apps.tokenfate.src.binance.utils import (get_binance_client, genera
                                get_order_info, get_all_prices, get_min_trade_quantity, is_min_trade_quantity_limit,
                                process_recommendation)
 
-from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices,fetch_and_store_usdt_historical_prices
+from pythonp.apps.tokenfate.src.binance.schedule import get_random_dex_historical_prices,fetch_and_store_usdt_historical_prices
 
 def test(user_input):
     try:
@@ -27,7 +27,7 @@ def test(user_input):
 
 if __name__ == "__main__":
     fetch_and_store_usdt_historical_prices()
-    result = get_random_usdt_historical_prices()
+    result = get_random_dex_historical_prices()
     print(result)
     # result = get_all_prices(10000,"USDT")
     # print(result,len(result),'get_all_prices')
