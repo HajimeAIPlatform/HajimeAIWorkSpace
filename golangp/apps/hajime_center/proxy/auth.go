@@ -92,6 +92,8 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 	//chat
 	router.Handle("/dify/console/api/apps/{app_id}/chat-messages", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
 	router.Handle("/dify/console/api/installed-apps/{app_id}/chat-messages", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/apps/{app_id}/workflows/draft/run", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/dify/console/api/installed-apps/{app_id}/workflows/run", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
 
 	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.PathPrefix("/dify/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))
