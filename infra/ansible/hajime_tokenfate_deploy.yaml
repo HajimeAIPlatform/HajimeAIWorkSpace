@@ -3,9 +3,12 @@
   hosts: hajime_tokenfate
   become: yes
   tasks:
-    - name:  Execute hajime_tokenfate deploy task from tokenfate role
+    - name: Execute hajime_tokenfate deploy task from tokenfate role
       include_role:
         name: tokenfate
       vars:
-        install_bazel : true
-        install_docker : true
+        install_bazel: false
+        install_docker: false
+        git:
+          workspace_repo: HajimeAIWorkSpace
+          workspace_repo_branch: main

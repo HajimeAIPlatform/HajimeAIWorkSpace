@@ -12,7 +12,7 @@
 - name: Clone {{ git_repo }}
   ignore_errors: true
   git:
-    repo:  git@github.com:HajimeAIPlatform/{{ git_repo }}.git
+    repo: git@github.com:HajimeAIPlatform/{{ git_repo }}.git
     dest: "{{ workspace }}/{{ git_repo }}"
     clone: yes
     update: yes

@@ -22,7 +22,7 @@ ansible -i development all -m ping
 
 For deploying an ansible-playbook,
 ```shell
-ansible-playbook -i development tokenfate.yaml
+ansible-playbook -i development hajime_tokenfate_deploy.yaml
 
 ```
 ### How to pass Extra Variables to Ansible Playbook?

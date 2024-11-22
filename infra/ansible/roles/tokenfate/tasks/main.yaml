@@ -17,21 +17,32 @@
     name: git
     tasks_from: main.yaml
   vars:
-    gitlab_repo: "{{ item.name }}"
+    git_repo: "{{ item.name }}"
     workspace: "{{ service_path }}"
     repo_branch: "{{ item.branch }}"
   with_items:
-    - { name: "{{ git.workspace_repo }}", branch: "{{ git.workspace_repo_branch }}" }
+    - {
+        name: "{{ git.workspace_repo }}",
+        branch: "{{ git.workspace_repo_branch }}",
+      }
+
+- name: Copy .env file to workspace using template
+  template:
+    src: "{{ role_path }}/templates/{{ item }}.j2"
+    dest: "{{ work_space_dir }}/{{ service_code_dir }}/.env"
+    mode: "0644"
+  with_items:
+    - .env
 
 - name: Bazel build hajime_tokenfate
   shell:
     chdir: "{{ work_space_dir }}"
     cmd: |
-      sudo -u {{ ansible_ssh_user }} bazel build //pythonp/apps/tokenfate:tokenfate_tar
-      cp bazel-bin/pythonp/apps/tokenfate/tokenfate_tar.tar.gz pythonp/apps/tokenfate/tokenfate_tar.tar.gz
+      sudo -u {{ ansible_ssh_user }} bazel build //{{ service_code_dir }}:tokenfate_tar
+      cp bazel-bin/{{ service_code_dir }}/tokenfate_tar.tar.gz {{ service_code_dir }}/tokenfate_tar.tar.gz
 
 - name: Start hajime_tokenfate service
   shell:
-    chdir: "{{ work_space_dir }}"
+    chdir: "{{ work_space_dir }}/{{ service_code_dir }}"
     cmd: |
       sudo docker compose up -d --build

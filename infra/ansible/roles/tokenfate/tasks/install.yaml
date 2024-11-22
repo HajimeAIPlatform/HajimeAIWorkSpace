@@ -9,4 +9,3 @@
     name: bazel
     tasks_from: install.yaml
   when: install_bazel is defined and install_bazel
-
