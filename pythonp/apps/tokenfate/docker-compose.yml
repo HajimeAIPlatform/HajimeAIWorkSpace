@@ -24,7 +24,7 @@ services:
     networks:
       - telebot
 
-  einstein:
+  telebot:
     container_name: telebot
     build:
       context: .
