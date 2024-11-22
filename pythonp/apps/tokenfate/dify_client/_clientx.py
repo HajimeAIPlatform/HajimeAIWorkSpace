@@ -19,7 +19,7 @@ import httpx._types as types
 from httpx_sse import connect_sse, ServerSentEvent, aconnect_sse
 from pydantic import BaseModel
 
-from dify_client import errors, models
+from pythonp.apps.tokenfate.dify_client import models, errors
 
 _httpx_client = httpx.Client()
 _async_httpx_client = httpx.AsyncClient()
