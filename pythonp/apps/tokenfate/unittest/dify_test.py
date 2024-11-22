@@ -10,7 +10,7 @@ from typing import Dict
 
 from pydantic import ValidationError
 
-from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices
+from pythonp.apps.tokenfate.src.binance.schedule import get_random_dex_historical_prices
 from pythonp.apps.tokenfate.dify_client import Client, models
 
 dify_api_key = getenv('DIFY_API_KEY')
@@ -33,7 +33,7 @@ def chat_workflow(data: Dict):
         logging.info("User ID: %s", user)
 
         # Retrieve market data
-        today_market_data = get_random_usdt_historical_prices()
+        today_market_data = get_random_dex_historical_prices()
         serialized_market_data = json.dumps(today_market_data)
 
         # Prepare chat request with correct input format
