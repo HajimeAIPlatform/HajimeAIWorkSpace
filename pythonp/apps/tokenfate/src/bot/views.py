@@ -300,7 +300,8 @@ async def webhook():
                 logging.info(f"data: {data}")
                 details = data.split(":")
                 token = details[1]
-                await decode_lot(update, token)
+                role = details[2]
+                await decode_lot(update, token, role)
                 return jsonify({'status': 'ok'}), 200
 
         if update.message:
@@ -577,7 +578,7 @@ async def reveal_fate(update, token, role: str):
         image_path = get_images_path(f'{sign_level}.png')
         dialog = i18n.get_dialog("lot_daily_content")
         dialog = dialog.format(token=token, sign_from=sign_from, sign_text=sign_text)
-        reply_markup = keyboard_factory.create_keyboard("lot", token=token)
+        reply_markup = keyboard_factory.create_keyboard("lot", token=token, role=role)
         with open(image_path, 'rb') as image_file:
             await target.message.reply_photo(
                 photo=image_file,
@@ -717,7 +718,8 @@ async def decode_lot(update, token, role):
                 "query": sign_text,
                 "inputs": {
                     "lot": sign_text,
-                    "lang": lang
+                    "lang": lang,
+                    "risk_preference": role,
                 },
             }
             cached_decode = chat_decode(data)

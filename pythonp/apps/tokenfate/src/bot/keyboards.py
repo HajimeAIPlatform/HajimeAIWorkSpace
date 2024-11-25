@@ -163,13 +163,13 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_lot_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
+    def _create_lot_keyboard(self, context: Any=None, token: str=None, role: str=None) -> InlineKeyboardMarkup:
         """创建灵签的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('lot_decode', context=context),
-                    callback_data=f'decode:{token}'
+                    callback_data=f'decode:{token}:{role}'
                 )
             ]
         ]
