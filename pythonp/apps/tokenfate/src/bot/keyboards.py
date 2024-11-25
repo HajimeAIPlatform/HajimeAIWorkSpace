@@ -74,25 +74,25 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_risk_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
+    def _create_risk_keyboard(self, context: Any=None, token: str=None, risk_target: str=None) -> InlineKeyboardMarkup:
         """创建风险选择的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
-                    self.i18n.get_button('role1', context=context),
-                    callback_data=f'risk:{token}',
+                    self.i18n.get_button('risk_role_Conservative', context=context),
+                    callback_data=f'risk:role=Conservative&token={token}&risk_target={risk_target}',
                 ),
                 InlineKeyboardButton(
-                    self.i18n.get_button('role2', context=context),
-                    callback_data=f'risk:{token}',
+                    self.i18n.get_button('risk_role_Cautious', context=context),
+                    callback_data=f'risk:role=Cautious&token={token}&risk_target={risk_target}',
                 ),
                 InlineKeyboardButton(
-                    self.i18n.get_button('role3', context=context),
-                    callback_data=f'risk:{token}',
+                    self.i18n.get_button('risk_role_Assertive', context=context),
+                    callback_data=f'risk:role=Assertive&token={token}&risk_target={risk_target}',
                 ),
                 InlineKeyboardButton(
-                    self.i18n.get_button('role4', context=context),
-                    callback_data=f'risk:{token}',
+                    self.i18n.get_button('risk_role_Risk_Taker', context=context),
+                    callback_data=f'risk:role=Risk_Taker&token={token}&risk_target={risk_target}',
                 )
             ],
         ]
