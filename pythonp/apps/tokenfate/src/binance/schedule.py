@@ -49,7 +49,7 @@ def get_symbol_historical_prices(symbol, days):
         logging.error(f"Error fetching historical prices for {symbol}: {e}")
         return []
 
-def fetch_and_store_dex_historical_data(days=7):
+def fetch_and_store_dex_historical_data():
     """
     获取所有USDT交易对最近几天的价格数据，并存储到本地文件。
 
@@ -58,6 +58,7 @@ def fetch_and_store_dex_historical_data(days=7):
     try:
         # 获取dexscreener排行榜数据
         fetch_dex_data(output_path=data_source)
+        print(data_source, 'data_source')
         logging.info("Historical prices fetched and stored successfully.")
     except Exception as e:
         logging.error(f"Error fetching historical prices for USDT pairs: {e}")
@@ -105,6 +106,7 @@ def start_schedule_thread():
     """
     启动定时任务线程。
     """
+    fetch_and_store_dex_historical_data()
     # 设置定时任务，每天0点执行
     schedule.every().day.at("00:00").do(fetch_and_store_dex_historical_data)    
     # schedule.every(1).minutes.do(fetch_and_store_usdt_historical_prices)

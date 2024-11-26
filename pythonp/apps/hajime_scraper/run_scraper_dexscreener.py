@@ -1,6 +1,7 @@
 import json
 from bs4 import BeautifulSoup
 import requests
+import os
 
 DEFAULT_API_KEY = "0d0b52c02a37a758af91d9d83856f094"
 DEFAULT_URL = "https://dexscreener.com/?rankBy=trendingScoreH24&order=desc"
@@ -96,11 +97,17 @@ def fetch_dex_data(api_key = DEFAULT_API_KEY, url = DEFAULT_URL, output_path="/t
         data_list.append(pair_data)
 
     # 保存为JSON文件
-    with open(output_path, mode='w', encoding='utf-8') as json_file:
-        json.dump(data_list, json_file, ensure_ascii=False, indent=4)
-    print(f"Data has been written to {output_path}")
-    return output_path
-
+    try:
+        # 确保目录存在
+        # os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, mode='w', encoding='utf-8') as json_file:
+            json.dump(data_list, json_file, ensure_ascii=False, indent=4)
+        print(f"Data has been written to {output_path}")
+        # print(os.getcwd(), "current_path")
+        return output_path
+    except Exception as e:
+        print(f"Error writing to file: {e}")
+        return None
 
 if __name__ == "__main__":
     # 定义参数
