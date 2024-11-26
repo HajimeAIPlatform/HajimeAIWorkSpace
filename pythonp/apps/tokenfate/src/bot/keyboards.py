@@ -163,13 +163,19 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_lot_keyboard(self, context: Any=None, token: str=None, role: str=None) -> InlineKeyboardMarkup:
+    def _create_lot_keyboard(self, context: Any=None, token: str=None, role: str=None, status: str=None) -> InlineKeyboardMarkup:
         """创建灵签的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('lot_decode', context=context),
-                    callback_data=f'decode:{token}:{role}'
+                    callback_data=f'decode_yes:{token}:{role}'
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('not_decode', context=context),
+                    callback_data=f'decode_no:{token}:{role}'
                 )
             ]
         ]
@@ -197,4 +203,50 @@ class KeyboardFactory:
                 )
             ]
         ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _create_menu_keyboard(self, context: Any=None) -> InlineKeyboardMarkup:
+        """创建菜单的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('community', context=context),
+                    url="t.me/HajimeAI"
+                ),
+                InlineKeyboardButton(
+                    self.i18n.get_button('aura', context=context),
+                    callback_data='show_aura_rules'
+                )
+            ],
+        ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _create_decode_keyboard(self, context: Any=None, token: str=None, role: str=None) -> InlineKeyboardMarkup:
+        """创建揭示的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('more', context=context),
+                    callback_data="menu"
+                )
+            ]
+        ]
+
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _create_unveil_or_not_keyboard(self, context: Any=None, token: str=None, role: str=None) -> InlineKeyboardMarkup:
+        """创建揭示的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('do_unveil', context=context),
+                    callback_data=f'risk:role={role}&token={token}&risk_target=recommend_only'
+                ),
+                InlineKeyboardButton(
+                    self.i18n.get_button('not_unveil', context=context),
+                    callback_data="menu"
+                )
+            ]
+        ]
+
         return InlineKeyboardMarkup(keyboard)

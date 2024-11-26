@@ -287,21 +287,19 @@ async def webhook():
                 # 返回 HTTP 响应
                 return jsonify({'status': 'ok'}), 200
             
-            # if update.callback_query.data.startswith("risk"):
-            #     data = update.callback_query.data
-            #     logging.info(f"data: {data}")
-            #     data = data.split(":")[1]
-            #     token = details[1]
-            #     await reveal_fate(update, token)
-            #     return jsonify({'status': 'ok'}), 200
-            
             if update.callback_query.data.startswith("decode"):
                 data = update.callback_query.data
                 logging.info(f"data: {data}")
                 details = data.split(":")
-                token = details[1]
-                role = details[2]
-                await decode_lot(update, token, role)
+                status, token, role = details
+                if status == "decode_yes":
+                    await decode_lot(update, token, role)
+                elif status == "decode_no":
+                    await message_unveil_or_not(update, token, role)
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data.startswith("menu"):
+                await message_menu(update)
                 return jsonify({'status': 'ok'}), 200
 
         if update.message:
@@ -529,7 +527,7 @@ async def send_recommendations(update, role: str):
         return
 
     reply_markup = create_token_keyboard(recommended_tokens)
-    dialog = i18n.get_dialog("recommended")
+    dialog = i18n.get_dialog("unveil_result")
     await target.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
 
 async def reveal_fate(update, token, role: str):
@@ -587,7 +585,7 @@ async def reveal_fate(update, token, role: str):
                 reply_markup=reply_markup,
             )
         # 发送推荐的tokens
-        await send_recommendations(update, role)
+        # await send_recommendations(update, role)
 
         return jsonify({'status': 'ok'}), 200
     
@@ -699,6 +697,7 @@ async def decode_lot(update, token, role):
         
         lang = UserPoints.get_language_by_user_id(user_id)
         i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
         # 获取今日缓存的签
         result_of_draw = await daily_fortune.get_cached_lot(user_id, token)
         if result_of_draw is None:
@@ -728,8 +727,10 @@ async def decode_lot(update, token, role):
         # 发送签解
         dialog = i18n.get_dialog("lot_decoded_content")
         dialog = dialog.format(token=token, cached_decode=cached_decode)
+        reply_markup = keyboard_factory.create_keyboard("decode")
         await target.message.reply_text(
-            escape(dialog), parse_mode="MarkdownV2"
+            escape(dialog), parse_mode="MarkdownV2", 
+            reply_markup=reply_markup
         )
         return jsonify({'status': 'ok'}), 200
 
@@ -878,7 +879,6 @@ async def start(update):
                 parse_mode="MarkdownV2",
                 reply_markup=reply_markup
             )
-        
         return ('OK', 200)
     
     except Exception as e:
@@ -897,4 +897,44 @@ def handle_recommendation_click(user_id):
             return False
     else:
         logging.info(f"User {user_id} has already reached the daily limit for recommendation clicks.")
+        return False
+
+async def message_menu(update):
+    try:
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
+        reply_markup = keyboard_factory.create_keyboard("menu")
+        dialog = i18n.get_dialog('menu')
+        await target.message.reply_text(text = escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+    except Exception as e:
+        logging.error(f"Error in message_menu: {e}")
+        return False
+
+async def message_unveil_or_not(update, token, role: str):
+    try:
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
+        reply_markup = keyboard_factory.create_keyboard("unveil_or_not", token=token, role=role)
+        dialog = i18n.get_dialog('unveil_or_not')
+        await target.message.reply_text(text = escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+    except Exception as e:
+        logging.error(f"Error in message_unveil_or_not: {e}")
         return False

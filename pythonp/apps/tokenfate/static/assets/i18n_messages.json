@@ -10,6 +10,8 @@
       "invalid_format": "Invalid format. Please enter in the format BTC:0.1,\ncancel to input /cancel.",
       "recommended": "Dear fortune seeker, here lies today's token selection.\nWhile I do not urge you, the choice is yours to click and trade right here, right now.",
       "recommend_before": "Finish a fate journey to gain insight.",
+      "unveil_or_not": "Also my dear fortune seeker, here lies today’s token selection. Shall we unveil it?",
+      "unveil_result": "Dear, while I do not urge you, the choice is yours.",
       "recently_connected": "Thank you, my dear. Now, with the stars aligned, it is time to reveal the fate of your token!",
       "connected": "Now, with the stars aligned, it is time to reveal the fate of your token!",
       "unconnected": "Fantastic!\nYou stand at the crossroads of fate, a decision awaits:\nChoose how you wish to proceed on this journey.",
@@ -38,7 +40,8 @@
       "description_connect": "Connect Wallet",
       "description_disconnect": "Disconnect Wallet",
       "description_aura": "Check Aura",
-      "description_language": "Set Language"
+      "description_language": "Set Language",
+      "menu": "Maybe you wanna do something else?"
     },
     "zh": {
       "start": "阁下，欢迎来到命运之符 Token Fate。\n请输入您的符码代号 (Token Ticker, 如 $BTC)，揭示您的命理。从神圣的宇宙和大数据中获得指引。\n今日，您的符之命运如何？",
@@ -50,6 +53,8 @@
       "invalid_format": "无效格式。请以 BTC:0.1 的格式输入,\ncancel to input /cancel",
       "recommended": "亲爱的命运探寻者，今日之符码选择就在眼前。\n我并不强求于你，点击交易，此刻此地，选择权在你手中。",
       "recommend_before": "完成一次符命探寻，方可征得启示",
+      "unveil_or_not": "亲爱的命运探寻者，今日之符码选择就在眼前。是否启封，以观其奥？",
+      "unveil_result": "我并不强求于你，此刻此地，选择权在你手中。",
       "recently_connected": "多谢，吾之挚友。现星辰已排列就绪，是时候揭示你代币符码的命运了！",
       "connected": "此刻，星象已然齐聚，是时候揭示汝之符命了！",
       "unconnected": "太奇妙了！\n你伫立在符命的十字路口，一个抉择在等待：\n选择你希望在这段旅程中前行的方式。",
@@ -78,7 +83,8 @@
       "description_connect": "连接钱包",
       "description_disconnect": "断开钱包",
       "description_aura": "探查灵气",
-      "description_language": "语言设置"
+      "description_language": "语言设置",
+      "menu": "或许你想做点别的?"
     },
     "ja": {
       "start": "皆様、運命のご神符（Token Fate）へようこそ\n汝のトークンコード（Token Ticker例えば、$BTC）を入力すると、運命を明らかにします。神聖な宇宙とビッグデータからの導きを得ます。\n今日、汝のトークンによる運命はいかがでしょうか？",
@@ -90,6 +96,8 @@
       "invalid_format": "無効な形式。BTC:0.1 の形式で入力してください。\nキャンセルするには /cancel",
       "recommended": "運命の探求者に、今日のトークンコードの選択が待っています。\n私はあなたを強要しません。取引をクリックし、今すぐ、この場所で、選択権はあなたにあります。",
       "recommend_before": "ルーンの探索を一回終えることで、はじめて啓示を得ることができます",
+      "unveil_or_not": "運命の探求者、今日のトークンは目の前にあります。開封して、その奥義を覗いてみますか？",
+      "unveil_result": "無理せずに、決定権は汝の次第です。",
       "recently_connected": "ありがとう、お友達。星が整ったので、今、あなたのトークンコードの運命を明らかにしましょう！",
       "connected": "今、星が整ったので、あなたのトークンコードの運命を明らかにしましょう！",
       "unconnected": "素晴らしい！\nあなたは運命の十字路口に立っています。一つの選択が待っています：\nこの旅で進む方法を選択してください。",
@@ -118,7 +126,8 @@
       "description_connect": "財布を接続",
       "description_disconnect": "財布を切断",
       "description_aura": "霊気の確認",
-      "description_language": "言語設定"
+      "description_language": "言語設定",
+      "menu": "他のことをしたいですか？"
     }
   },
   "buttons": {
@@ -133,7 +142,8 @@
       "risk_role_Cautious": "Cautious",
       "risk_role_Assertive": "Assertive",
       "risk_role_Risk_Taker": "Risk-Taker",
-      "lot_decode": "Decode",
+      "lot_decode": "Decode the Fate",
+      "not_decode": "Leave it Be",
       "aura_action_wallet_connect": "Wallet Connect",
       "aura_action_daily_checkin": "Daily Sign-in",
       "aura_action_recommend_click": "Click Token",
@@ -151,7 +161,10 @@
       "command_aura": "Inspiration",
       "lang_en": "English",
       "lang_zh": "中文",
-      "lang_ja": "日本語"
+      "lang_ja": "日本語",
+      "more": "More",
+      "do_unveil": "Yes, please",
+      "not_unveil": "No, next time."
     },
     "zh": {
       "launch": "启航，以揭示吾之符命",
@@ -165,6 +178,7 @@
       "risk_role_Assertive": "企业家",
       "risk_role_Risk_Taker": "冒险者",
       "lot_decode": "解签",
+      "not_decode": "顺其自然，再议",
       "aura_action_wallet_connect": "钱包连结",
       "aura_action_daily_checkin": "每日打卡",
       "aura_action_recommend_click": "点击推荐",
@@ -182,7 +196,10 @@
       "command_aura": "灵感",
       "lang_en": "English",
       "lang_zh": "中文",
-      "lang_ja": "日本語"
+      "lang_ja": "日本語",
+      "more": "更多",
+      "do_unveil": "看看",
+      "not_unveil": "改日"
     },
     "ja": {
       "launch": "始めよう、トークンで運命鑑定",
@@ -196,6 +213,7 @@
       "risk_role_Assertive": "積極型",
       "risk_role_Risk_Taker": "冒険型",
       "lot_decode": "おみくじを解きましょう。",
+      "not_decode": "成り行きに任せ、再議",
       "aura_action_wallet_connect": "ウォレット接続",
       "aura_action_daily_checkin": "毎日登録",
       "aura_action_recommend_click": "トークンをクリック",
@@ -213,7 +231,10 @@
       "command_aura": "インスピレーション",
       "lang_en": "English",
       "lang_zh": "中文",
-      "lang_ja": "日本語"
+      "lang_ja": "日本語",
+      "more": "次へ",
+      "do_unveil": "はい",
+      "not_unveil": "いいえ"
     }
   },
   "text": {
