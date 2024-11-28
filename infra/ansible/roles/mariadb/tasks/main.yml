@@ -1,0 +1,40 @@
+---
+# Tasks file for mariadb
+
+- name: Install packages
+  apt:
+    state: latest
+    pkg:
+      - mariadb-server
+    update_cache: yes
+
+- name: Create user vmail
+  command: >
+    mysql --execute="grant select on vmail.* to 'vmail'@'localhost' identified by '{{ vmail_pass }}';"
+  tags: mysql
+
+- name: Copy database schema
+  copy:
+    src: files/schema.sql
+    dest: /tmp
+  tags: mysql
+
+- name: Copy mail config
+  template:
+    src: templates/config.j2
+    dest: /tmp/config.sql
+  tags: mysql
+
+- name: Import database schema
+  command: mysql --execute="source /tmp/schema.sql;"
+  tags: mysql
+
+- name: Import mail config
+  command: mysql --execute="source /tmp/config.sql;"
+  tags: mysql
+
+- name: Delete mail config
+  file:
+    state: absent
+    path: /tmp/config.sql
+  tags: mysql

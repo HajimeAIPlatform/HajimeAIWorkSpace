@@ -1,0 +1,25 @@
+---
+# Tasks file for certbot
+- name: Install packages
+  apt:
+    state: latest
+    pkg:
+      - certbot
+    update_cache: yes
+
+- name: Setup cron for weekly cert renew
+  cron:
+    name: certbot renew
+    minute: 20
+    hour: 2
+    weekday: 0
+    job: "certbot renew --renew-hook 'systemctl reload dovecot; systemctl reload postfix' --quiet"
+
+- name: Check whether the cert exists
+  stat:
+    path: /etc/letsencrypt/live/{{ mail_fqdn }}/fullchain.pem
+  register: live_cert
+
+- name: Generate certificates
+  shell: certbot certonly --standalone --rsa-key-size 4096 -d {{ mail_fqdn }} -d {{ imap_fqdn }} -d {{ smtp_fqdn }} -m {{email_for_updates}} --agree-tos
+  when: live_cert.stat.exists == False

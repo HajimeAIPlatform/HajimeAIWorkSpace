@@ -1,0 +1,23 @@
+- name: Import general role
+  import_role:
+    name: general
+
+- name: Import certbot role
+  import_role:
+    name: certbot
+
+- name: Import mariadb role
+  import_role:
+    name: mariadb
+
+- name: Import dovecot role
+  import_role:
+    name: dovecot
+
+- name: Import rspamd role
+  import_role:
+    name: rspamd
+
+- name: Import postfix role
+  import_role:
+    name: postfix

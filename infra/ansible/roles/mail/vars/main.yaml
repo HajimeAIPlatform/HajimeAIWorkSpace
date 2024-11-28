@@ -1,0 +1,20 @@
+---
+# Group vars for all hosts
+
+host: mail
+domain: pointer.ai
+ip_address: "{{ ansible_default_ipv4.address }}"
+# ip_address: 43.207.85.5
+mail_fqdn: "{{ host }}.{{ domain }}"
+smtp_fqdn: "mail.{{ domain }}"
+imap_fqdn: mail.{{ domain }}
+mail_user: mail
+email_for_updates: "{{ mail_user }}@{{ domain }}"
+# vmail_pass: vmail
+# mail_user_pass: mail
+# mail_user_pass_hash: "$6$33RsRNpvBDlWv3j8$tKwtbcfsduBbPW1fcxYVHAt0wiW4tbu9txrJqlMKx2tM6JBC6FR5jPoiFsXEEIt2gzx91.yII2uItJg.HYwdM0"
+mail_user_pass_hash: "{SHA512-CRYPT}$6$33RsRNpvBDlWv3j8$tKwtbcfsduBbPW1fcxYVHAt0wiW4tbu9txrJqlMKx2tM6JBC6FR5jPoiFsXEEIt2gzx91.yII2uItJg.HYwdM0"
+# rspamadm_pass: rspamadmpw
+vmail_pass: vmail
+mail_user_pass: mail
+rspamadm_pass: "v$2$qou8we3fsh98bofug3iggfj8184d7kwq$8pnwa7omsh5egiecxg74qzaikejniwrcysuse5aa8fa6ouet4zky"
