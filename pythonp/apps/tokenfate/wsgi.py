@@ -51,7 +51,7 @@ def run_gunicorn():
     }
 
     # 假设你的 Flask 应用在 `wsgi.py` 中定义为 `app`
-    from app import app
+    from pythonp.apps.tokenfate.app import app
     logging.info(f"current pwd: {os.getcwd()}")
     logging.info(f"Working config: using {workers} workers")
     StandaloneApplication(app, options).run()
