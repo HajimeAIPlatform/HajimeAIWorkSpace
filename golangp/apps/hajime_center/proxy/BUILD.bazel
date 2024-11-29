@@ -10,6 +10,7 @@ go_library(
         "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/models",
         "//golangp/apps/hajime_center/proxy/middleware",
+        "//golangp/apps/hajime_center/constants",
         "//golangp/common/utils",
         "//golangp/common/logging:logger",
         "@com_github_gorilla_mux//:go_default_library",

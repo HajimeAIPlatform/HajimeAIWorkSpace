@@ -2,27 +2,30 @@ package middleware
 
 import (
 	"fmt"
-	"hajime/golangp/common/utils"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/common/utils"
 )
 
 func DeserializeUser() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var accessToken string
-		cookie, err := ctx.Cookie("access_token")
 
 		authorizationHeader := ctx.Request.Header.Get("Authorization")
 		fields := strings.Fields(authorizationHeader)
 
-		if len(fields) != 0 && fields[0] == "Bearer" {
+		// 检查 fields 的长度
+		if len(fields) == 2 && fields[0] == "Bearer" {
 			accessToken = fields[1]
-		} else if err == nil {
-			accessToken = cookie
+		} else {
+			cookie, err := ctx.Cookie("access_token")
+			if err == nil {
+				accessToken = cookie
+			}
 		}
 
 		if accessToken == "" {
@@ -40,7 +43,7 @@ func DeserializeUser() gin.HandlerFunc {
 		var user models.User
 		result := initializers.DB.First(&user, "id = ?", fmt.Sprint(sub))
 		if result.Error != nil {
-			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "the user belonging to this token no logger exists"})
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "The user belonging to this token no longer exists"})
 			return
 		}
 

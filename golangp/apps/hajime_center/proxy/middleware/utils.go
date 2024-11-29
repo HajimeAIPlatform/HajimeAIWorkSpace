@@ -73,18 +73,18 @@ func WriteErrorResponse(w http.ResponseWriter, code, message string, status int)
 	json.NewEncoder(w).Encode(response)
 }
 
-func IsPathExcluded(path string, excludedPaths []string) bool {
+func IsPathExcluded(path string, excludedPaths []string,prefix string) bool {
 	for _, excludedPath := range excludedPaths {
-		if path == excludedPath {
+		if path == prefix + excludedPath {
 			return true
 		}
 	}
 	return false
 }
 
-func IsPathPrefix(path string, excludedPaths []string) bool {
+func IsPathPrefix(path string, excludedPaths []string,prefix string) bool {
 	for _, excludedPath := range excludedPaths {
-		if strings.HasPrefix(path, excludedPath) {
+		if strings.HasPrefix(path, prefix + excludedPath) {
 			return true
 		}
 	}

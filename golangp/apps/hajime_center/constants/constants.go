@@ -30,3 +30,5 @@ const (
 const (
 	GiftedPoints = 100
 )
+
+const DifyServerPrefix = "/hajime_federation"
