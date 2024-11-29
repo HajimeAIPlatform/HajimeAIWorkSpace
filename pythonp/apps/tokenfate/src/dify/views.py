@@ -117,7 +117,7 @@ def chat_blocking_key_2(data):
 def chat_workflow(data: Dict):
     try:
         # Generate a unique user ID if not provided
-        user = data.get("user", str(uuid.uuid4()))
+        user = str(uuid.uuid4())
         logging.info("User ID: %s", user)
 
         # Retrieve market data
@@ -127,11 +127,12 @@ def chat_workflow(data: Dict):
         # Prepare chat request with correct input format
         inputs: Dict = {
             "todayMarketData": serialized_market_data,
+            "riskPreference": data.get("risk_preference", "neutral"),
         }
 
         # Prepare chat request
         blocking_chat_req = models.WorkflowsRunRequest(
-            inputs=data.get("inputs", inputs),
+            inputs=inputs,
             user=user,
             response_mode=models.ResponseMode.BLOCKING,
         )

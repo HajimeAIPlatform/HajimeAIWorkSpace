@@ -74,25 +74,25 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_risk_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
+    def _create_risk_keyboard(self, context: Any=None, token: str=None, risk_target: str=None) -> InlineKeyboardMarkup:
         """创建风险选择的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
-                    self.i18n.get_button('role1', context=context),
-                    callback_data=f'risk:{token}',
+                    self.i18n.get_button('risk_role_Conservative', context=context),
+                    callback_data=f'risk:role=Conservative&token={token}&risk_target={risk_target}',
                 ),
                 InlineKeyboardButton(
-                    self.i18n.get_button('role2', context=context),
-                    callback_data=f'risk:{token}',
+                    self.i18n.get_button('risk_role_Cautious', context=context),
+                    callback_data=f'risk:role=Cautious&token={token}&risk_target={risk_target}',
                 ),
                 InlineKeyboardButton(
-                    self.i18n.get_button('role3', context=context),
-                    callback_data=f'risk:{token}',
+                    self.i18n.get_button('risk_role_Assertive', context=context),
+                    callback_data=f'risk:role=Assertive&token={token}&risk_target={risk_target}',
                 ),
                 InlineKeyboardButton(
-                    self.i18n.get_button('role4', context=context),
-                    callback_data=f'risk:{token}',
+                    self.i18n.get_button('risk_role_Risk_Taker', context=context),
+                    callback_data=f'risk:role=Risk_Taker&token={token}&risk_target={risk_target}',
                 )
             ],
         ]
@@ -163,13 +163,19 @@ class KeyboardFactory:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def _create_lot_keyboard(self, context: Any=None, token: str=None) -> InlineKeyboardMarkup:
+    def _create_lot_keyboard(self, context: Any=None, token: str=None, role: str=None, status: str=None) -> InlineKeyboardMarkup:
         """创建灵签的键盘布局"""
         keyboard = [
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('lot_decode', context=context),
-                    callback_data=f'decode:{token}'
+                    callback_data=f'decode_yes:{token}:{role}'
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('not_decode', context=context),
+                    callback_data=f'decode_no:{token}:{role}'
                 )
             ]
         ]
@@ -197,4 +203,50 @@ class KeyboardFactory:
                 )
             ]
         ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _create_menu_keyboard(self, context: Any=None) -> InlineKeyboardMarkup:
+        """创建菜单的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('community', context=context),
+                    url="t.me/HajimeAI"
+                ),
+                InlineKeyboardButton(
+                    self.i18n.get_button('aura', context=context),
+                    callback_data='show_aura_rules'
+                )
+            ],
+        ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _create_decode_keyboard(self, context: Any=None, token: str=None, role: str=None) -> InlineKeyboardMarkup:
+        """创建揭示的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('more', context=context),
+                    callback_data="menu"
+                )
+            ]
+        ]
+
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _create_unveil_or_not_keyboard(self, context: Any=None, token: str=None, role: str=None) -> InlineKeyboardMarkup:
+        """创建揭示的键盘布局"""
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    self.i18n.get_button('do_unveil', context=context),
+                    callback_data=f'risk:role={role}&token={token}&risk_target=recommend_only'
+                ),
+                InlineKeyboardButton(
+                    self.i18n.get_button('not_unveil', context=context),
+                    callback_data="menu"
+                )
+            ]
+        ]
+
         return InlineKeyboardMarkup(keyboard)
