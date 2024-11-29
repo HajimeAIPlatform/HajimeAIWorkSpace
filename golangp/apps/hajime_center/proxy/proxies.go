@@ -3,6 +3,7 @@ package proxy
 import (
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/apps/hajime_center/constants"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -12,7 +13,7 @@ import (
 // DifyHandler forwards requests after removing the "dify" prefix
 func DifyHandler(w http.ResponseWriter, r *http.Request) {
 	// Remove the "dify" prefix from the URL path
-	r.URL.Path = strings.TrimPrefix(r.URL.Path, "/dify")
+	r.URL.Path = strings.TrimPrefix(r.URL.Path, constants.DifyServerPrefix)
 
 	// Parse the target URL
 	config, _ := initializers.LoadEnv(".")
