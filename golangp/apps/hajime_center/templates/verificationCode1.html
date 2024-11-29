@@ -1,4 +1,5 @@
-{{template "base" .}} {{define "content"}}
+{{template "base" .}} 
+{{define "content"}}
 <table role="presentation" class="main">
     <!-- START MAIN CONTENT AREA -->
     <tr>
@@ -7,10 +8,10 @@
                 <tr>
                     <td>
                         <p>Hi {{ .FirstName}},</p>
-                        <p>请前往网址验证你的验证码</p>
-                        <p>你的验证码是 <code>{{.VerificationCode}}</code></p>
-                       
-                        <p>HajimeAI 敬上</p>
+                        <p>Please visit the URL to verify your verification code.</p>
+                        <p>Your verification code is <code>{{.VerificationCode}}</code></p>
+                        
+                        <p>Sincerely, HajimeAI</p>
                     </td>
                 </tr>
             </table>
