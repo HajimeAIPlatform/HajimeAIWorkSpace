@@ -6,6 +6,7 @@ import urllib.parse
 import time
 import json
 import os
+import re
 from typing import List, Dict, Union
 
 from flask import Blueprint, jsonify, request
@@ -352,7 +353,7 @@ async def webhook():
                 await set_language(update)
                 return jsonify({'status': 'ok'}), 200
 
-            if update.message.text.startswith('$'):
+            if update.message.text.startswith('$') and validate_ticker(update.message.text[1:]):
                 chat_id = update.message.chat_id
                 Token = update.message.text
                 print(Token, 'Token')
@@ -938,3 +939,26 @@ async def message_unveil_or_not(update, token, role: str):
     except Exception as e:
         logging.error(f"Error in message_unveil_or_not: {e}")
         return False
+    
+def validate_ticker(ticker: str) -> bool:
+    """
+    验证加密货币缩写是否有效。
+    
+    参数:
+    - ticker: 用户输入的加密货币缩写
+    
+    返回:
+    - 如果有效返回 True，否则返回 False
+    """
+    # 去除前后的空白字符
+    ticker = ticker.strip()
+    
+    # 检查输入长度
+    if len(ticker) < 1 or len(ticker) > 10:  # 假设合理的长度范围是1到10个字符
+        return False
+    
+    # 检查是否为字母和数字的组合
+    if not re.match(r'^[A-Za-z0-9]+$', ticker):
+        return False
+    
+    return True
