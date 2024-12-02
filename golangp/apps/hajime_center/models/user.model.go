@@ -34,6 +34,7 @@ type User struct {
 	AppAmount          int64     `gorm:"not null;default:0"`
 	CreatedAt          time.Time `gorm:"not null"`
 	UpdatedAt          time.Time `gorm:"not null"`
+	FromCode           string    `gorm:"type:varchar(255)"`
 }
 
 type SignUpInput struct {
@@ -270,4 +271,24 @@ func (u *User) PreCheckBalance() bool {
 		return false
 	}
 	return true
+}
+
+func UpdateUserFrom(id string, from string) error {
+	db := initializers.DB
+
+	// 查询用户
+	var user User
+	if err := db.First(&user, "id = ?", id).Error; err != nil {
+		return err
+	}
+
+	// 更新用户信息
+	user.FromCode = from
+
+	// 保存更新后的用户
+	if err := db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

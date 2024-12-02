@@ -24,12 +24,12 @@ var (
 
 	CreditSystem *controllers.CreditSystem
 
-	AuthController      controllers.AuthController
-	AuthRouteController routes.AuthRouteController
+	AuthController              controllers.AuthController
+	AuthRouteController         routes.AuthRouteController
+	ReferralCodeController      controllers.ReferralCodeController
+	ReferralCodeRouteController routes.ReferralCodeRouteController
 
-	AppsController      controllers.AppsController
-	AppsRouteController routes.AppsRouteController
-	wg                  sync.WaitGroup
+	wg sync.WaitGroup
 )
 
 func init() {
@@ -44,9 +44,8 @@ func init() {
 
 	AuthController = controllers.NewAuthController(initializers.DB, CreditSystem)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
-
-	AppsController = controllers.NewAppsController(initializers.DB)
-	AppsRouteController = routes.NewAppsRouteController(AppsController)
+	ReferralCodeController = controllers.NewReferralCodeController(initializers.DB, CreditSystem)
+	ReferralCodeRouteController = routes.NewReferralCodeRouteController(ReferralCodeController)
 
 	server = gin.Default()
 }
@@ -91,7 +90,7 @@ func main() {
 	})
 
 	AuthRouteController.AuthRoute(router)
-	AppsRouteController.AppsRoute(router)
+	ReferralCodeRouteController.ReferralCodeRoute(router)
 
 	// Start the main server in a new goroutine
 	httpServer := &http.Server{
