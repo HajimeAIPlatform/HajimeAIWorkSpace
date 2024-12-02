@@ -413,6 +413,7 @@ func (ac *AuthController) AddUser(ctx *gin.Context) {
 		Verified:  true,         // 直接设置为已验证
 		Photo:     "test",
 		Provider:  "local",
+		FromCode:  payload.FromCode,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

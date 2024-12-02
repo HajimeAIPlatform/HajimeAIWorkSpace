@@ -44,6 +44,7 @@ type SignUpInput struct {
 	PasswordConfirm string `json:"password_confirm" binding:"required"`
 	Photo           string `json:"photo,omitempty"`
 	Role            string `json:"role"`
+	FromCode        string `json:"fromCode,omitempty"`
 }
 
 type SignInInput struct {

@@ -27,7 +27,7 @@ type InviteUserPayload struct {
 }
 
 func (rc *ReferralCode) GenerateRandomCode() (referralCode string) {
-	code := randstr.String(8)
+	code := randstr.String(12)
 
 	referralCode = utils.Encode(code)
 	return referralCode
