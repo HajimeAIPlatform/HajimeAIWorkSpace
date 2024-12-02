@@ -39,16 +39,23 @@ func ValidateCode(code string) (referralCode string) {
 }
 
 // CreateReferralCode adds a new ReferralCode to the database
-func (rc *ReferralCode) CreateReferralCode(db *gorm.DB, owner string) (*ReferralCode, error) {
+func (rc *ReferralCode) CreateReferralCode(db *gorm.DB, user User) (*ReferralCode, error) {
+	if user.UsedCodeAmount >= user.UserMaxCodeAmount {
+		return nil, fmt.Errorf("user has reached the maximum number of invite code")
+	}
 	code := rc.GenerateRandomCode()
 	referralCode := &ReferralCode{
 		Code:       code,
-		Owner:      owner,
+		Owner:      user.ID.String(),
 		UsageCount: 0,
 		CreatedAt:  time.Now().Unix(),
 	}
 
 	if err := db.Create(referralCode).Error; err != nil {
+		return nil, err
+	}
+	err := UpdateUserCodeAmount(user.ID.String(), 1)
+	if err != nil {
 		return nil, err
 	}
 

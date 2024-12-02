@@ -66,16 +66,18 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	now := time.Now()
 	newUser := models.User{
-		Name:      payload.Name,
-		Email:     strings.ToLower(payload.Email),
-		Password:  hashedPassword,
-		Role:      constants.RoleEditor,
-		Verified:  false,
-		Photo:     "test",
-		Provider:  "local",
-		Balance:   constants.GiftedPoints,
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:              payload.Name,
+		Email:             strings.ToLower(payload.Email),
+		Password:          hashedPassword,
+		Role:              constants.RoleEditor,
+		Verified:          false,
+		Photo:             "test",
+		Provider:          "local",
+		Balance:           constants.GiftedPoints,
+		FromCode:          payload.FromCode,
+		UserMaxCodeAmount: constants.RoleEditorMaxCodeAmount,
+		CreatedAt:         now,
+		UpdatedAt:         now,
 	}
 
 	result := ac.DB.Create(&newUser)
@@ -404,18 +406,29 @@ func (ac *AuthController) AddUser(ctx *gin.Context) {
 		return
 	}
 
+	var maxCodeAmount int
+
+	if payload.Role == constants.RoleAdmin {
+		maxCodeAmount = constants.RoleAdminMaxCodeAmount
+	} else if payload.Role == constants.RoleEditor {
+		maxCodeAmount = constants.RoleEditorMaxCodeAmount
+	} else {
+		maxCodeAmount = constants.RoleUserMaxCodeAmount
+	}
+
 	now := time.Now()
 	newUser := models.User{
-		Name:      payload.Name,
-		Email:     strings.ToLower(payload.Email),
-		Password:  hashedPassword,
-		Role:      payload.Role, // 允许管理员设置用户角色
-		Verified:  true,         // 直接设置为已验证
-		Photo:     "test",
-		Provider:  "local",
-		FromCode:  payload.FromCode,
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:              payload.Name,
+		Email:             strings.ToLower(payload.Email),
+		Password:          hashedPassword,
+		Role:              payload.Role, // 允许管理员设置用户角色
+		Verified:          true,         // 直接设置为已验证
+		Photo:             "test",
+		Provider:          "local",
+		FromCode:          payload.FromCode,
+		UserMaxCodeAmount: maxCodeAmount,
+		CreatedAt:         now,
+		UpdatedAt:         now,
 	}
 
 	result := ac.DB.Create(&newUser)

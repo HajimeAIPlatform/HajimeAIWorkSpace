@@ -35,6 +35,8 @@ type User struct {
 	CreatedAt          time.Time `gorm:"not null"`
 	UpdatedAt          time.Time `gorm:"not null"`
 	FromCode           string    `gorm:"type:varchar(255)"`
+	UsedCodeAmount     int       `gorm:"not null;default:0"`
+	UserMaxCodeAmount  int       `gorm:"not null;default:0"`
 }
 
 type SignUpInput struct {
@@ -285,6 +287,26 @@ func UpdateUserFrom(id string, from string) error {
 
 	// 更新用户信息
 	user.FromCode = from
+
+	// 保存更新后的用户
+	if err := db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateUserCodeAmount(id string, amount int) error {
+	db := initializers.DB
+
+	// 查询用户
+	var user User
+	if err := db.First(&user, "id = ?", id).Error; err != nil {
+		return err
+	}
+
+	// 更新用户信息
+	user.UsedCodeAmount = user.UsedCodeAmount + amount
 
 	// 保存更新后的用户
 	if err := db.Save(&user).Error; err != nil {

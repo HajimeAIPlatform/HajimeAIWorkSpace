@@ -22,7 +22,7 @@ func (rc *ReferralCodeController) AddReferralCode(ctx *gin.Context) {
 	currentUser := ctx.MustGet("currentUser").(models.User)
 
 	referralCodeModel := &models.ReferralCode{}
-	referralCode, err := referralCodeModel.CreateReferralCode(rc.DB, currentUser.ID.String())
+	referralCode, err := referralCodeModel.CreateReferralCode(rc.DB, currentUser)
 
 	if err != nil {
 		logging.Warning("Failed to create referral code: " + err.Error())

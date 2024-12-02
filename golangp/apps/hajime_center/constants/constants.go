@@ -4,6 +4,10 @@ const RoleAdmin = "admin"
 const RoleEditor = "editor"
 const RoleUser = "normal"
 
+const RoleAdminMaxCodeAmount = 100
+const RoleEditorMaxCodeAmount = 5
+const RoleUserMaxCodeAmount = 2
+
 // file
 
 var (
