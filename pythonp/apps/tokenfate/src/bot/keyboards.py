@@ -227,7 +227,7 @@ class KeyboardFactory:
             [
                 InlineKeyboardButton(
                     self.i18n.get_button('more', context=context),
-                    callback_data="menu"
+                    callback_data="decode_no:{token}:{role}"
                 )
             ]
         ]

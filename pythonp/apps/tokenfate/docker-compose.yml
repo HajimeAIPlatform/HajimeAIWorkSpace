@@ -4,8 +4,8 @@ services:
   redis:
     image: redis/redis-stack-server:latest
     container_name: redis_server
-#    ports:
-#      - "0.0.0.0:6379:${REDIS_PORT:-6379}"
+    #    ports:
+    #      - "0.0.0.0:6379:${REDIS_PORT:-6379}"
     restart: always
     networks:
       - telebot
@@ -17,8 +17,8 @@ services:
       POSTGRES_USER: "${POSTGRESQL_USER:-telebot}"
       POSTGRES_PASSWORD: "${POSTGRESQL_PASSWORD:-telebot}"
       POSTGRES_DB: "${POSTGRESQL_DATABASE:-telebot}"
-#    ports:
-#      - "0.0.0.0:5432:${POSTGRESQL_PORT:-5432}"
+    #    ports:
+    #      - "0.0.0.0:5432:${POSTGRESQL_PORT:-5432}"
     volumes:
       - ./docker-data/postgres_data:/var/lib/postgresql/data
     networks:
