@@ -1,0 +1,6 @@
+---
+- name: Hajime Mail Server Deploy
+  hosts: hajime_mail_server
+  become: yes
+  roles:
+    - mail

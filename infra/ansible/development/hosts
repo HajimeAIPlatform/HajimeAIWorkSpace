@@ -5,8 +5,10 @@
 52.195.9.90 ansible_ssh_private_key_file=development/files/hajime_tokenfate.pem 
 
 [hajime_website]
-54.178.69.31 ansible_ssh_private_key_file=development/files/hajime_website.pem
+43.207.85.5 ansible_ssh_private_key_file=development/files/hajime_website.pem
 
+[hajime_mail_server]
+43.207.85.5 ansible_ssh_private_key_file=development/files/hajime_mail_server.pem
 
 [all:vars]
 ansible_connection=ssh
