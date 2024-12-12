@@ -2,6 +2,10 @@ package models
 
 import (
 	"errors"
+	"fmt"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
 )
 
@@ -20,6 +24,23 @@ type Dataset struct {
 // SaveDataset saves a given Dataset instance to the database
 func SaveDataset(dataset *Dataset) error {
 	db := initializers.DB
+
+	var user User
+	ownerUUID, err := uuid.Parse(dataset.Owner)
+	if err != nil {
+		return fmt.Errorf("invalid UUID format for owner: %v", err)
+	}
+	if err := db.First(&user, ownerUUID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return fmt.Errorf("user not found")
+		}
+		return err
+	}
+	err = user.UpdateBalance(constants.UploadKnowledgePoints)
+	if err != nil {
+		return err
+	}
+
 	return db.Create(dataset).Error
 }
 

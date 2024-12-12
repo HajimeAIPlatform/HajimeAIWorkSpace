@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/common/logging"
 	"time"
@@ -46,9 +48,33 @@ type HajimeApps struct {
 // CreateHajimeApp 创建一个新的 HajimeApps
 func CreateHajimeApp(app HajimeApps) error {
 	db := initializers.DB
+
 	if err := db.Create(&app).Error; err != nil {
 		return err
 	}
+	var user User
+	ownerUUID, err := uuid.Parse(app.Owner)
+	if err != nil {
+		return fmt.Errorf("invalid UUID format for owner: %v", err)
+	}
+	if err := db.First(&user, ownerUUID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return fmt.Errorf("user not found")
+		}
+		return err
+	}
+	if app.Mode == "workflow" {
+		err := user.UpdateBalance(constants.CreateWorkflowPoints)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := user.UpdateBalance(constants.CreateChatbotPoints)
+		if err != nil {
+			return err
+		}
+	}
+
 	fmt.Println("App created:", app)
 	return nil
 }

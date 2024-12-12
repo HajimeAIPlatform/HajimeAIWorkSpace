@@ -36,3 +36,27 @@ const (
 )
 
 const DifyServerPrefix = "/hajime_federation"
+
+const (
+	// 日常
+	RegisterPoints            = 1000
+	WalletLinkPoints          = 100
+	DailySignInPoints         = 10
+	UseBotAgentWorkflowPoints = 20
+
+	// 控制成本
+	ChatCostPerToken = -0.5
+	FreeChatSessions = 3
+
+	// 鼓励Devs
+	CreateChatbotPoints    = 10000
+	CreateWorkflowPoints   = 30000
+	UseVariablesPoints     = 2000
+	UseToolsPoints         = 3000
+	UploadKnowledgePoints  = 1000
+	UseKnowledgePoints     = 2000
+	DevUsagePointsPerToken = 0.5
+
+	// 运营 / 市场
+	HajimeBotHolderMultiplier = 1.5
+)

@@ -163,6 +163,21 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 		return
 	}
 
+	now := time.Now()
+	if user.LoginTime == nil || !user.IsSameDay(*user.LoginTime, now) {
+		// 更新余额
+		if err := user.UpdateBalance(constants.DailySignInPoints); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"result": "fail", "code": "UPDATE_BALANCE_ERROR", "message": err.Error()})
+			return
+		}
+
+		// 更新登录时间
+		if err := user.UpdateLoginTime(&now); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"result": "fail", "code": "UPDATE_LOGINTIME_ERROR", "message": err.Error()})
+			return
+		}
+	}
+
 	config, _ := initializers.LoadEnv(".")
 
 	// Generate Tokens
@@ -578,6 +593,15 @@ func (ac *AuthController) LoginWithWallet(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Invalid request"})
 		return
+	}
+
+	// Check if currentUser.Address exists
+	if currentUser.Address == "" {
+		err := currentUser.UpdateBalance(constants.WalletLinkPoints)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+			return
+		}
 	}
 
 	// 将 WalletAddress 转为小写
