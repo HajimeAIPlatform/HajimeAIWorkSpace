@@ -1,7 +1,7 @@
 load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "telemetry_lib",
+    name = "telemetry",
     srcs = glob(["**/*.go"]),
     importpath = "hajime/golangp/apps/AgentTown/telemetry",
     visibility = ["//visibility:public"],

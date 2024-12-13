@@ -1,13 +1,13 @@
 load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "runtime_lib",
+    name = "runtime",
     srcs = glob(["**/*.go"]),
     importpath = "hajime/golangp/apps/AgentTown/runtime",
     visibility = ["//visibility:public"],
     deps = [
-        "//golangp/apps/AgentTown/agent:agent_lib",
-        "//golangp/apps/AgentTown/config:config_lib",
-        "//golangp/apps/AgentTown/task:task_lib",
+        "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/config",
+        "//golangp/apps/AgentTown/task",
     ],
 )
