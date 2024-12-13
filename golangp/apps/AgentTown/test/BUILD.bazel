@@ -7,9 +7,3 @@ go_test(
         "@com_github_magiconair_properties//assert",
     ],
 )
-
-go_test(
-    name = "test_test",
-    srcs = ["common_test.go"],
-    deps = ["@com_github_magiconair_properties//assert"],
-)
