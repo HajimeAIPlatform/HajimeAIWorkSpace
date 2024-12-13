@@ -49,13 +49,13 @@ const (
 	FreeChatSessions = 3
 
 	// 鼓励Devs
-	CreateChatbotPoints    = 10000
-	CreateWorkflowPoints   = 30000
-	UseVariablesPoints     = 2000
-	UseToolsPoints         = 3000
-	UploadKnowledgePoints  = 1000
-	UseKnowledgePoints     = 2000
-	DevUsagePointsPerToken = 0.5
+	CreateChatbotPoints   = 10000
+	CreateWorkflowPoints  = 30000
+	UseVariablesPoints    = 2000
+	UseToolsPoints        = 3000
+	UploadKnowledgePoints = 1000
+	UseKnowledgePoints    = 2000
+	UsageEarnPerToken     = 0.5
 
 	// 运营 / 市场
 	HajimeBotHolderMultiplier = 1.5

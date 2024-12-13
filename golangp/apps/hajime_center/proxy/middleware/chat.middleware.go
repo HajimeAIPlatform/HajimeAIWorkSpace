@@ -85,8 +85,9 @@ func processResponse(body []byte, exceedsLimit bool, user *models.User, appID st
 	}
 
 	type Response struct {
-		Event    string   `json:"event"`
-		Metadata Metadata `json:"metadata"`
+		Event          string   `json:"event"`
+		Metadata       Metadata `json:"metadata"`
+		ConversationID string   `json:"conversation_id"`
 	}
 
 	data := string(body)
@@ -119,6 +120,24 @@ func processResponse(body []byte, exceedsLimit bool, user *models.User, appID st
 			if err != nil {
 				logging.Warning("Failed to update user balance: " + err.Error())
 			}
+		}
+
+		tokenEarn := float64(response.Metadata.Usage.TotalTokens) * constants.UsageEarnPerToken
+
+		ownerUser, err := models.GetUserByAppID(appID)
+		if err != nil {
+			logging.Warning("Failed to get owner user: " + err.Error())
+			return
+		}
+
+		err = ownerUser.UpdateBalance(tokenEarn, "UsageEarnPerToken")
+		if err != nil {
+			logging.Warning("Failed to update user balance: " + err.Error())
+		}
+
+		_, err = models.CreateConversation(response.ConversationID, user.ID.String())
+		if err != nil {
+			logging.Warning("Failed to create conversation: " + err.Error())
 		}
 
 		logging.Info(fmt.Sprintf(
