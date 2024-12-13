@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "routes",
@@ -8,6 +8,6 @@ go_library(
     deps = [
         "//golangp/apps/hajime_center/controllers",
         "//golangp/apps/hajime_center/middleware",
-        "@com_github_gin_gonic_gin//:go_default_library",
+        "@com_github_gin_gonic_gin//:gin",
     ],
 )

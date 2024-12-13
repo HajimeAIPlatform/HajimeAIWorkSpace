@@ -6,9 +6,9 @@ py_library(
     srcs = glob(["**/*.py"]),
     visibility = ["//visibility:public"],
     deps = [
-        requirement("httpx"),
-        requirement("httpx-sse"),
-        requirement("pydantic"),
-        requirement("StrEnum"),
+        "@pypi_deps//:httpx",
+        "@pypi_deps//:httpx-sse",
+        "@pypi_deps//:pydantic",
+        "@pypi_deps//:StrEnum",
     ],
 )

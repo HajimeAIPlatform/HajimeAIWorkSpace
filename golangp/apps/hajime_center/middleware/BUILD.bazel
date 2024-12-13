@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "middleware",
@@ -9,6 +9,6 @@ go_library(
         "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/models",
         "//golangp/common/utils",
-        "@com_github_gin_gonic_gin//:go_default_library",
+        "@com_github_gin_gonic_gin//:gin",
     ],
 )

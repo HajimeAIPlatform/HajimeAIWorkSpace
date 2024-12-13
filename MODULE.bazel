@@ -1,6 +1,58 @@
 ###############################################################################
 # Bazel now uses Bzlmod by default to manage external dependencies.
-# Please consider migrating your external dependencies from WORKSPACE to MODULE.bazel.
+# Please consider migrating your external dependencies from WORKSPACE.bazel to MODULE.bazel.
 #
 # For more details, please check https://github.com/bazelbuild/bazel/issues/18958
 ###############################################################################
+
+module(
+    name = "hajime_ai",
+    version = "0.0.1",
+)
+
+bazel_dep(name = "rules_go", version = "0.50.1")
+bazel_dep(name = "gazelle", version = "0.40.0")
+bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+
+
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(
+    goarch = "amd64",
+    goos = "linux",
+    version = "1.23.2",
+)
+
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+go_deps.from_file(go_mod = "//:go.mod")
+use_repo(
+    go_deps,
+    "com_github_blocto_solana_go_sdk",
+    "com_github_carlmjohnson_requests",
+    "com_github_gin_contrib_cors",
+    "com_github_gin_gonic_gin",
+    "com_github_golang_jwt_jwt",
+    "com_github_google_uuid",
+    "com_github_gorilla_mux",
+    "com_github_k3a_html2text",
+    "com_github_magiconair_properties",
+    "com_github_minio_minio_go_v7",
+    "com_github_mr_tron_base58",
+    "com_github_reiver_go_telnet",
+    "com_github_shopspring_decimal",
+    "com_github_smartwalle_alipay_v3",
+    "com_github_spf13_viper",
+    "com_github_thanhpk_randstr",
+    "in_gopkg_gomail_v2",
+    "io_gorm_driver_postgres",
+    "io_gorm_gorm",
+    "org_golang_x_crypto",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pypi_deps",
+    python_version = "3.11",
+    requirements_lock = "//:requirements_lock.txt",
+)
+use_repo(pip, "pypi_deps")
