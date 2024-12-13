@@ -1,7 +1,10 @@
-load("@rules_go//go:def.bzl", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
 
 go_test(
-    name = "test_test",
+    name = "common_test",
     srcs = ["common_test.go"],
-    deps = ["@com_github_magiconair_properties//assert"],
+    deps = [
+        "//golangp/common/utils",
+        "@com_github_magiconair_properties//assert",
+    ],
 )

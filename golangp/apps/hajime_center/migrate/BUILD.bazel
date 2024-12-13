@@ -10,10 +10,14 @@ go_binary(
 go_library(
     name = "migrate_lib",
     srcs = ["migrate.go"],
-    importpath = "hajime/golangp/apps/hajime_center/golangp/apps/hajime_center/migrate",
+    importpath = "hajime/golangp/apps/hajime_center/migrate",
     visibility = ["//visibility:private"],
     deps = [
+        "//golangp/apps/hajime_center/constants",
+        "//golangp/apps/hajime_center/initializers",
+        "//golangp/apps/hajime_center/models",
         "//golangp/common/logging:logger",
-        "@io_gorm_gorm//:gorm",
+        "//golangp/common/utils",
+        "@io_gorm_gorm//:go_default_library",
     ],
 )

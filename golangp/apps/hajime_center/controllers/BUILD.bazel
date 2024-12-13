@@ -3,12 +3,18 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "controllers",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/hajime_center/golangp/apps/hajime_center/controllers",
+    importpath = "hajime/golangp/apps/hajime_center/controllers",
     visibility = ["//visibility:public"],
     deps = [
+        "//golangp/apps/hajime_center/constants",
+        "//golangp/apps/hajime_center/dify",
+        "//golangp/apps/hajime_center/initializers",
+        "//golangp/apps/hajime_center/mail_utils",
+        "//golangp/apps/hajime_center/models",
         "//golangp/common/logging:logger",
-        "@com_github_gin_gonic_gin//:gin",
-        "@com_github_thanhpk_randstr//:randstr",
-        "@io_gorm_gorm//:gorm",
+        "//golangp/common/utils",
+        "@com_github_gin_gonic_gin//:go_default_library",
+        "@com_github_thanhpk_randstr//:go_default_library",
+        "@io_gorm_gorm//:go_default_library",
     ],
 )

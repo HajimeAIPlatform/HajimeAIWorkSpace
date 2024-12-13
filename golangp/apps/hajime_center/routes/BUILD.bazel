@@ -3,7 +3,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "routes",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/hajime_center/golangp/apps/hajime_center/routes",
+    importpath = "hajime/golangp/apps/hajime_center/routes",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_gin_gonic_gin//:gin"],
+    deps = [
+        "//golangp/apps/hajime_center/controllers",
+        "//golangp/apps/hajime_center/middleware",
+        "@com_github_gin_gonic_gin//:go_default_library",
+    ],
 )

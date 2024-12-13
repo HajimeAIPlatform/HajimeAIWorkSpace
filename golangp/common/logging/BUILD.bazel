@@ -6,10 +6,3 @@ go_library(
     importpath = "hajime/golangp/common/logging",
     visibility = ["//visibility:public"],
 )
-
-go_library(
-    name = "logging",
-    srcs = ["logger.go"],
-    importpath = "hajime/golangp/apps/hajime_center/golangp/common/logging",
-    visibility = ["//visibility:public"],
-)

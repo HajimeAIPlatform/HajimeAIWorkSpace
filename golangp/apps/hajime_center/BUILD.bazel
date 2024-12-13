@@ -42,9 +42,13 @@ pkg_tar(
 go_library(
     name = "hajime_center_lib",
     srcs = ["main.go"],
-    importpath = "hajime/golangp/apps/hajime_center/golangp/apps/hajime_center",
+    importpath = "hajime/golangp/apps/hajime_center",
     visibility = ["//visibility:private"],
     deps = [
+        "//golangp/apps/hajime_center/controllers",
+        "//golangp/apps/hajime_center/initializers",
+        "//golangp/apps/hajime_center/proxy",
+        "//golangp/apps/hajime_center/routes",
         "@com_github_gin_contrib_cors//:cors",
         "@com_github_gin_gonic_gin//:gin",
     ],
