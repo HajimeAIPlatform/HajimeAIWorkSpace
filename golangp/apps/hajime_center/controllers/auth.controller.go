@@ -166,7 +166,7 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	now := time.Now()
 	if user.LoginTime == nil || !user.IsSameDay(*user.LoginTime, now) {
 		// 更新余额
-		if err := user.UpdateBalance(constants.DailySignInPoints); err != nil {
+		if err := user.UpdateBalance(constants.DailySignInPoints, "DailySignInPoints"); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"result": "fail", "code": "UPDATE_BALANCE_ERROR", "message": err.Error()})
 			return
 		}
@@ -597,7 +597,7 @@ func (ac *AuthController) LoginWithWallet(ctx *gin.Context) {
 
 	// Check if currentUser.Address exists
 	if currentUser.Address == "" {
-		err := currentUser.UpdateBalance(constants.WalletLinkPoints)
+		err := currentUser.UpdateBalance(constants.WalletLinkPoints, "WalletLinkPoints")
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
 			return

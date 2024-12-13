@@ -36,7 +36,7 @@ func SaveDataset(dataset *Dataset) error {
 		}
 		return err
 	}
-	err = user.UpdateBalance(constants.UploadKnowledgePoints)
+	err = user.UpdateBalance(constants.UploadKnowledgePoints, "UploadKnowledgePoints")
 	if err != nil {
 		return err
 	}

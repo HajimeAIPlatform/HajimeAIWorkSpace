@@ -115,7 +115,7 @@ func processResponse(body []byte, exceedsLimit bool, user *models.User, appID st
 		tokenCost := float64(response.Metadata.Usage.TotalTokens) * constants.ChatCostPerToken
 
 		if exceedsLimit {
-			err := user.UpdateBalance(tokenCost)
+			err := user.UpdateBalance(tokenCost, "ChatCostPerToken")
 			if err != nil {
 				logging.Warning("Failed to update user balance: " + err.Error())
 			}

@@ -144,7 +144,7 @@ func (u *User) UpdateAppUsage(appID string) (bool, error) {
 		usageData[appID] = count + 1
 	} else {
 		usageData[appID] = 1
-		err := u.UpdateBalance(constants.UseBotAgentWorkflowPoints) // Replace with your actual points
+		err := u.UpdateBalance(constants.UseBotAgentWorkflowPoints, "UseBotAgentWorkflowPoints") // Replace with your actual points
 		if err != nil {
 			return false, err
 		}
@@ -198,7 +198,7 @@ func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) e
 	// Check and update "Knowledge"
 	if knowledge && configUsage[appID][0] == "" {
 		configUsage[appID][0] = "Knowledge"
-		err := u.UpdateBalance(constants.UseKnowledgePoints)
+		err := u.UpdateBalance(constants.UseKnowledgePoints, "UseKnowledgePoints")
 		if err != nil {
 			return err
 		}
@@ -207,7 +207,7 @@ func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) e
 	// Check and update "Variables"
 	if variables && configUsage[appID][1] == "" {
 		configUsage[appID][1] = "Variables"
-		err := u.UpdateBalance(constants.UseVariablesPoints)
+		err := u.UpdateBalance(constants.UseVariablesPoints, "UseVariablesPoints")
 		if err != nil {
 			return err
 		}
@@ -277,10 +277,21 @@ func (u *User) IsSameDay(t1, t2 time.Time) bool {
 	return y1 == y2 && m1 == m2 && d1 == d2
 }
 
-func (u *User) UpdateBalance(balance float64) error {
+func (u *User) UpdateBalance(balance float64, operatorType string) error {
 	// Update the user's Balance field
 	db := initializers.DB
+	// 确定变动类型
+	changeType := "add"
+	if balance < 0 {
+		changeType = "subtract"
+	}
 	newBalance := u.Balance + balance
+
+	err := AddBalanceHistory(db, u.ID, balance, changeType, operatorType, u.Balance, newBalance)
+	if err != nil {
+		return err
+	}
+
 	result := db.Model(u).Update("Balance", newBalance)
 	if result.Error != nil {
 		return result.Error

@@ -64,12 +64,12 @@ func CreateHajimeApp(app HajimeApps) error {
 		return err
 	}
 	if app.Mode == "workflow" {
-		err := user.UpdateBalance(constants.CreateWorkflowPoints)
+		err := user.UpdateBalance(constants.CreateWorkflowPoints, "CreateWorkflowPoints")
 		if err != nil {
 			return err
 		}
 	} else {
-		err := user.UpdateBalance(constants.CreateChatbotPoints)
+		err := user.UpdateBalance(constants.CreateChatbotPoints, "CreateChatbotPoints")
 		if err != nil {
 			return err
 		}
