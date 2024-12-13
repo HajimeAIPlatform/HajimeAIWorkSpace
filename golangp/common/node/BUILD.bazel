@@ -1,15 +1,22 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_test")
 
 go_library(
     name = "node",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/common/node",
+    importpath = "hajime/golangp/apps/hajime_center/golangp/common/node",
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/common/logging:logger",
-        "@com_github_blocto_solana_go_sdk//types:go_default_library",
-        "@com_github_carlmjohnson_requests//:go_default_library",
-        "@com_github_mr_tron_base58//:go_default_library",
-        "@com_github_reiver_go_telnet//:go_default_library",
+        "@com_github_blocto_solana_go_sdk//types",
+        "@com_github_carlmjohnson_requests//:requests",
+        "@com_github_mr_tron_base58//:base58",
+        "@com_github_reiver_go_telnet//:go-telnet",
     ],
+)
+
+go_test(
+    name = "node_test",
+    srcs = ["utils_test.go"],
+    embed = [":node"],
 )

@@ -8,15 +8,15 @@ compile_pip_requirements(
     requirements_txt = "requirements_lock.txt",
 )
 
-## gazelle:prefix hajime/golangp/apps/hajime_center
-#gazelle(
-#    name = "gazelle-update-repos",
-#    args = [
-#        "-from_file=go.mod",
-#        "-to_macro=deps.bzl%go_dependencies",
-#        "-prune",
-#    ],
-#    command = "update-repos",
-#)
+# gazelle:prefix hajime/golangp/apps/hajime_center
+gazelle(
+    name = "gazelle-update-repos",
+    args = [
+        "-from_file=go.mod",
+        "-to_macro=deps.bzl%go_dependencies",
+        "-prune",
+    ],
+    command = "update-repos",
+)
 
 gazelle(name = "gazelle")

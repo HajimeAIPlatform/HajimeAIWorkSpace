@@ -3,12 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "middleware",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/hajime_center/middleware",
+    importpath = "hajime/golangp/apps/hajime_center/golangp/apps/hajime_center/middleware",
     visibility = ["//visibility:public"],
-    deps = [
-        "//golangp/apps/hajime_center/initializers",
-        "//golangp/apps/hajime_center/models",
-        "//golangp/common/utils",
-        "@com_github_gin_gonic_gin//:go_default_library",
-    ],
+    deps = ["@com_github_gin_gonic_gin//:gin"],
 )

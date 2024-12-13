@@ -1,0 +1,9 @@
+load("@rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "common_test",
+    srcs = ["common_test.go"],
+    deps = [
+        "@com_github_magiconair_properties//assert",
+    ],
+)

@@ -3,14 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "models",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/hajime_center/models",
+    importpath = "hajime/golangp/apps/hajime_center/golangp/apps/hajime_center/models",
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/common/logging:logger",
-        "//golangp/apps/hajime_center/initializers",
-        "@com_github_google_uuid//:go_default_library",
-        "@io_gorm_datatypes//:go_default_library",
-        "@io_gorm_gorm//:go_default_library",
-        "@com_github_shopspring_decimal//:go_default_library",
+        "@com_github_google_uuid//:uuid",
+        "@com_github_shopspring_decimal//:decimal",
+        "@io_gorm_gorm//:gorm",
     ],
 )

@@ -2,15 +2,18 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_binary(
     name = "migrate",
-    srcs = ["migrate.go"],
     data = ["//golangp/apps/hajime_center:app.env"],
+    embed = [":migrate_lib"],
     visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "migrate_lib",
+    srcs = ["migrate.go"],
+    importpath = "hajime/golangp/apps/hajime_center/golangp/apps/hajime_center/migrate",
+    visibility = ["//visibility:private"],
     deps = [
-        "//golangp/apps/hajime_center/constants",
-        "//golangp/apps/hajime_center/initializers",
-        "//golangp/apps/hajime_center/models",
-        "//golangp/common/utils",
         "//golangp/common/logging:logger",
-        "@io_gorm_gorm//:go_default_library",
+        "@io_gorm_gorm//:gorm",
     ],
 )
