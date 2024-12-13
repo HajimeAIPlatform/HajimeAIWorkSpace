@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create and add agents
@@ -24,9 +25,9 @@ func main() {
 	// Assign tasks to agents
 	go func() {
 		time.Sleep(2 * time.Second)
-		runtime.AssignTask("Agent_A", task.Task{ID: "1", Content: "Fetch Data"})
-		runtime.AssignTask("Agent_B", task.Task{ID: "2", Content: "Process Data"})
-		runtime.AssignTask("Agent_C", task.Task{ID: "3", Content: "Export Results"})
+		runtime.AssignTask("Agent_A", task.Task{Description: "Fetch Data"})
+		runtime.AssignTask("Agent_B", task.Task{Description: "Process Data"})
+		runtime.AssignTask("Agent_C", task.Task{Description: "Export Results"})
 	}()
 
 	// Log activities

@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"hajime/golangp/apps/AgentTown/task"
 	"hajime/golangp/apps/AgentTown/telemetry"
 	"math/rand"
 	"sync"
@@ -19,9 +20,9 @@ type Message struct {
 // Agent represents a single autonomous entity
 type Agent struct {
 	Name      string
-	MessageCh chan Message  // Channel to receive messages
-	ProcessCh chan string   // Channel for tasks to process
-	Done      chan struct{} // Signaling channel indicating work completion
+	MessageCh chan Message    // Channel to receive messages
+	ProcessCh chan *task.Task // Channel for tasks to process
+	Done      chan struct{}   // Signaling channel indicating work completion
 	Receivers map[string]*Agent
 	IsActive  bool
 }
@@ -30,8 +31,8 @@ type Agent struct {
 func NewAgent(name string) *Agent {
 	return &Agent{
 		Name:      name,
-		MessageCh: make(chan Message, 10), // Buffered channel for communication
-		ProcessCh: make(chan string, 5),   // Buffered channel for tasks
+		MessageCh: make(chan Message, 10),    // Buffered channel for communication
+		ProcessCh: make(chan *task.Task, 20), // Buffered channel for tasks
 		Done:      make(chan struct{}),
 		Receivers: make(map[string]*Agent),
 		IsActive:  false,
@@ -57,15 +58,15 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 				continue
 
 			// Process assigned tasks
-			case task := <-agent.ProcessCh:
-				fmt.Printf("[%s] Processing task: %s\n", agent.Name, task)
+			case tsk := <-agent.ProcessCh:
+				fmt.Printf("[%s] Processing task %s : %s\n", agent.Name, tsk.ID, tsk.Description)
 				time.Sleep(time.Duration(rand.Intn(2)+1) * time.Second) // Simulate task processing
-				fmt.Printf("[%s] Finished task: %s\n", agent.Name, task)
+				fmt.Printf("[%s] Finished task %s : %s\n", agent.Name, tsk.ID, tsk.Description)
 				continue
 
 			case <-agent.Done:
 				fmt.Printf("[%s] Done signal received\n", agent.Name)
-				fmt.Printf("[%s] Shutting down...\n", agent.Name)
+				fmt.Printf("[%s] Quiting the agent goroutine\n", agent.Name)
 				agent.IsActive = false
 				telemetry.RecordMetricInc("agents_active", -1)
 				return
@@ -73,7 +74,7 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 			// Graceful shutdown on context cancellation
 			case <-ctx.Done():
 				fmt.Printf("[%s] Context cancelled\n", agent.Name)
-				fmt.Printf("[%s] Shutting down...\n", agent.Name)
+				fmt.Printf("[%s] Quiting the agent goroutine\n", agent.Name)
 				agent.IsActive = false
 				telemetry.RecordMetricInc("agents_active", -1)
 				return
@@ -104,6 +105,6 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 }
 
 // AssignTask sends a task to the agent for processing
-func (agent *Agent) AssignTask(task string) {
-	agent.ProcessCh <- task
+func (agent *Agent) AssignTask(taskDescription string) {
+	agent.ProcessCh <- task.NewTask(taskDescription)
 }

@@ -6,6 +6,7 @@ go_library(
     importpath = "hajime/golangp/apps/AgentTown/agent",
     visibility = ["//visibility:public"],
     deps = [
+        "//golangp/apps/AgentTown/task",
         "//golangp/apps/AgentTown/telemetry",
     ],
 )

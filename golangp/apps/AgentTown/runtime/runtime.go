@@ -62,7 +62,7 @@ func AssignTask(agentName string, t task.Task) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if ag, exists := r.agents[agentName]; exists {
-		ag.AssignTask(t.Content)
+		ag.AssignTask(t.Description)
 		telemetry.RecordMetricInc("tasks_assigned", 1)
 	}
 }
