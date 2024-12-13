@@ -13,35 +13,32 @@ import (
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	rt := runtime.GetInstance()
-
 	// Create and add agents
-	rt.AddAgent(config.Config{Name: "Agent_A"})
-	rt.AddAgent(config.Config{Name: "Agent_B"})
-	rt.AddAgent(config.Config{Name: "Agent_C"})
+	runtime.AddAgent(config.Config{Name: "Agent_A"})
+	runtime.AddAgent(config.Config{Name: "Agent_B"})
+	runtime.AddAgent(config.Config{Name: "Agent_C"})
 
 	// Start agents
-	go rt.StartAgents(ctx)
+	go runtime.StartAgents(ctx)
 
 	// Assign tasks to agents
 	go func() {
 		time.Sleep(2 * time.Second)
-		rt.AssignTask("Agent_A", task.Task{ID: "1", Content: "Fetch Data"})
-		rt.AssignTask("Agent_B", task.Task{ID: "2", Content: "Process Data"})
-		rt.AssignTask("Agent_C", task.Task{ID: "3", Content: "Export Results"})
+		runtime.AssignTask("Agent_A", task.Task{ID: "1", Content: "Fetch Data"})
+		runtime.AssignTask("Agent_B", task.Task{ID: "2", Content: "Process Data"})
+		runtime.AssignTask("Agent_C", task.Task{ID: "3", Content: "Export Results"})
 	}()
 
 	// Log activities
 	go func() {
 		for {
 			time.Sleep(5 * time.Second)
-			rt.LogActivity()
+			runtime.LogActivity()
 		}
 	}()
 
-	// Start tm monitoring
-	tm := telemetry.NewTelemetry()
-	tm.Monitor()
+	// Start telemetry monitoring
+	telemetry.Monitor(5 * time.Second)
 
 	// For test purpose
 	time.Sleep(15 * time.Second)

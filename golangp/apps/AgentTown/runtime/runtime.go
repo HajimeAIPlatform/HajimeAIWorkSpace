@@ -6,6 +6,7 @@ import (
 	"hajime/golangp/apps/AgentTown/agent"
 	"hajime/golangp/apps/AgentTown/config"
 	"hajime/golangp/apps/AgentTown/task"
+	"hajime/golangp/apps/AgentTown/telemetry"
 	"sync"
 )
 
@@ -14,29 +15,31 @@ type Runtime struct {
 	mu     sync.Mutex
 }
 
-var instance *Runtime
+var rt *Runtime
 var once sync.Once
 
-// GetInstance returns the singleton instance of Runtime
-func GetInstance() *Runtime {
-	once.Do(func() {
-		instance = &Runtime{
-			agents: make(map[string]*agent.Agent),
-		}
-	})
-	return instance
-}
-
 // AddAgent adds a new agent to the runtime
-func (r *Runtime) AddAgent(cfg config.Config) {
+func AddAgent(cfg config.Config) {
+	r := GetInstance()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	newAgent := agent.NewAgent(cfg.Name)
 	r.agents[cfg.Name] = newAgent
 }
 
+// GetInstance returns the singleton instance of Runtime
+func GetInstance() *Runtime {
+	once.Do(func() {
+		rt = &Runtime{
+			agents: make(map[string]*agent.Agent),
+		}
+	})
+	return rt
+}
+
 // StartAgents starts all agents
-func (r *Runtime) StartAgents(ctx context.Context) {
+func StartAgents(ctx context.Context) {
+	r := GetInstance()
 	fmt.Printf("Starting all agents from runtime ...\n")
 	var wg sync.WaitGroup
 	for _, ag := range r.agents {
@@ -50,21 +53,23 @@ func (r *Runtime) StartAgents(ctx context.Context) {
 			close(ag.Done)
 		}
 	}()
-
 	wg.Wait()
 }
 
 // AssignTask assigns a task to a specific agent
-func (r *Runtime) AssignTask(agentName string, t task.Task) {
+func AssignTask(agentName string, t task.Task) {
+	r := GetInstance()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if ag, exists := r.agents[agentName]; exists {
 		ag.AssignTask(t.Content)
+		telemetry.RecordMetricInc("tasks_assigned", 1)
 	}
 }
 
 // LogActivity logs activities of all agents
-func (r *Runtime) LogActivity() {
+func LogActivity() {
+	r := GetInstance()
 	for _, ag := range r.agents {
 		if ag.IsActive {
 			fmt.Printf("Agent %s is active\n", ag.Name)

@@ -9,5 +9,6 @@ go_library(
         "//golangp/apps/AgentTown/agent",
         "//golangp/apps/AgentTown/config",
         "//golangp/apps/AgentTown/task",
+        "//golangp/apps/AgentTown/telemetry",
     ],
 )

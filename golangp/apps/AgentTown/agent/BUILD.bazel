@@ -5,4 +5,7 @@ go_library(
     srcs = ["agent.go"],
     importpath = "hajime/golangp/apps/AgentTown/agent",
     visibility = ["//visibility:public"],
+    deps = [
+        "//golangp/apps/AgentTown/telemetry",
+    ],
 )

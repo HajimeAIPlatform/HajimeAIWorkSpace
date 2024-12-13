@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"hajime/golangp/apps/AgentTown/telemetry"
 	"math/rand"
 	"sync"
 	"time"
@@ -46,7 +47,7 @@ func (agent *Agent) RegisterReceiver(other *Agent) {
 func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
 	agent.IsActive = true
-
+	telemetry.RecordMetricInc("agents_active", 1)
 	go func() {
 		for {
 			select {
@@ -66,14 +67,15 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 				fmt.Printf("[%s] Done signal received\n", agent.Name)
 				fmt.Printf("[%s] Shutting down...\n", agent.Name)
 				agent.IsActive = false
+				telemetry.RecordMetricInc("agents_active", -1)
 				return
 
 			// Graceful shutdown on context cancellation
 			case <-ctx.Done():
-
 				fmt.Printf("[%s] Context cancelled\n", agent.Name)
 				fmt.Printf("[%s] Shutting down...\n", agent.Name)
 				agent.IsActive = false
+				telemetry.RecordMetricInc("agents_active", -1)
 				return
 			}
 		}
