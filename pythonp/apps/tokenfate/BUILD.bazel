@@ -32,6 +32,7 @@ py_binary(
         "//pythonp/apps/tokenfate/models",
         "//pythonp/apps/tokenfate/src",
         "//pythonp/common/logging:logger",
+        "//pythonp/common/email_notifications:email_notifications",
     ],
 )
 

@@ -27,7 +27,7 @@ from pythonp.apps.tokenfate.src.bot.keyboards import KeyboardFactory
 from pythonp.apps.tokenfate.src.ton.tc_storage import DailyFortune, UserActivityTracker
 from pythonp.apps.tokenfate.models.transaction import UserPoints
 from pythonp.apps.tokenfate.static.static import get_images_path
-
+from pythonp.common.email_notifications.error_collector import collect_error
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')
@@ -90,8 +90,9 @@ async def handle_streaming_chat(chat_id, query):
                 )
                 current_message_content = message
 
-    except Exception as error:
-        logging.error(f"Error occurred during streaming: {error}")
+    except Exception as e:
+        logging.error(f"Error occurred during streaming: {e}")
+        collect_error(e)
         await telegram_app.bot.send_message(
             chat_id=chat_id,
             text='Sorry, I am not able to generate content for you right now. Please try again later.'
@@ -106,8 +107,9 @@ async def ton_command_handle(update):
             return ton_response
         return None
 
-    except Exception as error:
-        logging.error(f"Error occurred during streaming: {error}")
+    except Exception as e:
+        logging.error(f"Error occurred during streaming: {e}")
+        collect_error(e)
         return {
             "text":
                 'Sorry, I am not able to generate content for you right now. Please try again later.'
@@ -430,9 +432,10 @@ async def webhook():
                 return jsonify({'status': 'ok'}), 200
         return jsonify({'status': 'ok'}), 200
 
-    except Exception as error:
+    except Exception as e:
         logging.info(f"update: {update}")
-        logging.error(f"Error Occurred: {error}")
+        logging.error(f"Error Occurred: {e}")
+        collect_error(e)
         return {
             "method":
                 "sendMessage",
@@ -487,6 +490,7 @@ def fetch_trending_tokens(role: str):
 
     except Exception as e:
         logging.error("Failed to fetch trending tokens: %s", e)
+        collect_error(e)
         return []
     
 def create_token_keyboard(tokens):
@@ -507,6 +511,7 @@ def create_token_keyboard(tokens):
                 row = []
 
     return InlineKeyboardMarkup(keyboard)
+
 
 async def send_recommendations(update, role: str):
     if update.message:
@@ -530,6 +535,7 @@ async def send_recommendations(update, role: str):
     reply_markup = create_token_keyboard(recommended_tokens)
     dialog = i18n.get_dialog("unveil_result")
     await target.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+
 
 async def reveal_fate(update, token, role: str):
     try:
@@ -592,10 +598,12 @@ async def reveal_fate(update, token, role: str):
     
     except Exception as e:
         logging.error(f"Error in reveal_fate: {e}")
+        collect_error(e)
         await target.message.reply_text(
             "Sorry, something went wrong while revealing your fate."
         )
         return
+
     
 async def risk_preference(update, token, risk_target):
     chat_id = await get_chat_id(update) # 获取chat_id
@@ -635,10 +643,12 @@ async def risk_preference(update, token, risk_target):
 
     except Exception as e:
         logging.error(f"Error in reveal_fate: {e}")
+        collect_error(e)
         await update.callback_query.message.reply_text(
             "Sorry, something went wrong while showing risk preference."
         )
         return
+
     
 async def show_aura_rules(update):    
     try:
@@ -680,8 +690,10 @@ async def show_aura_rules(update):
 
     except Exception as e:
         logging.error(f"Error in show_aura_rules: {e}")
+        collect_error(e)
         await target.reply_text("Sorry, something went wrong while showing the aura rules.")
         return
+
     
 async def decode_lot(update, token, role):
     try:
@@ -737,8 +749,10 @@ async def decode_lot(update, token, role):
 
     except Exception as e:
         logging.error(f"Error in decode_lot: {e}")
+        collect_error(e)
         await target.message.reply_text("Sorry, something went wrong while decode your lot.")
         return
+
     
 async def get_aura_status(update, action: str):
     try:
@@ -763,9 +777,11 @@ async def get_aura_status(update, action: str):
 
     except Exception as e:
         logging.error(f"Error in get_aura_status: {e}")
+        collect_error(e)
         await target.message.reply_text("Sorry, something went wrong while getting your aura status.")
         return
     
+
 async def handle_daily_checkin(update):
     try:
         # 获取用户ID
@@ -798,7 +814,9 @@ async def handle_daily_checkin(update):
 
     except Exception as e:
         logging.error(f"Error in handle_daily_checkin: {str(e)}")
+        collect_error(e)
         await get_aura_status(update, "aura_action_invalid")
+
 
 async def update_default_language(update, lang: str):
     try:
@@ -815,8 +833,10 @@ async def update_default_language(update, lang: str):
         return 
     except Exception as e:
         logging.error(f"Error in update_default_language: {e}")
+        collect_error(e)
         await target.message.reply_text("Sorry, something went wrong while setting your language.")
         return
+
     
 async def set_language(update, i18n=I18nHelper()):
     keyboard_factory = KeyboardFactory(i18n)
@@ -839,9 +859,11 @@ async def get_chat_id(update):
         return user_id
     except Exception as e:
         logging.error(f"Error in get_chat_id: {e}")
+        collect_error(e)
         # await target.message.reply_text("Sorry, something went wrong while getting your chat ID.")
         return
     
+
 async def start(update):
     try:
         # 处理普通消息
@@ -884,6 +906,7 @@ async def start(update):
     
     except Exception as e:
         logging.error(f"An error occurred in the start command: {e}")
+        collect_error(e)
         await target.message.reply_text(text="An unexpected error occurred.")
         return ('Error', 500)
     
@@ -918,6 +941,7 @@ async def message_menu(update):
         await target.message.reply_text(text = escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
     except Exception as e:
         logging.error(f"Error in message_menu: {e}")
+        collect_error(e)
         return False
 
 async def message_unveil_or_not(update, token, role: str):
@@ -934,10 +958,16 @@ async def message_unveil_or_not(update, token, role: str):
         i18n = I18nHelper(lang)
         keyboard_factory = KeyboardFactory(i18n)
         reply_markup = keyboard_factory.create_keyboard("unveil_or_not", token=token, role=role)
-        dialog = i18n.get_dialog('unveil_or_not')
+        dialog = i18n.get_dialog('unveil_or_no')
         await target.message.reply_text(text = escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
     except Exception as e:
         logging.error(f"Error in message_unveil_or_not: {e}")
+        collect_error(e)
+        await telegram_app.bot.send_message(
+            chat_id=user_id,
+            text='Sorry, I am not able to generate content for you right now. Please try again later.'
+        )
+
         return False
     
 def validate_ticker(ticker: str) -> bool:

@@ -41,7 +41,8 @@
       "description_disconnect": "Disconnect Wallet",
       "description_aura": "Check Aura",
       "description_language": "Set Language",
-      "menu": "Maybe you wanna do something else?"
+      "menu": "Maybe you wanna do something else?",
+      "error_chat_decode": "The divine beings are currently in deep meditation. Please attempt again later."
     },
     "zh": {
       "start": "阁下，欢迎来到命运之符 Token Fate。\n请输入您的符码代号 (Token Ticker, 如 $BTC)，揭示您的命理。从神圣的宇宙和大数据中获得指引。\n今日，您的符之命运如何？",
@@ -84,7 +85,8 @@
       "description_disconnect": "断开钱包",
       "description_aura": "探查灵气",
       "description_language": "语言设置",
-      "menu": "或许你想做点别的?"
+      "menu": "或许你想做点别的?",
+      "error_chat_decode": "神祇正在静心冥想，请稍后再行尝试。"
     },
     "ja": {
       "start": "皆様、運命のご神符（Token Fate）へようこそ\n汝のトークンコード（Token Ticker例えば、$BTC）を入力すると、運命を明らかにします。神聖な宇宙とビッグデータからの導きを得ます。\n今日、汝のトークンによる運命はいかがでしょうか？",
@@ -127,7 +129,8 @@
       "description_disconnect": "財布を切断",
       "description_aura": "霊気の確認",
       "description_language": "言語設定",
-      "menu": "他のことをしたいですか？"
+      "menu": "他のことをしたいですか？",
+      "error_chat_decode": "神霊たちは現在、深い瞑想にふけっています。後ほど再度お試しください。"
     }
   },
   "buttons": {

@@ -3,44 +3,19 @@ version: '3.8'
 services:
   redis:
     image: redis/redis-stack-server:latest
-    container_name: redis_server
-#    ports:
-#      - "0.0.0.0:6379:${REDIS_PORT:-6379}"
+    container_name: redis_server222
+    ports:
+      - "0.0.0.0:6399:${REDIS_PORT:-6379}"
     restart: always
-    networks:
-      - telebot
 
   postgres:
     image: postgres:14
-    container_name: postgres_server
+    container_name: postgres_server22
     environment:
       POSTGRES_USER: "${POSTGRESQL_USER:-telebot}"
       POSTGRES_PASSWORD: "${POSTGRESQL_PASSWORD:-telebot}"
       POSTGRES_DB: "${POSTGRESQL_DATABASE:-telebot}"
-#    ports:
-#      - "0.0.0.0:5432:${POSTGRESQL_PORT:-5432}"
+    ports:
+      - "0.0.0.0:5442:${POSTGRESQL_PORT:-5432}"
     volumes:
       - ./docker-data/postgres_data:/var/lib/postgresql/data
-    networks:
-      - telebot
-
-  einstein:
-    container_name: telebot
-    build:
-      context: .
-    privileged: true
-    restart: always
-    ports:
-      - "0.0.0.0:${PORT:-5000}:${PORT:-5000}"
-    volumes:
-      - "./logs/:${LOG_DIR:-/opt/TokenFate/logs}"
-      - "./.env/:/opt/TokenFate/wsgi.runfiles/_main/pythonp/apps/tokenfate/.env"
-    networks:
-      - telebot
-    depends_on:
-      - postgres
-      - redis
-
-networks:
-  telebot:
-    driver: bridge
