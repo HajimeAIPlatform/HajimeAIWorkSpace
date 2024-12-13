@@ -1,3 +1,4 @@
+load("@py_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 py_library(
@@ -6,8 +7,8 @@ py_library(
     data = ["scrapy.cfg"],
     visibility = ["//visibility:public"],
     deps = [
-         "@pypi_deps//:bs4",
-         "@pypi_deps//:requests",
+        requirement("requests"),
+        requirement("bs4"),
     ],
 )
 
@@ -18,7 +19,7 @@ py_binary(
     data = ["scrapy.cfg"],
     deps = [
         "//pythonp/apps/hajime_scraper/hajime_scraper_lib",
-         "@pypi_deps//:scrapy",
+        requirement("scrapy"),
     ],
 )
 
@@ -27,8 +28,8 @@ py_binary(
     srcs = ["run_scraper_dexscreener.py"],
     data = ["scrapy.cfg"],
     deps = [
-         "@pypi_deps//:bs4",
-         "@pypi_deps//:requests",
+        requirement("requests"),
+        requirement("bs4"),z
     ],
 )
 

@@ -51,8 +51,8 @@ use_repo(
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
-    hub_name = "pypi_deps",
+    hub_name = "py_deps",
     python_version = "3.11",
     requirements_lock = "//:requirements_lock.txt",
 )
-use_repo(pip, "pypi_deps")
+use_repo(pip, "py_deps")
