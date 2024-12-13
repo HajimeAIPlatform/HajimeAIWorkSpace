@@ -14,7 +14,7 @@ func NewCreditSystem(DB *gorm.DB) *CreditSystem {
 	return &CreditSystem{DB}
 }
 
-func (cs *CreditSystem) GetBalanceByUserEmail(email string) (int64, error) {
+func (cs *CreditSystem) GetBalanceByUserEmail(email string) (float64, error) {
 	var user models.User
 	err := cs.DB.First(&user, "email = ?", email).Error
 	if err != nil {
@@ -24,7 +24,7 @@ func (cs *CreditSystem) GetBalanceByUserEmail(email string) (int64, error) {
 	return user.Balance, nil
 }
 
-func (cs *CreditSystem) UpdateBalanceByUserEmail(email string, amount int64) (int64, error) {
+func (cs *CreditSystem) UpdateBalanceByUserEmail(email string, amount float64) (float64, error) {
 	var user models.User
 	err := cs.DB.First(&user, "email = ?", email).Error
 	if err != nil {

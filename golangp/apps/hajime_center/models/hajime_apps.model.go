@@ -1,29 +1,16 @@
 package models
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/common/logging"
-	"time"
 )
 
 type UnixTime int64
-
-func (t *UnixTime) UnmarshalJSON(b []byte) error {
-	var timestamp int64
-	if err := json.Unmarshal(b, &timestamp); err != nil {
-		return fmt.Errorf("UnixTime: %w", err)
-	}
-	*t = UnixTime(timestamp)
-	return nil
-}
-
-func (t UnixTime) Time() time.Time {
-	return time.Unix(int64(t), 0)
-}
 
 type HajimeApps struct {
 	ID               string   `gorm:"type:uuid;primaryKey" json:"id"`
@@ -46,9 +33,33 @@ type HajimeApps struct {
 // CreateHajimeApp 创建一个新的 HajimeApps
 func CreateHajimeApp(app HajimeApps) error {
 	db := initializers.DB
+
 	if err := db.Create(&app).Error; err != nil {
 		return err
 	}
+	var user User
+	ownerUUID, err := uuid.Parse(app.Owner)
+	if err != nil {
+		return fmt.Errorf("invalid UUID format for owner: %v", err)
+	}
+	if err := db.First(&user, ownerUUID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return fmt.Errorf("user not found")
+		}
+		return err
+	}
+	if app.Mode == "workflow" {
+		err := user.UpdateBalance(constants.CreateWorkflowPoints, "CreateWorkflowPoints")
+		if err != nil {
+			return err
+		}
+	} else {
+		err := user.UpdateBalance(constants.CreateChatbotPoints, "CreateChatbotPoints")
+		if err != nil {
+			return err
+		}
+	}
+
 	fmt.Println("App created:", app)
 	return nil
 }
@@ -117,4 +128,51 @@ func GetAllHajimeAppsNoAuth() ([]HajimeApps, error) {
 		return nil, err
 	}
 	return apps, nil
+}
+
+// GetUserByAppID 根据 AppID 获取应用的所有者
+func GetUserByAppID(appID string) (User, error) {
+	db := initializers.DB
+	var app HajimeApps
+	var user User
+
+	// 查找应用
+	if err := db.First(&app, "id = ?", appID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			if err = db.First(&app, "install_app_id = ?", appID).Error; err != nil {
+				return User{}, fmt.Errorf("app not found")
+			}
+		}
+	}
+
+	//TODO: Remove This
+	app.Owner = ""
+
+	// 检查 Owner 字段是否为空
+	if app.Owner == "" {
+		// 如果 Owner 为空，查找默认用户
+		if err := db.First(&user, "email = ?", "hajime@gmail.com").Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return User{}, fmt.Errorf("default user not found")
+			}
+			return User{}, err
+		}
+		return user, nil
+	}
+
+	// 解析 Owner 字段为 UUID
+	ownerUUID, err := uuid.Parse(app.Owner)
+	if err != nil {
+		return User{}, fmt.Errorf("invalid UUID format for owner: %v", err)
+	}
+
+	// 查找用户
+	if err := db.First(&user, "id = ?", ownerUUID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return User{}, fmt.Errorf("user not found")
+		}
+		return User{}, err
+	}
+
+	return user, nil
 }

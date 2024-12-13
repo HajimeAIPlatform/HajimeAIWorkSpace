@@ -66,16 +66,18 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	now := time.Now()
 	newUser := models.User{
-		Name:      payload.Name,
-		Email:     strings.ToLower(payload.Email),
-		Password:  hashedPassword,
-		Role:      constants.RoleEditor,
-		Verified:  false,
-		Photo:     "test",
-		Provider:  "local",
-		Balance:   constants.GiftedPoints,
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:              payload.Name,
+		Email:             strings.ToLower(payload.Email),
+		Password:          hashedPassword,
+		Role:              constants.RoleEditor,
+		Verified:          false,
+		Photo:             "test",
+		Provider:          "local",
+		Balance:           constants.GiftedPoints,
+		FromCode:          payload.FromCode,
+		UserMaxCodeAmount: constants.RoleEditorMaxCodeAmount,
+		CreatedAt:         now,
+		UpdatedAt:         now,
 	}
 
 	result := ac.DB.Create(&newUser)
@@ -159,6 +161,21 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	if err := utils.VerifyPassword(user.Password, payload.Password); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "INVALID_CREDENTIALS", "message": "Invalid email or password"})
 		return
+	}
+
+	now := time.Now()
+	if user.LoginTime == nil || !user.IsSameDay(*user.LoginTime, now) {
+		// 更新余额
+		if err := user.UpdateBalance(constants.DailySignInPoints, "DailySignInPoints"); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"result": "fail", "code": "UPDATE_BALANCE_ERROR", "message": err.Error()})
+			return
+		}
+
+		// 更新登录时间
+		if err := user.UpdateLoginTime(&now); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"result": "fail", "code": "UPDATE_LOGINTIME_ERROR", "message": err.Error()})
+			return
+		}
 	}
 
 	config, _ := initializers.LoadEnv(".")
@@ -404,17 +421,29 @@ func (ac *AuthController) AddUser(ctx *gin.Context) {
 		return
 	}
 
+	var maxCodeAmount int
+
+	if payload.Role == constants.RoleAdmin {
+		maxCodeAmount = constants.RoleAdminMaxCodeAmount
+	} else if payload.Role == constants.RoleEditor {
+		maxCodeAmount = constants.RoleEditorMaxCodeAmount
+	} else {
+		maxCodeAmount = constants.RoleUserMaxCodeAmount
+	}
+
 	now := time.Now()
 	newUser := models.User{
-		Name:      payload.Name,
-		Email:     strings.ToLower(payload.Email),
-		Password:  hashedPassword,
-		Role:      payload.Role, // 允许管理员设置用户角色
-		Verified:  true,         // 直接设置为已验证
-		Photo:     "test",
-		Provider:  "local",
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:              payload.Name,
+		Email:             strings.ToLower(payload.Email),
+		Password:          hashedPassword,
+		Role:              payload.Role, // 允许管理员设置用户角色
+		Verified:          true,         // 直接设置为已验证
+		Photo:             "test",
+		Provider:          "local",
+		FromCode:          payload.FromCode,
+		UserMaxCodeAmount: maxCodeAmount,
+		CreatedAt:         now,
+		UpdatedAt:         now,
 	}
 
 	result := ac.DB.Create(&newUser)
@@ -564,6 +593,15 @@ func (ac *AuthController) LoginWithWallet(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Invalid request"})
 		return
+	}
+
+	// Check if currentUser.Address exists
+	if currentUser.Address == "" {
+		err := currentUser.UpdateBalance(constants.WalletLinkPoints, "WalletLinkPoints")
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+			return
+		}
 	}
 
 	// 将 WalletAddress 转为小写

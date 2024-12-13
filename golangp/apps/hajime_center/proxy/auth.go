@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
+	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/proxy/middleware"
-	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/common/logging"
 	"log"
 	"net/http"
@@ -39,7 +39,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if !middleware.IsPathExcluded(r.URL.Path, excludedPaths, constants.DifyServerPrefix) && !middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix,constants.DifyServerPrefix) {
+		if !middleware.IsPathExcluded(r.URL.Path, excludedPaths, constants.DifyServerPrefix) && !middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix, constants.DifyServerPrefix) {
 			user, err := middleware.DeserializeUser(r)
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
@@ -63,7 +63,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
-		if middleware.IsPathExcluded(r.URL.Path, excludedPaths,constants.DifyServerPrefix) || middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix,constants.DifyServerPrefix) {
+		if middleware.IsPathExcluded(r.URL.Path, excludedPaths, constants.DifyServerPrefix) || middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix, constants.DifyServerPrefix) {
 			Token, err := difyClient.GetUserToken("admin")
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())
@@ -78,11 +78,18 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+var apiPaths = []string{
+	"/console/api/apps/{app_id}/chat-messages",
+	"/console/api/installed-apps/{app_id}/chat-messages",
+	"/console/api/apps/{app_id}/workflows/draft/run",
+	"/console/api/installed-apps/{app_id}/workflows/run",
+}
+
 // CreateProxiedServer sets up and starts the HTTP server with middleware
 func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
 	mux_router := mux.NewRouter()
-    router := mux_router.PathPrefix(constants.DifyServerPrefix).Subrouter()
+	router := mux_router.PathPrefix(constants.DifyServerPrefix).Subrouter()
 
 	// Register handlers with middleware
 	router.HandleFunc("/console/api/apps/no_auth", middleware.GetAllNoAuthApp).Methods("GET")
@@ -91,11 +98,12 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 	router.Handle("/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.Handle("/console/api/datasets/{dataset_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
+	router.Handle("/console/api/apps/{app_id}/model-config", middleware.ModelUpdateMiddleware(http.HandlerFunc(DifyHandler)))
+
 	//chat
-	router.Handle("/console/api/apps/{app_id}/chat-messages", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
-	router.Handle("/console/api/installed-apps/{app_id}/chat-messages", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
-	router.Handle("/console/api/apps/{app_id}/workflows/draft/run", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
-	router.Handle("/console/api/installed-apps/{app_id}/workflows/run", middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
+	for _, path := range apiPaths {
+		router.Handle(path, middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
+	}
 
 	router.Handle("/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 	router.PathPrefix("/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))

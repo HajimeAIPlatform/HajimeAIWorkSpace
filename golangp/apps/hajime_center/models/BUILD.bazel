@@ -7,10 +7,13 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/common/logging:logger",
+        "//golangp/common/utils",
         "//golangp/apps/hajime_center/initializers",
+        "//golangp/apps/hajime_center/constants",
         "@com_github_google_uuid//:go_default_library",
         "@io_gorm_datatypes//:go_default_library",
         "@io_gorm_gorm//:go_default_library",
         "@com_github_shopspring_decimal//:go_default_library",
+        "@com_github_thanhpk_randstr//:go_default_library",
     ],
 )
