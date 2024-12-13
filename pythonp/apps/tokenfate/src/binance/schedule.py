@@ -7,10 +7,11 @@ from binance import Client
 import logging
 import json
 from pythonp.apps.tokenfate.src.binance.utils import get_binance_client
+from pythonp.apps.hajime_scraper.run_scraper_dexscreener import fetch_dex_data
 from pythonp.apps.tokenfate.static.static import get_assets_path
 import os
 
-data_source = get_assets_path("usdt_historical_prices.json")
+data_source = get_assets_path("dexscreener_info.json")
 
 def get_symbol_historical_prices(symbol, days):
     """
@@ -48,33 +49,22 @@ def get_symbol_historical_prices(symbol, days):
         logging.error(f"Error fetching historical prices for {symbol}: {e}")
         return []
 
-
-def fetch_and_store_usdt_historical_prices(days=7):
+def fetch_and_store_dex_historical_data():
     """
     获取所有USDT交易对最近几天的价格数据，并存储到本地文件。
 
     :param days: int, 获取数据的天数，默认是7天
     """
     try:
-        # 获取所有交易对的价格
-        binance_client = get_binance_client()
-        prices = binance_client.get_all_tickers()
-        usdt_symbols = [p['symbol'] for p in prices if p['symbol'].endswith('USDT')]
-
-        result = {}
-        for symbol in usdt_symbols:
-            result[symbol] = get_symbol_historical_prices(symbol, days)
-
-        # 存储到本地文件
-        with open(data_source, 'w') as f:
-            json.dump(result, f)
-
+        # 获取dexscreener排行榜数据
+        fetch_dex_data(output_path=data_source)
+        print(data_source, 'data_source')
         logging.info("Historical prices fetched and stored successfully.")
     except Exception as e:
         logging.error(f"Error fetching historical prices for USDT pairs: {e}")
 
 
-def get_random_usdt_historical_prices(sample_size=30):
+def get_random_dex_historical_prices(sample_size=30):
     """
     从本地文件中读取USDT交易对的价格数据，并随机选择30个symbol返回。
 
@@ -84,16 +74,18 @@ def get_random_usdt_historical_prices(sample_size=30):
     try:
         # 检查文件是否存在
         if not os.path.exists(data_source):
-            logging.error("Historical prices file does not exist.")
+            logging.error(f"Historical prices file {data_source} does not exist.")
             return {"error": "Historical prices file does not exist."}
 
         # 读取本地文件
         with open(data_source, 'r') as f:
             data = json.load(f)
 
+        print(f"get_random_dex_historical_prices {len(data)} items in data")
+
         # 随机选择sample_size个symbol
-        selected_symbols = random.sample(list(data.keys()), sample_size)
-        result = {symbol: data[symbol] for symbol in selected_symbols}
+        selected_indexes = random.sample(list(range(len(data))), sample_size)
+        result = {data[index]["Token"]: data[index] for index in selected_indexes}
 
         return result
     except Exception as e:
@@ -114,8 +106,9 @@ def start_schedule_thread():
     """
     启动定时任务线程。
     """
+    fetch_and_store_dex_historical_data()
     # 设置定时任务，每天0点执行
-    schedule.every().day.at("00:00").do(fetch_and_store_usdt_historical_prices)
+    schedule.every().day.at("00:00").do(fetch_and_store_dex_historical_data)    
     # schedule.every(1).minutes.do(fetch_and_store_usdt_historical_prices)
     # 启动定时任务线程
     schedule_thread = threading.Thread(target=run_schedule)

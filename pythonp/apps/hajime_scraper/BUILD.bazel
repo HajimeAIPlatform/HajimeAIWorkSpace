@@ -1,5 +1,16 @@
 load("@py_deps//:requirements.bzl", "requirement")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "run_scraper_dexscreener_lib",
+    srcs = ["run_scraper_dexscreener.py"],
+    visibility = ["//visibility:public"],
+    data = ["scrapy.cfg"],
+    deps = [
+        requirement("requests"),
+        requirement("bs4"),
+    ],
+)
 
 # 定义一个可执行的爬虫脚本
 py_binary(
@@ -9,6 +20,16 @@ py_binary(
     deps = [
         "//pythonp/apps/hajime_scraper/hajime_scraper_lib",
         requirement("scrapy"),
+    ],
+)
+
+py_binary(
+    name = "run_scraper_dexscreener",
+    srcs = ["run_scraper_dexscreener.py"],
+    data = ["scrapy.cfg"],
+    deps = [
+        requirement("requests"),
+        requirement("bs4"),
     ],
 )
 

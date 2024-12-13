@@ -6,6 +6,7 @@ import urllib.parse
 import time
 import json
 import os
+import re
 from typing import List, Dict, Union
 
 from flask import Blueprint, jsonify, request
@@ -231,7 +232,8 @@ async def webhook():
             
             if update.callback_query.data == "aura_action_recommend_click":
                 await update.callback_query.answer()
-                await send_recommendations(update)
+                # await send_recommendations(update)
+                await risk_preference(update, token=None, risk_target="recommend_only")
                 return jsonify({'status': 'ok'}), 200
 
             if update.callback_query.data.startswith("reveal_fate"):
@@ -239,7 +241,7 @@ async def webhook():
                 logging.info(f"data: {data}")
                 details = data.split(":")
                 token = details[1]
-                await risk_preference(update, token)
+                await risk_preference(update, token, risk_target="reveal_fate")
                 return jsonify({'status': 'ok'}), 200
 
             if update.callback_query.data.startswith("recommend"):
@@ -249,23 +251,56 @@ async def webhook():
                 token = details[1]
                 if handle_recommendation_click(chat_id):
                     await get_aura_status(update, "aura_action_recommend_click")
-                await risk_preference(update, token)
+                await risk_preference(update, token, risk_target="reveal_fate")
                 return jsonify({'status': 'ok'}), 200
-
+            
             if update.callback_query.data.startswith("risk"):
-                data = update.callback_query.data
-                logging.info(f"data: {data}")
-                details = data.split(":")
-                token = details[1]
-                await reveal_fate(update, token)
+                callback_data = update.callback_query.data
+                logging.info(f"callback_data: {callback_data}")
+
+                # 先去掉前缀 "risk:" 并获取剩余部分
+                remaining_data = callback_data.split(':')[1]
+                
+                # 使用 & 分割字符串，得到一个列表，每个元素都是 key=value 形式的字符串
+                details = remaining_data.split("&")
+                
+                # 创建一个字典来存储解析出来的键值对
+                params = {}
+                for detail in details:
+                    # 每个 detail 是 key=value 形式，再次使用 = 分割
+                    key, value = detail.split("=")
+                    params[key] = value
+                
+                # 从 params 字典中获取 token, risk_target 和 role 的值
+                token = params.get('token')
+                risk_target = params.get('risk_target')
+                role = params.get('role')
+                
+                # 打印或记录获取到的值，以便调试
+                logging.info(f"token: {token}, risk_target: {risk_target}, role: {role}")
+                
+                # 调用函数，假设函数需要 token 和 role 参数
+                if risk_target == "reveal_fate":
+                    await reveal_fate(update, token, role)  # 如果 reveal_fate 需要 role 参数，则传入
+                elif risk_target == "recommend_only":
+                    await send_recommendations(update, role)
+                
+                # 返回 HTTP 响应
                 return jsonify({'status': 'ok'}), 200
             
             if update.callback_query.data.startswith("decode"):
                 data = update.callback_query.data
                 logging.info(f"data: {data}")
                 details = data.split(":")
-                token = details[1]
-                await decode_lot(update, token)
+                status, token, role = details
+                if status == "decode_yes":
+                    await decode_lot(update, token, role)
+                elif status == "decode_no":
+                    await message_unveil_or_not(update, token, role)
+                return jsonify({'status': 'ok'}), 200
+            
+            if update.callback_query.data.startswith("menu"):
+                await message_menu(update)
                 return jsonify({'status': 'ok'}), 200
 
         if update.message:
@@ -318,7 +353,7 @@ async def webhook():
                 await set_language(update)
                 return jsonify({'status': 'ok'}), 200
 
-            if update.message.text.startswith('$'):
+            if update.message.text.startswith('$') and validate_ticker(update.message.text[1:]):
                 chat_id = update.message.chat_id
                 Token = update.message.text
                 print(Token, 'Token')
@@ -438,10 +473,13 @@ def parse_token_response(response: str) -> Dict[str, Union[str, list]]:
         raise
 
 
-def fetch_trending_tokens():
+def fetch_trending_tokens(role: str):
     try:
         # Fetch recommendations from Dify API
-        api_response = chat_workflow({})
+        data = {
+            "risk_preference": role,
+        }
+        api_response = chat_workflow(data)
         logging.info("Raw API response: %s", api_response)
         parsed_response = parse_token_response(api_response)
         logging.info(f"parsed_response: {parsed_response}")
@@ -470,7 +508,7 @@ def create_token_keyboard(tokens):
 
     return InlineKeyboardMarkup(keyboard)
 
-async def send_recommendations(update):
+async def send_recommendations(update, role: str):
     if update.message:
         target = update
         user_id = update.message['from']['id']
@@ -484,16 +522,16 @@ async def send_recommendations(update):
     i18n = I18nHelper(lang)
 
     """发送推荐的tokens给用户"""
-    recommended_tokens = fetch_trending_tokens()
+    recommended_tokens = fetch_trending_tokens(role)
     if not recommended_tokens:
         logging.error("Failed to get token recommendations")
         return
 
     reply_markup = create_token_keyboard(recommended_tokens)
-    dialog = i18n.get_dialog("recommended")
+    dialog = i18n.get_dialog("unveil_result")
     await target.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
 
-async def reveal_fate(update, token):
+async def reveal_fate(update, token, role: str):
     try:
         # 处理普通消息
         if update.message:
@@ -539,7 +577,7 @@ async def reveal_fate(update, token):
         image_path = get_images_path(f'{sign_level}.png')
         dialog = i18n.get_dialog("lot_daily_content")
         dialog = dialog.format(token=token, sign_from=sign_from, sign_text=sign_text)
-        reply_markup = keyboard_factory.create_keyboard("lot", token=token)
+        reply_markup = keyboard_factory.create_keyboard("lot", token=token, role=role)
         with open(image_path, 'rb') as image_file:
             await target.message.reply_photo(
                 photo=image_file,
@@ -548,7 +586,7 @@ async def reveal_fate(update, token):
                 reply_markup=reply_markup,
             )
         # 发送推荐的tokens
-        await send_recommendations(update)
+        # await send_recommendations(update, role)
 
         return jsonify({'status': 'ok'}), 200
     
@@ -559,16 +597,16 @@ async def reveal_fate(update, token):
         )
         return
     
-async def risk_preference(update, token):
+async def risk_preference(update, token, risk_target):
     chat_id = await get_chat_id(update) # 获取chat_id
     lang = UserPoints.get_language_by_user_id(chat_id)
     i18n = I18nHelper(lang)
     try:
         keyboard_factory = KeyboardFactory(i18n)
         await update.callback_query.answer()
-        if not token:
-            await update.callback_query.message.reply_text("Please Enter Your Token.")
-            return jsonify({'status': 'ok'}), 200
+        # if not token:
+        #     await update.callback_query.message.reply_text("Please Enter Your Token.")
+        #     return jsonify({'status': 'ok'}), 200
         
         # 发送文本信息
         dialog = i18n.get_dialog('risk')
@@ -577,8 +615,15 @@ async def risk_preference(update, token):
             parse_mode="MarkdownV2"
         )
 
+        # 根据触发源选择键盘
+        if risk_target == "reveal_fate":
+            reply_markup = keyboard_factory.create_keyboard("risk", token=token, risk_target="reveal_fate")
+        elif risk_target == "recommend_only":
+            reply_markup = keyboard_factory.create_keyboard("risk", token=token, risk_target="recommend_only")
+        else:
+            reply_markup = keyboard_factory.create_keyboard("risk", token=token)
+
         # 发送图片及选择项
-        reply_markup = keyboard_factory.create_keyboard("risk", token=token)
         image_path = get_images_path('risk_preference_combined.png')
         with open(image_path, 'rb') as image_file:
             await update.callback_query.message.reply_photo(
@@ -616,15 +661,19 @@ async def show_aura_rules(update):
         aura_status_daily = i18n.get_dialog('aura_status_daily').format(daily_recommended_points=daily_recommended_points)
         aura_rules = i18n.get_dialog('aura_rules')
         dialog = aura_status_amount + aura_status_daily + aura_rules
-        # logging.info(dialog)
-        await target.reply_text(
-            text = escape(dialog),
-            parse_mode="MarkdownV2"
-        )
+
+        image_name = f'{lang}_aura.png'
+        image_path = get_images_path(image_name)
+        with open(image_path, 'rb') as image_file:
+            await target.reply_photo(
+                photo=image_file,
+                caption=escape(dialog),
+                parse_mode="MarkdownV2",
+            )
 
         # Send interactive elements
         reply_markup = keyboard_factory.create_keyboard("aura")
-        image_name = f'{lang}-ways-to-impact-aura.png'
+        image_name = f'{lang}_ways-to-impact-aura.png'
         image_path = get_images_path(image_name)
         with open(image_path, 'rb') as image_file:
             await target.reply_photo(
@@ -638,7 +687,7 @@ async def show_aura_rules(update):
         await target.reply_text("Sorry, something went wrong while showing the aura rules.")
         return
     
-async def decode_lot(update, token):
+async def decode_lot(update, token, role):
     try:
         # 处理普通消息
         if update.message:
@@ -653,6 +702,7 @@ async def decode_lot(update, token):
         
         lang = UserPoints.get_language_by_user_id(user_id)
         i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
         # 获取今日缓存的签
         result_of_draw = await daily_fortune.get_cached_lot(user_id, token)
         if result_of_draw is None:
@@ -672,7 +722,8 @@ async def decode_lot(update, token):
                 "query": sign_text,
                 "inputs": {
                     "lot": sign_text,
-                    "lang": lang
+                    "lang": lang,
+                    "risk_preference": role,
                 },
             }
             cached_decode = chat_decode(data)
@@ -681,8 +732,10 @@ async def decode_lot(update, token):
         # 发送签解
         dialog = i18n.get_dialog("lot_decoded_content")
         dialog = dialog.format(token=token, cached_decode=cached_decode)
+        reply_markup = keyboard_factory.create_keyboard("decode", token=token, role=role)
         await target.message.reply_text(
-            escape(dialog), parse_mode="MarkdownV2"
+            escape(dialog), parse_mode="MarkdownV2", 
+            reply_markup=reply_markup
         )
         return jsonify({'status': 'ok'}), 200
 
@@ -831,7 +884,6 @@ async def start(update):
                 parse_mode="MarkdownV2",
                 reply_markup=reply_markup
             )
-        
         return ('OK', 200)
     
     except Exception as e:
@@ -851,3 +903,66 @@ def handle_recommendation_click(user_id):
     else:
         logging.info(f"User {user_id} has already reached the daily limit for recommendation clicks.")
         return False
+
+async def message_menu(update):
+    try:
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
+        reply_markup = keyboard_factory.create_keyboard("menu")
+        dialog = i18n.get_dialog('menu')
+        await target.message.reply_text(text = escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+    except Exception as e:
+        logging.error(f"Error in message_menu: {e}")
+        return False
+
+async def message_unveil_or_not(update, token, role: str):
+    try:
+        if update.message:
+            target = update
+            user_id = update.message['from']['id']
+        elif update.callback_query:
+            target = update.callback_query
+            user_id = update.callback_query['from']['id']
+        else:
+            return
+        lang = UserPoints.get_language_by_user_id(user_id)
+        i18n = I18nHelper(lang)
+        keyboard_factory = KeyboardFactory(i18n)
+        reply_markup = keyboard_factory.create_keyboard("unveil_or_not", token=token, role=role)
+        dialog = i18n.get_dialog('unveil_or_not')
+        await target.message.reply_text(text = escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
+    except Exception as e:
+        logging.error(f"Error in message_unveil_or_not: {e}")
+        return False
+    
+def validate_ticker(ticker: str) -> bool:
+    """
+    验证加密货币缩写是否有效。
+    
+    参数:
+    - ticker: 用户输入的加密货币缩写
+    
+    返回:
+    - 如果有效返回 True，否则返回 False
+    """
+    # 去除前后的空白字符
+    ticker = ticker.strip()
+    
+    # 检查输入长度
+    if len(ticker) < 1 or len(ticker) > 10:  # 假设合理的长度范围是1到10个字符
+        return False
+    
+    # 检查是否为字母和数字的组合
+    if not re.match(r'^[A-Za-z0-9]+$', ticker):
+        return False
+    
+    return True

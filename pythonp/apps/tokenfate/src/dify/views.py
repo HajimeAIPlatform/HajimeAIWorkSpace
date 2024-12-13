@@ -8,7 +8,7 @@ from flask import Blueprint, jsonify, request, Response
 
 from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
 from pythonp.apps.tokenfate.dify_client import Client, models
-from pythonp.apps.tokenfate.src.binance.schedule import get_random_usdt_historical_prices
+from pythonp.apps.tokenfate.src.binance.schedule import get_random_dex_historical_prices
 
 dify_api_key_workflow = getenv('DIFY_API_KEY_WORKFLOW')
 dify_api_key_message = getenv('DIFY_API_KEY_MESSAGE')
@@ -47,7 +47,7 @@ def chat_blocking(data):
         user = str(uuid.uuid4())
         logging.info("Generated user ID: %s", user)
 
-        today_market_data = get_random_usdt_historical_prices()
+        today_market_data = get_random_dex_historical_prices()
 
         print(len(json.dumps(today_market_data)),'today_market_data')
         logging.info("Received data: %s", data)
@@ -117,21 +117,22 @@ def chat_blocking_key_2(data):
 def chat_workflow(data: Dict):
     try:
         # Generate a unique user ID if not provided
-        user = data.get("user", str(uuid.uuid4()))
+        user = str(uuid.uuid4())
         logging.info("User ID: %s", user)
 
         # Retrieve market data
-        today_market_data = get_random_usdt_historical_prices()
+        today_market_data = get_random_dex_historical_prices()
         serialized_market_data = json.dumps(today_market_data)
 
         # Prepare chat request with correct input format
         inputs: Dict = {
             "todayMarketData": serialized_market_data,
+            "riskPreference": data.get("risk_preference", "neutral"),
         }
 
         # Prepare chat request
         blocking_chat_req = models.WorkflowsRunRequest(
-            inputs=data.get("inputs", inputs),
+            inputs=inputs,
             user=user,
             response_mode=models.ResponseMode.BLOCKING,
         )
