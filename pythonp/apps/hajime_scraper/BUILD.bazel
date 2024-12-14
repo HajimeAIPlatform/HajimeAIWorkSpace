@@ -29,7 +29,7 @@ py_binary(
     data = ["scrapy.cfg"],
     deps = [
         requirement("requests"),
-        requirement("bs4"),z
+        requirement("bs4"),
     ],
 )
 
