@@ -9,17 +9,17 @@ from pytoniq_core import Cell
 import pytonconnect.exceptions
 
 
-from pythonp.apps.tokenfate.src.ton.tc_storage import TcStorage, TransactionManager
-from pythonp.apps.tokenfate.src.ton.connector import get_connector
-from pythonp.apps.tokenfate.src.binance.utils import is_min_trade_quantity_limit
-from pythonp.apps.tokenfate.src.binance.views import convert_currency
-from pythonp.apps.tokenfate.src.ton.utils import calculate_fee, get_bot_ton_address, convert_address_to_hex, estimate_gas_fee
+from pythonp.apps.tokenfate.service.ton.tc_storage import TcStorage, TransactionManager
+from pythonp.apps.tokenfate.service.ton.connector import get_connector
+from pythonp.apps.tokenfate.service.binance.utils import is_min_trade_quantity_limit
+from pythonp.apps.tokenfate.service.binance.views import convert_currency
+from pythonp.apps.tokenfate.service.ton.utils import calculate_fee, get_bot_ton_address, convert_address_to_hex, estimate_gas_fee
 from pythonp.apps.tokenfate.models.transaction import save_ton_transaction_to_db, UserAsset
-import pythonp.apps.tokenfate.src.ton.ton_server as ton_server
-from pythonp.apps.tokenfate.src.ton.messages import get_comment_message
+import pythonp.apps.tokenfate.service.ton.ton_server as ton_server
+from pythonp.apps.tokenfate.service.ton.messages import get_comment_message
 import pythonp.apps.tokenfate.mock_service.mock_connector as mock_connector
 import pythonp.apps.tokenfate.mock_service.mock_ton_server as mock_ton_server
-from pythonp.apps.tokenfate.src.ton.views import save_to_transaction_info_to_db
+from pythonp.apps.tokenfate.service.ton.views import save_to_transaction_info_to_db
 
 
 ton = Blueprint('ton', __name__)

@@ -30,7 +30,7 @@ py_binary(
     deps = [
         "//pythonp/apps/tokenfate:common_deps",
         "//pythonp/apps/tokenfate/models",
-        "//pythonp/apps/tokenfate/src",
+        "//pythonp/apps/tokenfate/service",
         "//pythonp/common/logging:logger",
     ],
 )
