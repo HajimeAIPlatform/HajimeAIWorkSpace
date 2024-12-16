@@ -3,11 +3,14 @@ package agent
 import (
 	"context"
 	"fmt"
+	"hajime/golangp/apps/AgentTown/config"
 	"hajime/golangp/apps/AgentTown/task"
 	"hajime/golangp/apps/AgentTown/telemetry"
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Message structure to model communication between agents
@@ -19,17 +22,21 @@ type Message struct {
 
 // Agent represents a single autonomous entity
 type Agent struct {
+	ID        string
 	Name      string
 	MessageCh chan Message    // Channel to receive messages
 	ProcessCh chan *task.Task // Channel for tasks to process
 	Done      chan struct{}   // Signaling channel indicating work completion
 	Receivers map[string]*Agent
 	IsActive  bool
+	Config    config.Config
+	mu        sync.Mutex
 }
 
 // NewAgent creates a new agent
 func NewAgent(name string) *Agent {
 	return &Agent{
+		ID:        uuid.New().String(),
 		Name:      name,
 		MessageCh: make(chan Message, 10),    // Buffered channel for communication
 		ProcessCh: make(chan *task.Task, 20), // Buffered channel for tasks
@@ -41,6 +48,8 @@ func NewAgent(name string) *Agent {
 
 // RegisterReceiver binds communication with other agents
 func (agent *Agent) RegisterReceiver(other *Agent) {
+	agent.mu.Lock()
+	defer agent.mu.Unlock()
 	agent.Receivers[other.Name] = other
 }
 
@@ -60,6 +69,9 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 			// Process assigned tasks
 			case tsk := <-agent.ProcessCh:
 				fmt.Printf("[%s] Processing task %s : %s\n", agent.Name, tsk.ID, tsk.Description)
+				if tsk.Execute != nil {
+					tsk.Execute(tsk.Parameters, agent.Config.PrivateData)
+				}
 				time.Sleep(time.Duration(rand.Intn(2)+1) * time.Second) // Simulate task processing
 				fmt.Printf("[%s] Finished task %s : %s\n", agent.Name, tsk.ID, tsk.Description)
 				continue
