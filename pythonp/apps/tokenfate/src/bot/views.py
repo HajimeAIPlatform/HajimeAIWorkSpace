@@ -958,7 +958,7 @@ async def message_unveil_or_not(update, token, role: str):
         i18n = I18nHelper(lang)
         keyboard_factory = KeyboardFactory(i18n)
         reply_markup = keyboard_factory.create_keyboard("unveil_or_not", token=token, role=role)
-        dialog = i18n.get_dialog('unveil_or_no')
+        dialog = i18n.get_dialog('unveil_or_not')
         await target.message.reply_text(text = escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
     except Exception as e:
         logging.error(f"Error in message_unveil_or_not: {e}")

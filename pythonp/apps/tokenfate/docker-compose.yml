@@ -16,6 +16,6 @@ services:
       POSTGRES_PASSWORD: "${POSTGRESQL_PASSWORD:-telebot}"
       POSTGRES_DB: "${POSTGRESQL_DATABASE:-telebot}"
     ports:
-      - "0.0.0.0:5442:${POSTGRESQL_PORT:-5432}"
+      - "0.0.0.0:5442:5432"
     volumes:
       - ./docker-data/postgres_data:/var/lib/postgresql/data
