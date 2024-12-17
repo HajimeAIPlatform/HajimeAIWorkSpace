@@ -9,10 +9,11 @@ from gunicorn.app.base import BaseApplication
 from uvicorn.workers import UvicornWorker
 import multiprocessing
 import logging
-from pythonp.common.email_notifications.email_sender import start_email_sender
 
 # 加载环境变量
 load_dotenv()
+from pythonp.apps.tokenfate.email_service.email_sender import EmailMonitor
+
 smtp_config = {
     'smtp_host': os.getenv('SMTP_HOST'),
     'smtp_port': os.getenv('SMTP_PORT'),
@@ -21,8 +22,10 @@ smtp_config = {
     'email_from': os.getenv('EMAIL_FROM'),
     'email_to': os.getenv('EMAIL_TO')
 }
-# 启动错误收集线程
-start_email_sender(smtp_config)
+
+# 创建并启动监控器
+monitor = EmailMonitor(smtp_config)
+monitor.start()
 
 class StandaloneApplication(BaseApplication):
     def __init__(self, app, options=None):

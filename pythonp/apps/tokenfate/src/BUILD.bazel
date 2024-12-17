@@ -26,7 +26,8 @@ py_library(
         "//pythonp/apps/tokenfate/models",
         "//pythonp/apps/tokenfate/dify_client",
         "//pythonp/apps/tokenfate/mock_service",
+        "//pythonp/apps/tokenfate/email_service",
         "//pythonp/apps/tokenfate/static",
-        "//pythonp/apps/hajime_scraper:run_scraper_dexscreener_lib"
+        "//pythonp/apps/hajime_scraper:run_scraper_dexscreener_lib",
     ],
 )

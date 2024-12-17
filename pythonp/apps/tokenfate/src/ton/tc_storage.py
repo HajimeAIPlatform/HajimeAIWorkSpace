@@ -293,3 +293,29 @@ class UserActivityTracker:
         except Exception as e:
             logging.error(f"Error in is_checked_in_today: {str(e)}")
             return False
+
+    
+
+class ExceptionStorage:
+    def __init__(self):
+        self.client = client
+
+    async def add_exception(self, exception_message: str):
+        """将错误信息存储到Redis中"""
+        await self.client.lpush("exceptions", json.dumps({"message": exception_message}))
+        logging.info(f"Stored exception: {exception_message}")
+
+    async def get_exceptions(self):
+        """从Redis中获取所有错误信息"""
+        exceptions = await self.client.lrange("exceptions", 0, -1)
+        return [json.loads(exception.decode('utf-8')) for exception in exceptions]
+
+    async def clear_exceptions(self):
+        """清除所有存储的错误信息"""
+        await self.client.delete("exceptions")
+        logging.info("Cleared all stored exceptions")
+
+    async def is_empty(self):
+        """检查错误信息列表是否为空"""
+        return await self.client.llen("exceptions") == 0
+  
