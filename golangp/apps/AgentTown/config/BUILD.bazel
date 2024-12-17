@@ -5,4 +5,7 @@ go_library(
     srcs = glob(["**/*.go"]),
     importpath = "hajime/golangp/apps/AgentTown/config",
     visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_google_uuid//:uuid",
+    ]
 )

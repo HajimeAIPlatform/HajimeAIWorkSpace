@@ -4,10 +4,15 @@ import (
 	"encoding/json"
 	"os"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 // Config represents the configuration for an agent
+// Multiple agents can share the same config and the config is shared across the entire runtime
+// The only identifier for the config is the UUID
 type Config struct {
+	ID          string
 	Name        string
 	Properties  map[string]string
 	PrivateData map[string]string
@@ -16,6 +21,7 @@ type Config struct {
 
 func NewConfig(name string) *Config {
 	return &Config{
+		ID:          uuid.New().String(),
 		Name:        name,
 		Properties:  make(map[string]string),
 		PrivateData: make(map[string]string),

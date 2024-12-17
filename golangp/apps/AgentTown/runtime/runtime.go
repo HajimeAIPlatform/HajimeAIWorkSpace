@@ -19,11 +19,11 @@ var rt *Runtime
 var once sync.Once
 
 // AddAgent adds a new agent to the runtime
-func AddAgent(cfg config.Config) {
+func AddAgent(cfg *config.Config) {
 	r := GetInstance()
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	newAgent := agent.NewAgent(cfg.Name)
+	newAgent := agent.NewAgent(cfg)
 	r.agents[cfg.Name] = newAgent
 }
 

@@ -1,6 +1,10 @@
 package task
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // Task represents a task assigned to an agent
 type Task struct {
@@ -8,6 +12,7 @@ type Task struct {
 	Description string
 	Execute     func(...any) // Function to be executed
 	Parameters  []any        // Parameters to pass to the function
+	Timestamp   time.Time
 }
 
 func NewTask(content string) *Task {
@@ -16,5 +21,6 @@ func NewTask(content string) *Task {
 		Description: content,
 		Execute:     nil,
 		Parameters:  nil,
+		Timestamp:   time.Now(),
 	}
 }

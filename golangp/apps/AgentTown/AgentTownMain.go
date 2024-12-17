@@ -15,9 +15,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create and add agents
-	runtime.AddAgent(config.Config{Name: "Agent_A"})
-	runtime.AddAgent(config.Config{Name: "Agent_B"})
-	runtime.AddAgent(config.Config{Name: "Agent_C"})
+	runtime.AddAgent(config.NewConfig("Config_A"))
+	runtime.AddAgent(config.NewConfig("Config_B"))
+	runtime.AddAgent(config.NewConfig("Config_C"))
 
 	// Start agents
 	go runtime.StartAgents(ctx)

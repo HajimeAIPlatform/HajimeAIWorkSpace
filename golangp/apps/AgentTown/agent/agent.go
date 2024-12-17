@@ -18,9 +18,13 @@ type Message struct {
 	Sender    string
 	Recipient string
 	Content   string
+	Timestamp time.Time
 }
 
 // Agent represents a single autonomous entity
+// Name is the readable identifier for the agent, may not be unique
+// ID is the unique identifier for the agent
+// AI logic can be implemented in the Execute function and message handlers
 type Agent struct {
 	ID        string
 	Name      string
@@ -29,20 +33,23 @@ type Agent struct {
 	Done      chan struct{}   // Signaling channel indicating work completion
 	Receivers map[string]*Agent
 	IsActive  bool
-	Config    config.Config
+	Config    *config.Config
+	CreatedAt time.Time
 	mu        sync.Mutex
 }
 
 // NewAgent creates a new agent
-func NewAgent(name string) *Agent {
+func NewAgent(config *config.Config) *Agent {
 	return &Agent{
 		ID:        uuid.New().String(),
-		Name:      name,
+		Name:      config.Name + uuid.New().String(),
 		MessageCh: make(chan Message, 10),    // Buffered channel for communication
 		ProcessCh: make(chan *task.Task, 20), // Buffered channel for tasks
 		Done:      make(chan struct{}),
 		Receivers: make(map[string]*Agent),
+		Config:    config,
 		IsActive:  false,
+		CreatedAt: time.Now(),
 	}
 }
 
@@ -108,6 +115,7 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 						Sender:    agent.Name,
 						Recipient: receiver.Name,
 						Content:   fmt.Sprintf("Hello from %s!", agent.Name),
+						Timestamp: time.Now(),
 					}
 					receiver.MessageCh <- msg
 				}
@@ -119,4 +127,8 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 // AssignTask sends a task to the agent for processing
 func (agent *Agent) AssignTask(taskDescription string) {
 	agent.ProcessCh <- task.NewTask(taskDescription)
+}
+
+func (agent *Agent) GetConfig() *config.Config {
+	return agent.Config
 }
