@@ -16,5 +16,6 @@ go_library(
         "//golangp/apps/AgentTown/runtime",
         "//golangp/apps/AgentTown/task",
         "//golangp/apps/AgentTown/telemetry",
+        "//golangp/apps/AgentTown/agent",
     ],
 )

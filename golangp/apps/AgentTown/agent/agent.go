@@ -35,7 +35,7 @@ type Agent struct {
 	IsActive  bool
 	Config    *config.Config
 	CreatedAt time.Time
-	mu        sync.Mutex
+	mu        sync.RWMutex
 }
 
 // NewAgent creates a new agent
@@ -63,11 +63,18 @@ func (agent *Agent) RegisterReceiver(other *Agent) {
 // Start runs the agent's loop as a goroutine
 func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
-	agent.IsActive = true
-	telemetry.RecordMetricInc("agents_active", 1)
+	agent.Activate()
 	go func() {
 		for {
 			select {
+
+			// Done should be processed before tasks
+			case <-agent.Done:
+				fmt.Printf("[%s] Done signal received, ignoring remaining tasks\n", agent.Name)
+				fmt.Printf("[%s] Quiting the agent goroutine\n", agent.Name)
+				agent.Deactivate()
+				return
+
 			// Process incoming messages
 			case msg := <-agent.MessageCh:
 				fmt.Printf("[%s] Received message from %s: %s\n", agent.Name, msg.Sender, msg.Content)
@@ -80,22 +87,15 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 					tsk.Execute(tsk.Parameters, agent.Config.PrivateData)
 				}
 				time.Sleep(time.Duration(rand.Intn(2)+1) * time.Second) // Simulate task processing
+				telemetry.RecordMetricInc("tasks_completed", 1)
 				fmt.Printf("[%s] Finished task %s : %s\n", agent.Name, tsk.ID, tsk.Description)
 				continue
-
-			case <-agent.Done:
-				fmt.Printf("[%s] Done signal received\n", agent.Name)
-				fmt.Printf("[%s] Quiting the agent goroutine\n", agent.Name)
-				agent.IsActive = false
-				telemetry.RecordMetricInc("agents_active", -1)
-				return
 
 			// Graceful shutdown on context cancellation
 			case <-ctx.Done():
 				fmt.Printf("[%s] Context cancelled\n", agent.Name)
 				fmt.Printf("[%s] Quiting the agent goroutine\n", agent.Name)
-				agent.IsActive = false
-				telemetry.RecordMetricInc("agents_active", -1)
+				agent.Deactivate()
 				return
 			}
 		}
@@ -125,10 +125,57 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 }
 
 // AssignTask sends a task to the agent for processing
-func (agent *Agent) AssignTask(taskDescription string) {
-	agent.ProcessCh <- task.NewTask(taskDescription)
+func (agent *Agent) AssignTask(tsk *task.Task) {
+	if agent.IsActiveAgent() {
+		agent.ProcessCh <- tsk
+		fmt.Printf("Task assigned to agent %s : %s\n", agent.Name, tsk.Description)
+		return
+	}
+	fmt.Printf("Agent %s is not active, task cannot be assigned: %s \n", agent.Name, tsk.Description)
 }
 
 func (agent *Agent) GetConfig() *config.Config {
+	agent.mu.RLock()
+	defer agent.mu.RUnlock()
 	return agent.Config
+}
+
+func (agent *Agent) GetID() string {
+	agent.mu.RLock()
+	defer agent.mu.RUnlock()
+	return agent.ID
+}
+
+func (agent *Agent) GetName() string {
+	agent.mu.RLock()
+	defer agent.mu.RUnlock()
+	return agent.Name
+}
+
+// MarkAsDone signals the agent to stop processing tasks and exit
+func (agent *Agent) MarkAsDone() {
+	agent.mu.Lock()
+	defer agent.mu.Unlock()
+	close(agent.Done)
+}
+
+func (agent *Agent) IsActiveAgent() bool {
+	agent.mu.RLock()
+	defer agent.mu.RUnlock()
+	return agent.IsActive
+}
+
+func (agent *Agent) Deactivate() {
+	agent.mu.Lock()
+	defer agent.mu.Unlock()
+	agent.IsActive = false
+	telemetry.RecordMetricInc("agents_active", -1)
+
+}
+
+func (agent *Agent) Activate() {
+	agent.mu.Lock()
+	defer agent.mu.Unlock()
+	agent.IsActive = true
+	telemetry.RecordMetricInc("agents_active", 1)
 }

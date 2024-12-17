@@ -58,7 +58,7 @@ func GetMetric(name string) int64 {
 func ReportMetrics() {
 	t := GetInstance()
 	for name, value := range t.metrics {
-		fmt.Printf("Metric %s: %d\n", name, atomic.LoadInt64(value))
+		fmt.Printf("[Telemetry] %s: %d\n", name, atomic.LoadInt64(value))
 	}
 }
 
