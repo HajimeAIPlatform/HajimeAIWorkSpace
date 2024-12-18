@@ -33,13 +33,13 @@ func main() {
 	// Assign tasks to agents
 	go func() {
 		time.Sleep(2 * time.Second)
-		runtime.AssignTaskByID(agentA.ID, task.NewTask("Collect Data"))
+		runtime.AssignTaskByAgentID(agentA.ID, task.NewTask("Collect Data"))
 		runtime.AssignTaskByAgentName(agentB.Name, task.NewTask("Process Data"))
-		runtime.AssignTaskByID(agentC.ID, task.NewTask("Report Data"))
+		runtime.AssignTaskByAgentID(agentC.ID, task.NewTask("Report Data"))
 		runtime.DeactivateAgentByID(agentB.ID)
-		runtime.AssignTaskByID(agentB.ID, task.NewTask("Test Deactivation"))
+		runtime.AssignTaskByAgentID(agentB.ID, task.NewTask("Test Deactivation"))
 		runtime.ActivateAgentByID(agentB.ID)
-		runtime.AssignTaskByID(agentB.ID, task.NewTask("Test Activation"))
+		runtime.AssignTaskByAgentID(agentB.ID, task.NewTask("Test Activation"))
 	}()
 
 	// Log activities

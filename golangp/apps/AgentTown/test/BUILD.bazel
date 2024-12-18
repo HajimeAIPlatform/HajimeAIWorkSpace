@@ -5,6 +5,8 @@ go_test(
     srcs = ["common_test.go"],
     deps = [
         "//golangp/apps/AgentTown/task",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/agent",
         "@com_github_magiconair_properties//assert",
     ],
 )

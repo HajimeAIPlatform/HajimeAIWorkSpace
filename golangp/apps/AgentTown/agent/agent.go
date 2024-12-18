@@ -39,15 +39,19 @@ type Agent struct {
 }
 
 // NewAgent creates a new agent
-func NewAgent(config *config.Config) *Agent {
+func NewAgent(cfg *config.Config) *Agent {
+	if cfg == nil {
+		cfg = config.NewConfig("DefaultConfig")
+		fmt.Printf("Agent created with default configuration\n")
+	}
 	return &Agent{
 		ID:        uuid.New().String(),
-		Name:      config.Name + uuid.New().String(),
+		Name:      cfg.Name + uuid.New().String(),
 		MessageCh: make(chan Message, 10),    // Buffered channel for communication
 		ProcessCh: make(chan *task.Task, 20), // Buffered channel for tasks
 		Done:      make(chan struct{}),
 		Receivers: make(map[string]*Agent),
-		Config:    config,
+		Config:    cfg,
 		IsActive:  false,
 		CreatedAt: time.Now(),
 	}
@@ -86,7 +90,6 @@ func (agent *Agent) Start(wg *sync.WaitGroup, ctx context.Context) {
 				if tsk.Execute != nil {
 					tsk.Execute(tsk.Parameters, agent.Config.PrivateData)
 				}
-				time.Sleep(time.Duration(rand.Intn(2)+1) * time.Second) // Simulate task processing
 				telemetry.RecordMetricInc("tasks_completed", 1)
 				fmt.Printf("[%s] Finished task %s : %s\n", agent.Name, tsk.ID, tsk.Description)
 				continue

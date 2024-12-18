@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Runtime represents the runtime environment for agents, providing a singleton instance with scheduling and monitoring capabilities
 type Runtime struct {
 	agents    map[string]*agent.Agent
 	mu        sync.RWMutex
@@ -75,7 +76,7 @@ func StartAgents(ctx context.Context) {
 
 // AssignTask assigns a task to a specific agent
 func AssignTaskByAgentName(agentName string, tsk *task.Task) {
-	ag := GetAgentByName(agentName)
+	ag := GetAgentByAgentName(agentName)
 	if ag != nil {
 		ag.AssignTask(tsk)
 	}
@@ -83,14 +84,16 @@ func AssignTaskByAgentName(agentName string, tsk *task.Task) {
 }
 
 // AssignTaskByID assigns a task to a specific agent
-func AssignTaskByID(agentID string, tsk *task.Task) {
-	ag := GetAgentByID(agentID)
+func AssignTaskByAgentID(agentID string, tsk *task.Task) {
+	ag := GetAgentByAgentID(agentID)
 	if ag != nil {
 		ag.AssignTask(tsk)
+	} else {
+		fmt.Printf("Agent %s not found , task cannot be signed: %s \n", agentID, tsk.ID)
 	}
 }
 
-func GetAgentByID(agentID string) *agent.Agent {
+func GetAgentByAgentID(agentID string) *agent.Agent {
 	r := GetInstance()
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -104,7 +107,7 @@ func ActivateAgentByID(agentID string) {
 	r := GetInstance()
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	ag := GetAgentByID(agentID)
+	ag := GetAgentByAgentID(agentID)
 	if ag != nil {
 		ag.Activate()
 	}
@@ -114,13 +117,13 @@ func DeactivateAgentByID(agentID string) {
 	r := GetInstance()
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	ag := GetAgentByID(agentID)
+	ag := GetAgentByAgentID(agentID)
 	if ag != nil {
 		ag.Deactivate()
 	}
 }
 
-func GetAgentByName(agentName string) *agent.Agent {
+func GetAgentByAgentName(agentName string) *agent.Agent {
 	r := GetInstance()
 	r.mu.RLock()
 	defer r.mu.RUnlock()
