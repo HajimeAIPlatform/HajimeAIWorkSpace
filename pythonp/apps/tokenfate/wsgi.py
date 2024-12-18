@@ -23,9 +23,6 @@ smtp_config = {
     'email_to': os.getenv('EMAIL_TO')
 }
 
-# 创建并启动监控器
-monitor = EmailMonitor(smtp_config)
-monitor.start()
 
 class StandaloneApplication(BaseApplication):
     def __init__(self, app, options=None):
@@ -71,4 +68,7 @@ def run_gunicorn():
     StandaloneApplication(app, options).run()
 
 if __name__ == "__main__":
+    # 创建并启动监控器
+    monitor = EmailMonitor(smtp_config)
+    monitor.start()
     run_gunicorn()
