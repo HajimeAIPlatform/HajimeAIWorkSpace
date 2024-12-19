@@ -16,6 +16,7 @@ bazel_dep(name = "rules_python", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 
 
+
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.download(
     goarch = "amd64",
@@ -49,10 +50,17 @@ use_repo(
     "org_golang_x_crypto",
 )
 
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+#noinspection
+python.toolchain(python_version = "3.10", is_default = True)
+
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+
 pip.parse(
     hub_name = "py_deps",
-    python_version = "3.11",
+    python_version = "3.10",
     requirements_lock = "//:requirements_lock.txt",
 )
 use_repo(pip, "py_deps")
+

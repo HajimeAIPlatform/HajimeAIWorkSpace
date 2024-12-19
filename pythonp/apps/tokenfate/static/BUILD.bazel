@@ -7,7 +7,7 @@ filegroup(
     srcs = glob([
         "assets/*.json",
         "assets/*.db",
-    ]),
+    ],allow_empty=True),
     visibility = ["//visibility:public"],
 )
 

@@ -1,8 +1,3 @@
-'''
-Description: 
-Author: Devin
-Date: 2024-11-21 14:18:32
-'''
 import os
 from dotenv import load_dotenv
 from gunicorn.app.base import BaseApplication
