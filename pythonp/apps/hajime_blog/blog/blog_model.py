@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, List, Set, Any
 
-from utils.common import get_unique_id, get_current_time, success_return, error_return
+from pythonp.apps.hajime_blog.utils.common import get_unique_id, get_current_time, success_return, error_return
 
 
 class Tag(BaseDocument):
