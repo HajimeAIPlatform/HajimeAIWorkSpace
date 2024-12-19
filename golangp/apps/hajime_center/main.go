@@ -67,14 +67,14 @@ func main() {
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{
 			"Origin",
-			"Content-Type",
+			"Description-Type",
 			"Accept",
 			"Authorization",
 			"App-Authorization",
 			"Access-Control-Allow-Origin",
 			"app-authorization",
 		},
-		ExposeHeaders:    []string{"Content-Length"},
+		ExposeHeaders:    []string{"Description-Length"},
 		AllowCredentials: true,
 	}
 

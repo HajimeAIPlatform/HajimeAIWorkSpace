@@ -4,11 +4,11 @@ load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 py_library(
     name = "src",
     srcs = glob(["**/*.py"]),
-    visibility = ["//visibility:public"],
     data = [
         "//pythonp/apps/tokenfate/static:assets",
         "//pythonp/apps/tokenfate/static:images",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         requirement("flask"),
         requirement("python-telegram-bot"),
@@ -22,12 +22,12 @@ py_library(
         requirement("Pillow"),
         requirement("schedule"),
         requirement("python-binance"),
-        "//pythonp/apps/tokenfate/utils",
-        "//pythonp/apps/tokenfate/models",
         "//pythonp/apps/tokenfate/dify_client",
         "//pythonp/apps/tokenfate/mock_service",
-        "//pythonp/apps/tokenfate/email_service",
         "//pythonp/apps/tokenfate/static",
+        "//pythonp/apps/tokenfate/models",
+        "//pythonp/apps/tokenfate/utils",
+        "//pythonp/apps/tokenfate/email_service",
         "//pythonp/apps/hajime_scraper:run_scraper_dexscreener_lib",
     ],
 )

@@ -6,11 +6,11 @@ go_library(
     importpath = "hajime/golangp/apps/hajime_center/models",
     visibility = ["//visibility:public"],
     deps = [
-        "//golangp/common/logging:logger",
         "//golangp/apps/hajime_center/initializers",
+        "//golangp/common/logging:logger",
         "@com_github_google_uuid//:go_default_library",
+        "@com_github_shopspring_decimal//:go_default_library",
         "@io_gorm_datatypes//:go_default_library",
         "@io_gorm_gorm//:go_default_library",
-        "@com_github_shopspring_decimal//:go_default_library",
     ],
 )

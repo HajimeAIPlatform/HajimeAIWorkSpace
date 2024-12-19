@@ -1,12 +1,19 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+#load("@rules_go//go:def.bzl", "go_test")
 
 go_library(
     name = "xminio",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/hajime_center/xminio",
+    importpath = "hajime/golangp/apps/hajime_center/golangp/apps/hajime_center/xminio",
     visibility = ["//visibility:public"],
     deps = [
-        "//golangp/apps/hajime_center/initializers",
-        "@com_github_minio_minio_go_v7//:go_default_library",
+        "@com_github_minio_minio_go_v7//:minio-go",
+        "@com_github_minio_minio_go_v7//pkg/credentials",
     ],
+)
+
+go_test(
+    name = "xminio_test",
+    srcs = ["object-post_test.go"],
+    embed = [":xminio"],
 )
