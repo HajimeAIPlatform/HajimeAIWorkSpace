@@ -35,3 +35,17 @@ httpx-sse==0.4.0
 pydantic==2.8.2
 StrEnum==0.4.15
 
+#hajime_blog
+fastapi
+apscheduler
+python-ulid
+solana  
+pymongo  
+beanie  
+email-validator  
+pymysql  
+pynacl  
+python-decouple 
+base58  
+passlib  
+

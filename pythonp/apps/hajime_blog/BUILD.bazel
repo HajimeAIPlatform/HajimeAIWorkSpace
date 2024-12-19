@@ -1,0 +1,34 @@
+# 使用 Ubuntu 基础镜像
+FROM ubuntu:22.04
+
+USER root
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# 定义编码
+ENV LC_ALL="C.UTF-8"
+ENV LANG="C.UTF-8"
+
+# 更新 apt 并安装 Python 3.10 和其他依赖
+RUN apt-get update && \
+    apt-get install -y python3.10 python3.10-venv python3.10-dev build-essential libpq-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 设置 Python 3.10 为默认 Python
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
+    update-alternatives --config python3
+
+# 复制项目代码到容器
+COPY . /opt/hajimeblog
+
+# 设置工作目录为 blog 目录
+WORKDIR /opt/hajimeblog/blog
+
+
+
+# 暴露端口（如有需要）
+EXPOSE 8000
+
+# 设置容器启动命令，运行主服务
+CMD ["/opt/hajimeblog/venv/bin/python", "/opt/hajimeblog/blog/main.py"]

@@ -1,0 +1,14 @@
+X_AUTH_KEY=You/yDEfVm6iAg0=
+DATABASE_NAME=hajime_evidence
+KEY_FILE=/opt/hajime/solana/devnet.json
+PROGRAM_ID=HVywFTz6QmtxviYPFH14WehvFvs5BhWDbgKz2ec7WSEK
+SOLANA_RPC_URL=https://api.devnet.solana.com
+DB_CONNECTION=mongodb://localhost:27017/
+HASH_TO_BLOCKCHAIN_CALLBACK=http://youhost/api/p2p/send_hash_event
+ASSET_TOKENS='USDC'
+INVITE_DOMAIN=https://hajimebot.ai/
+FS_STORE_PATH=/opt/hajime/s/s/
+FILE_DOMAIN=https://www.hajime.ai/s/
+REDIS_URL=redis://localhost
+REDIS_DB=0
+REDIS_DECODE_RESPONSES=true
