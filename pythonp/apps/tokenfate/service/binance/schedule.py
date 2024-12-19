@@ -6,7 +6,7 @@ import time
 from binance import Client
 import logging
 import json
-from pythonp.apps.tokenfate.src.binance.utils import get_binance_client
+from pythonp.apps.tokenfate.service.binance.utils import get_binance_client
 from pythonp.apps.hajime_scraper.run_scraper_dexscreener import fetch_dex_data
 from pythonp.apps.tokenfate.static.static import get_assets_path
 import os

@@ -12,10 +12,10 @@ from pythonp.common.logging.logger import setup_logging
 
 load_dotenv()
 
-from pythonp.apps.tokenfate.src import blueprint as api
+from pythonp.apps.tokenfate.service import blueprint as api
 from pythonp.apps.tokenfate.models import setup_db
-from pythonp.apps.tokenfate.src.binance.transaction_queue import start_transaction_processor
-from pythonp.apps.tokenfate.src.binance.schedule import start_schedule_thread
+from pythonp.apps.tokenfate.service.binance.transaction_queue import start_transaction_processor
+from pythonp.apps.tokenfate.service.binance.schedule import start_schedule_thread
 
 
 def create_app():

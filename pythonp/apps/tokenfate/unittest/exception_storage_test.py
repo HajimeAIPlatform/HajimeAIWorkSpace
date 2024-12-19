@@ -1,5 +1,5 @@
 import unittest
-from pythonp.apps.tokenfate.src.ton.tc_storage import ExceptionStorage
+from pythonp.apps.tokenfate.service.ton.tc_storage import ExceptionStorage
 
 class TestExceptionStorage(unittest.TestCase):
     def setUp(self):

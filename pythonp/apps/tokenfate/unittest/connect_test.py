@@ -13,7 +13,7 @@ from pytonconnect import TonConnect
 from pytonconnect.storage import IStorage
 import redis.asyncio as redis
 
-from pythonp.apps.tokenfate.src.ton.messages import get_comment_message
+from pythonp.apps.tokenfate.service.ton.messages import get_comment_message
 
 
 

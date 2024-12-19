@@ -17,16 +17,16 @@ from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMar
     InlineQueryResultsButton, InputMediaPhoto, Message, CallbackQuery
 from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
 
-from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming, chat_workflow, chat_decode
-from pythonp.apps.tokenfate.src.binance.views import handle_binance_command
-from pythonp.apps.tokenfate.src.binance.utils import get_all_prices, process_recommendation
-import pythonp.apps.tokenfate.src.ton.views as ton_module
-from pythonp.apps.tokenfate.src.bot.commands import set_commands
-from pythonp.apps.tokenfate.src.bot.wallet_menu_callback import set_handlers
-import pythonp.apps.tokenfate.src.bot.state as ChatStatus
-from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
-from pythonp.apps.tokenfate.src.bot.keyboards import KeyboardFactory
-from pythonp.apps.tokenfate.src.ton.tc_storage import DailyFortune, UserActivityTracker, ExceptionStorage
+from pythonp.apps.tokenfate.service.dify.views import chat_blocking, chat_streaming, chat_workflow, chat_decode
+from pythonp.apps.tokenfate.service.binance.views import handle_binance_command
+from pythonp.apps.tokenfate.service.binance.utils import get_all_prices, process_recommendation
+import pythonp.apps.tokenfate.service.ton.views as ton_module
+from pythonp.apps.tokenfate.service.bot.commands import set_commands
+from pythonp.apps.tokenfate.service.bot.wallet_menu_callback import set_handlers
+import pythonp.apps.tokenfate.service.bot.state as ChatStatus
+from pythonp.apps.tokenfate.service.bot.i18n_helper import I18nHelper
+from pythonp.apps.tokenfate.service.bot.keyboards import KeyboardFactory
+from pythonp.apps.tokenfate.service.ton.tc_storage import DailyFortune, UserActivityTracker, ExceptionStorage
 from pythonp.apps.tokenfate.models.transaction import UserPoints
 from pythonp.apps.tokenfate.static.static import get_images_path
 from pythonp.apps.tokenfate.utils.debug_tools import get_user_friendly_error_info

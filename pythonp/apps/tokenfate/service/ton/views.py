@@ -9,19 +9,19 @@ import pytonconnect.exceptions
 from telegram import Update
 from telegram.ext import ConversationHandler
 
-import pythonp.apps.tokenfate.src.bot.state as ChatStatus
-import pythonp.apps.tokenfate.src.bot.wallet_menu_callback as wallet_menu_callback
+import pythonp.apps.tokenfate.service.bot.state as ChatStatus
+import pythonp.apps.tokenfate.service.bot.wallet_menu_callback as wallet_menu_callback
 import pythonp.apps.tokenfate.mock_service.mock_connector as mock_connector
 import pythonp.apps.tokenfate.mock_service.mock_ton_server as mock_ton_server
-import pythonp.apps.tokenfate.src.ton.ton_server as ton_server
+import pythonp.apps.tokenfate.service.ton.ton_server as ton_server
 from pythonp.apps.tokenfate.models.transaction import save_ton_transaction_to_db, UserAsset
-from pythonp.apps.tokenfate.src.ton.utils import calculate_fee, get_bot_ton_address, convert_address_to_hex, estimate_gas_fee
-from pythonp.apps.tokenfate.src.binance.views import convert_currency
-from pythonp.apps.tokenfate.src.binance.transaction_queue import put_transaction_into_queue
-from pythonp.apps.tokenfate.src.binance.utils import is_min_trade_quantity_limit
-from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
-from pythonp.apps.tokenfate.src.ton.messages import get_comment_message
-from pythonp.apps.tokenfate.src.ton.connector import get_connector
+from pythonp.apps.tokenfate.service.ton.utils import calculate_fee, get_bot_ton_address, convert_address_to_hex, estimate_gas_fee
+from pythonp.apps.tokenfate.service.binance.views import convert_currency
+from pythonp.apps.tokenfate.service.binance.transaction_queue import put_transaction_into_queue
+from pythonp.apps.tokenfate.service.binance.utils import is_min_trade_quantity_limit
+from pythonp.apps.tokenfate.service.bot.i18n_helper import I18nHelper
+from pythonp.apps.tokenfate.service.ton.messages import get_comment_message
+from pythonp.apps.tokenfate.service.ton.connector import get_connector
 from pythonp.apps.tokenfate.models.transaction import UserPoints
 
 

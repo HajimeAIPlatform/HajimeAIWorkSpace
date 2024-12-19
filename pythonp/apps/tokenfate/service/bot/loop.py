@@ -12,11 +12,11 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Cal
 import qrcode
 from pytoniq_core import Address
 
-from pythonp.apps.tokenfate.src.bot.commands import set_bot_commands_handler
-from pythonp.apps.tokenfate.src.bot.wallet_menu_callback import set_handlers
-from pythonp.apps.tokenfate.src.dify.views import chat_blocking, chat_streaming
-from pythonp.apps.tokenfate.src.binance.views import handle_binance_command
-import pythonp.apps.tokenfate.src.ton.views as ton_module
+from pythonp.apps.tokenfate.service.bot.commands import set_bot_commands_handler
+from pythonp.apps.tokenfate.service.bot.wallet_menu_callback import set_handlers
+from pythonp.apps.tokenfate.service.dify.views import chat_blocking, chat_streaming
+from pythonp.apps.tokenfate.service.binance.views import handle_binance_command
+import pythonp.apps.tokenfate.service.ton.views as ton_module
 from pythonp.apps.tokenfate.utils.utils import run_async
 
 # 获取Telegram Bot Token

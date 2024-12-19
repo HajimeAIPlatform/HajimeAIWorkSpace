@@ -3,7 +3,7 @@ import logging
 
 from pytonconnect import TonConnect
 
-from pythonp.apps.tokenfate.src.ton.tc_storage import TcStorage
+from pythonp.apps.tokenfate.service.ton.tc_storage import TcStorage
 
 def get_connector(chat_id: int):
     MANIFEST_URL = getenv("MANIFEST_URL")

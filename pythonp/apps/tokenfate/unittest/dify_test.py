@@ -10,7 +10,7 @@ from typing import Dict
 
 from pydantic import ValidationError
 
-from pythonp.apps.tokenfate.src.binance.schedule import get_random_dex_historical_prices
+from pythonp.apps.tokenfate.service.binance.schedule import get_random_dex_historical_prices
 from pythonp.apps.tokenfate.dify_client import Client, models
 
 dify_api_key = getenv('DIFY_API_KEY')
