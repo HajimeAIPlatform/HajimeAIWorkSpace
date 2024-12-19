@@ -1,0 +1,14 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "agent",
+    srcs = ["agent.go"],
+    importpath = "hajime/golangp/apps/AgentTown/agent",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/AgentTown/telemetry",
+        "//golangp/apps/AgentTown/config",
+        "@com_github_google_uuid//:uuid",
+    ],
+)

@@ -128,7 +128,7 @@ func (s *S3Manager) ServeObject(w http.ResponseWriter, objectName string) {
 	}
 	defer resp.Body.Close()
 
-	// Set the Content-Disposition header to inline
+	// Set the Description-Disposition header to inline
 	w.Header().Set("Content-Disposition", "inline")
 
 	// Copy the response body to the HTTP response
@@ -152,7 +152,7 @@ func (s *S3Manager) DownloadObject(w http.ResponseWriter, objectName string) {
 	}
 	defer resp.Body.Close()
 
-	// Set the Content-Disposition header to attachment
+	// Set the Description-Disposition header to attachment
 	w.Header().Set("Content-Disposition", "attachment; filename="+objectName)
 
 	// Copy the response body to the HTTP response

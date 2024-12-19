@@ -1,0 +1,21 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_binary(
+    name = "AgentTownMain",
+    embed = [":AgentTown_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "AgentTown_lib",
+    srcs = ["AgentTownMain.go"],
+    importpath = "hajime/golangp/apps/AgentTown",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//golangp/apps/AgentTown/config",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/AgentTown/telemetry",
+        "//golangp/apps/AgentTown/agent",
+    ],
+)

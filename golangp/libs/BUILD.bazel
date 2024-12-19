@@ -6,3 +6,10 @@ go_library(
     importpath = "hajime/golangp/libs",
     visibility = ["//visibility:public"],
 )
+
+go_library(
+    name = "libs",
+    srcs = ["utils.go"],
+    importpath = "hajime/golangp/apps/hajime_center/golangp/libs",
+    visibility = ["//visibility:public"],
+)
