@@ -12,6 +12,17 @@ import logging
 
 # 加载环境变量
 load_dotenv()
+from pythonp.apps.tokenfate.email_service.email_monitor_thread import EmailMonitor
+
+smtp_config = {
+    'smtp_host': os.getenv('SMTP_HOST'),
+    'smtp_port': os.getenv('SMTP_PORT'),
+    'smtp_user': os.getenv('SMTP_USER'),
+    'smtp_pass': os.getenv('SMTP_PASS'),
+    'email_from': os.getenv('EMAIL_FROM'),
+    'email_to': os.getenv('EMAIL_TO')
+}
+
 
 class StandaloneApplication(BaseApplication):
     def __init__(self, app, options=None):
@@ -38,7 +49,7 @@ def run_gunicorn():
         workers = int(workers_env)
     else:
         workers = multiprocessing.cpu_count() * 2 + 1
-  
+
 
     options = {
         'bind': f'{host}:{port}',
@@ -57,4 +68,7 @@ def run_gunicorn():
     StandaloneApplication(app, options).run()
 
 if __name__ == "__main__":
+    # 创建并启动监控器
+    monitor = EmailMonitor(smtp_config)
+    monitor.start()
     run_gunicorn()

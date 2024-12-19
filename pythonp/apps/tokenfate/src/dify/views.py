@@ -79,7 +79,7 @@ def chat_blocking(data):
 
     except Exception as e:
         logging.error("Error during chat_blocking: %s", e)
-        return "An error occurred"
+        return None
 
 def chat_blocking_key_2(data):
     try:
@@ -111,7 +111,7 @@ def chat_blocking_key_2(data):
         return answer
 
     except Exception as e:
-        logging.error("Error during chat_blocking: %s", e)
+        logging.error("Error during chat_blocking_key_2: %s", e)
         return "An error occurred"
 
 def chat_workflow(data: Dict):
@@ -189,8 +189,8 @@ def chat_decode(data):
         return answer
 
     except Exception as e:
-        logging.error("Error during chat_blocking: %s", e)
-        return "An error occurred"
+        logging.error("Error during chat_decode: %s", e)
+        return None
 
 def chat_streaming(data):
     try:
