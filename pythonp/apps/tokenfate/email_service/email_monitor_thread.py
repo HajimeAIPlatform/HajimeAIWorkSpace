@@ -6,7 +6,7 @@ import redis.asyncio as redis
 from pythonp.common.email_notifications.email_sender import send_email 
 
 class EmailMonitor:
-    def __init__(self, smtp_config, check_interval=2):
+    def __init__(self, smtp_config, check_interval=60*60):
         self.smtp_config = smtp_config
         self.check_interval = check_interval
         self.is_running = False

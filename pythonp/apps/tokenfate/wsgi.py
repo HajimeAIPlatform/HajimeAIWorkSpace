@@ -12,7 +12,7 @@ import logging
 
 # 加载环境变量
 load_dotenv()
-from pythonp.apps.tokenfate.email_service.email_sender import EmailMonitor
+from pythonp.apps.tokenfate.email_service.email_monitor_thread import EmailMonitor
 
 smtp_config = {
     'smtp_host': os.getenv('SMTP_HOST'),
