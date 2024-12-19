@@ -1,17 +1,14 @@
-package mail_utils
+package mail_server
 
 import (
 	"bytes"
 	"crypto/tls"
 	"github.com/k3a/html2text"
-	"hajime/golangp/apps/hajime_center/initializers"
-	"hajime/golangp/apps/hajime_center/models"
+	"gopkg.in/gomail.v2"
 	"html/template"
 	"log"
 	"os"
 	"path/filepath"
-
-	gomail "gopkg.in/gomail.v2"
 )
 
 type EmailData struct {
@@ -23,13 +20,21 @@ type EmailData struct {
 	Balance          int64
 }
 
+type EmailConfig struct {
+	EmailFrom string
+	SMTPPass  string
+	SMTPUser  string
+	SMTPHost  string
+	SMTPPort  int
+}
+
 // ? Email template parser
 
-func ParseTemplateDir(dir string) (*template.Template, error) {
+func ParseTemplateDir(dir string, defaultTemplatePath string) (*template.Template, error) {
 	// 检查目录是否存在
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		// 如果目录不存在，使用默认路径
-		dir = "/srv/HajimeCenter/templates"
+		dir = defaultTemplatePath
 	}
 
 	var paths []string
@@ -50,24 +55,18 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 	return template.ParseFiles(paths...)
 }
 
-func SendEmail(user *models.User, data *EmailData, emailTemp string) {
-	config, err := initializers.LoadEnv(".")
-
-	if err != nil {
-		log.Fatal("could not load config", err)
-	}
-
+func SendEmail(config *EmailConfig, email string, data *EmailData, emailTemp string, templatesPath string, defaultTemplatePath string) {
 	// Sender data.
 	from := config.EmailFrom
 	smtpPass := config.SMTPPass
 	smtpUser := config.SMTPUser
-	to := user.Email
+	to := email
 	smtpHost := config.SMTPHost
 	smtpPort := config.SMTPPort
 
 	var body bytes.Buffer
 
-	tmpl, err := ParseTemplateDir("golangp/apps/hajime_center/templates")
+	tmpl, err := ParseTemplateDir(templatesPath, defaultTemplatePath)
 	if err != nil {
 		log.Fatal("Could not parse template", err)
 	}

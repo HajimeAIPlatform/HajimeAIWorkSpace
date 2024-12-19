@@ -1,15 +1,8 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "utils",
     srcs = ["utils.go"],
     importpath = "hajime/golangp/libs",
-    visibility = ["//visibility:public"],
-)
-
-go_library(
-    name = "libs",
-    srcs = ["utils.go"],
-    importpath = "hajime/golangp/apps/hajime_center/golangp/libs",
     visibility = ["//visibility:public"],
 )

@@ -677,15 +677,19 @@ async def show_aura_rules(update):
         aura_status_daily = i18n.get_dialog('aura_status_daily').format(daily_recommended_points=daily_recommended_points)
         aura_rules = i18n.get_dialog('aura_rules')
         dialog = aura_status_amount + aura_status_daily + aura_rules
-        # logging.info(dialog)
-        await target.reply_text(
-            text = escape(dialog),
-            parse_mode="MarkdownV2"
-        )
+
+        image_name = f'{lang}_aura.png'
+        image_path = get_images_path(image_name)
+        with open(image_path, 'rb') as image_file:
+            await target.reply_photo(
+                photo=image_file,
+                caption=escape(dialog),
+                parse_mode="MarkdownV2",
+            )
 
         # Send interactive elements
         reply_markup = keyboard_factory.create_keyboard("aura")
-        image_name = f'{lang}-ways-to-impact-aura.png'
+        image_name = f'{lang}_ways-to-impact-aura.png'
         image_path = get_images_path(image_name)
         with open(image_path, 'rb') as image_file:
             await target.reply_photo(
@@ -750,7 +754,7 @@ async def decode_lot(update, token, role):
         # 发送签解
         dialog = i18n.get_dialog("lot_decoded_content")
         dialog = dialog.format(token=token, cached_decode=cached_decode)
-        reply_markup = keyboard_factory.create_keyboard("decode")
+        reply_markup = keyboard_factory.create_keyboard("decode", token=token, role=role)
         await target.message.reply_text(
             escape(dialog), parse_mode="MarkdownV2", 
             reply_markup=reply_markup

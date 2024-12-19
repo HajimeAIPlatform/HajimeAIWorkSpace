@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "proxy",
@@ -6,13 +6,12 @@ go_library(
     importpath = "hajime/golangp/apps/hajime_center/proxy",
     visibility = ["//visibility:public"],
     deps = [
+        "//golangp/apps/hajime_center/constants",
         "//golangp/apps/hajime_center/dify",
         "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/models",
         "//golangp/apps/hajime_center/proxy/middleware",
         "//golangp/common/logging:logger",
-        "//golangp/common/utils",
-        "@com_github_gorilla_mux//:go_default_library",
-        "@io_gorm_gorm//:go_default_library",
+        "@com_github_gorilla_mux//:mux",
     ],
 )

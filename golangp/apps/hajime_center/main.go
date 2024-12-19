@@ -20,13 +20,16 @@ import (
 )
 
 var (
-	server              *gin.Engine
-	AuthController      controllers.AuthController
-	AuthRouteController routes.AuthRouteController
+	server *gin.Engine
 
-	AppsController      controllers.AppsController
-	AppsRouteController routes.AppsRouteController
-	wg                  sync.WaitGroup
+	CreditSystem *controllers.CreditSystem
+
+	AuthController              controllers.AuthController
+	AuthRouteController         routes.AuthRouteController
+	ReferralCodeController      controllers.ReferralCodeController
+	ReferralCodeRouteController routes.ReferralCodeRouteController
+
+	wg sync.WaitGroup
 )
 
 func init() {
@@ -37,12 +40,12 @@ func init() {
 
 	initializers.ConnectDB(&conf)
 	//initializers.ConnectDBDify(&conf)
+	CreditSystem = controllers.NewCreditSystem(initializers.DB)
 
-	AuthController = controllers.NewAuthController(initializers.DB)
+	AuthController = controllers.NewAuthController(initializers.DB, CreditSystem)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
-
-	AppsController = controllers.NewAppsController(initializers.DB)
-	AppsRouteController = routes.NewAppsRouteController(AppsController)
+	ReferralCodeController = controllers.NewReferralCodeController(initializers.DB, CreditSystem)
+	ReferralCodeRouteController = routes.NewReferralCodeRouteController(ReferralCodeController)
 
 	server = gin.Default()
 }
@@ -87,7 +90,7 @@ func main() {
 	})
 
 	AuthRouteController.AuthRoute(router)
-	AppsRouteController.AppsRoute(router)
+	ReferralCodeRouteController.ReferralCodeRoute(router)
 
 	// Start the main server in a new goroutine
 	httpServer := &http.Server{

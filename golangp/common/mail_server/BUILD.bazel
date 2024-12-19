@@ -1,0 +1,12 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "mail_server",
+    srcs = glob(["**/*.go"]),
+    importpath = "hajime/golangp/common/mail_server",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_k3a_html2text//:html2text",
+        "@in_gopkg_gomail_v2//:gomail_v2",
+    ],
+)

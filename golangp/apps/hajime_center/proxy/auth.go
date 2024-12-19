@@ -2,60 +2,30 @@ package proxy
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
+	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/proxy/middleware"
 	"hajime/golangp/common/logging"
 	"log"
 	"net/http"
-	"strings"
 	"sync"
 )
 
-func writeErrorResponse(w http.ResponseWriter, code, message string, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	response := map[string]interface{}{
-		"code":    code,
-		"message": message,
-		"status":  status,
-	}
-	json.NewEncoder(w).Encode(response)
-}
-
-func isPathExcluded(path string, excludedPaths []string) bool {
-	for _, excludedPath := range excludedPaths {
-		if path == excludedPath {
-			return true
-		}
-	}
-	return false
-}
-
-func isPathPrefix(path string, excludedPaths []string) bool {
-	for _, excludedPath := range excludedPaths {
-		if strings.HasPrefix(path, excludedPath) {
-			return true
-		}
-	}
-	return false
-}
-
 // Check if the path is /dify/console/api/setup
 var excludedPaths = []string{
-	"/dify/console/api/setup",
-	"/dify/console/api/system-features",
-	"/dify/console/api/installed-apps",
-	"/dify/console/api/features",
-	"/dify/console/api/datasets/retrieval-setting",
+	"/console/api/setup",
+	"/console/api/system-features",
+	"/console/api/installed-apps",
+	"/console/api/features",
+	"/console/api/datasets/retrieval-setting",
 }
 var excludedPathsPrefix = []string{
-	"/dify/api",
-	"/dify/console/api/installed-apps",
-	"/dify/console/api/apps/",
+	"/api",
+	"/console/api/installed-apps",
+	"/console/api/apps/",
 }
 
 // AuthMiddleware adds authentication headers to the request
@@ -69,11 +39,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if !isPathExcluded(r.URL.Path, excludedPaths) && !isPathPrefix(r.URL.Path, excludedPathsPrefix) {
+		if !middleware.IsPathExcluded(r.URL.Path, excludedPaths, constants.DifyServerPrefix) && !middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix, constants.DifyServerPrefix) {
 			user, err := middleware.DeserializeUser(r)
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
-				writeErrorResponse(w, "401", err.Error(), http.StatusBadRequest)
+				middleware.WriteErrorResponse(w, "401", err.Error(), http.StatusBadRequest)
 				return
 			}
 
@@ -93,7 +63,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
-		if isPathExcluded(r.URL.Path, excludedPaths) || isPathPrefix(r.URL.Path, excludedPathsPrefix) {
+		if middleware.IsPathExcluded(r.URL.Path, excludedPaths, constants.DifyServerPrefix) || middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix, constants.DifyServerPrefix) {
 			Token, err := difyClient.GetUserToken("admin")
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())
@@ -108,20 +78,35 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+var apiPaths = []string{
+	"/console/api/apps/{app_id}/chat-messages",
+	"/console/api/installed-apps/{app_id}/chat-messages",
+	"/console/api/apps/{app_id}/workflows/draft/run",
+	"/console/api/installed-apps/{app_id}/workflows/run",
+}
+
 // CreateProxiedServer sets up and starts the HTTP server with middleware
 func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
-	router := mux.NewRouter()
+	mux_router := mux.NewRouter()
+	router := mux_router.PathPrefix(constants.DifyServerPrefix).Subrouter()
 
 	// Register handlers with middleware
-	router.HandleFunc("/dify/console/api/apps/no_auth", middleware.GetAllNoAuthApp).Methods("GET")
-	router.HandleFunc("/dify/console/api/apps/publish/{app_id}", middleware.HandlePublish).Methods("POST")
-	router.HandleFunc("/dify/console/api/apps/unpublish/{app_id}", middleware.HandleUnpublish).Methods("POST")
-	router.Handle("/dify/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
-	router.Handle("/dify/console/api/datasets/{dataset_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.HandleFunc("/console/api/apps/no_auth", middleware.GetAllNoAuthApp).Methods("GET")
+	router.HandleFunc("/console/api/apps/publish/{app_id}", middleware.HandlePublish).Methods("POST")
+	router.HandleFunc("/console/api/apps/unpublish/{app_id}", middleware.HandleUnpublish).Methods("POST")
+	router.Handle("/console/api/apps/{app_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/console/api/datasets/{dataset_id}", AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
-	router.Handle("/dify/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
-	router.PathPrefix("/dify/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/console/api/apps/{app_id}/model-config", middleware.ModelUpdateMiddleware(http.HandlerFunc(DifyHandler)))
+
+	//chat
+	for _, path := range apiPaths {
+		router.Handle(path, middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
+	}
+
+	router.Handle("/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+	router.PathPrefix("/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
 	server := &http.Server{
 		Addr:    ":8001",

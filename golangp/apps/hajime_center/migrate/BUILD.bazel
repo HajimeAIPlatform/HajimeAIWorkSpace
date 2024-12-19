@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_binary(
     name = "migrate",
@@ -18,6 +18,6 @@ go_library(
         "//golangp/apps/hajime_center/models",
         "//golangp/common/logging:logger",
         "//golangp/common/utils",
-        "@io_gorm_gorm//:go_default_library",
+        "@io_gorm_gorm//:gorm",
     ],
 )

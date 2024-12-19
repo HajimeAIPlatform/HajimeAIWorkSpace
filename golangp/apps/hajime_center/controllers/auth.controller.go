@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
-	"hajime/golangp/apps/hajime_center/mail_utils"
 	"hajime/golangp/apps/hajime_center/models"
 	"hajime/golangp/common/logging"
+	"hajime/golangp/common/mail_server"
 	"hajime/golangp/common/utils"
 	"net/http"
 	"strings"
@@ -18,10 +18,30 @@ import (
 
 type AuthController struct {
 	DB *gorm.DB
+	cs *CreditSystem
 }
 
-func NewAuthController(DB *gorm.DB) AuthController {
-	return AuthController{DB}
+func SendEmail(email string, data *mail_server.EmailData, emailTemp string) error {
+	config, err := initializers.LoadEnv(".")
+	if err != nil {
+		return err
+	}
+	emailConfig := mail_server.EmailConfig{
+		EmailFrom: config.EmailFrom,
+		SMTPPass:  config.SMTPPass,
+		SMTPUser:  config.SMTPUser,
+		SMTPHost:  config.SMTPHost,
+		SMTPPort:  config.SMTPPort,
+	}
+
+	templatesPath := "golangp/apps/hajime_center/templates"
+	defaultTemplatePath := "/srv/HajimeCenter/templates"
+	mail_server.SendEmail(&emailConfig, email, data, emailTemp, templatesPath, defaultTemplatePath)
+	return nil
+}
+
+func NewAuthController(DB *gorm.DB, creditSystem *CreditSystem) AuthController {
+	return AuthController{DB, creditSystem}
 }
 
 // SignUpUser SignUp User
@@ -46,20 +66,23 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 
 	now := time.Now()
 	newUser := models.User{
-		Name:      payload.Name,
-		Email:     strings.ToLower(payload.Email),
-		Password:  hashedPassword,
-		Role:      constants.RoleEditor,
-		Verified:  false,
-		Photo:     "test",
-		Provider:  "local",
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:              payload.Name,
+		Email:             strings.ToLower(payload.Email),
+		Password:          hashedPassword,
+		Role:              constants.RoleEditor,
+		Verified:          false,
+		Photo:             "test",
+		Provider:          "local",
+		Balance:           constants.GiftedPoints,
+		FromCode:          payload.FromCode,
+		UserMaxCodeAmount: constants.RoleEditorMaxCodeAmount,
+		CreatedAt:         now,
+		UpdatedAt:         now,
 	}
 
 	result := ac.DB.Create(&newUser)
 
-	if result.Error != nil && strings.Contains(result.Error.Error(), "duplicated key not allowed") {
+	if result.Error != nil && strings.Contains(result.Error.Error(), "duplicate key") {
 		ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": "User with that email already exists, " +
 			"try use forget password to reset it."})
 		return
@@ -85,14 +108,18 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 	}
 
 	// ? Send Email
-	emailData := mail_utils.EmailData{
+	emailData := mail_server.EmailData{
 		URL:              config.ClientOrigin + "/verifyemail/" + code,
 		VerificationCode: code,
 		FirstName:        firstName,
 		Subject:          "Your account verification code",
 	}
 
-	mail_utils.SendEmail(&newUser, &emailData, "verificationCode.html")
+	err = SendEmail(newUser.Email, &emailData, "verificationCode.html")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": err})
+		return
+	}
 
 	message := "We sent an email with a verification code to " + newUser.Email
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": message})
@@ -134,6 +161,21 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	if err := utils.VerifyPassword(user.Password, payload.Password); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"result": "fail", "code": "INVALID_CREDENTIALS", "message": "Invalid email or password"})
 		return
+	}
+
+	now := time.Now()
+	if user.LoginTime == nil || !user.IsSameDay(*user.LoginTime, now) {
+		// 更新余额
+		if err := user.UpdateBalance(constants.DailySignInPoints, "DailySignInPoints"); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"result": "fail", "code": "UPDATE_BALANCE_ERROR", "message": err.Error()})
+			return
+		}
+
+		// 更新登录时间
+		if err := user.UpdateLoginTime(&now); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"result": "fail", "code": "UPDATE_LOGINTIME_ERROR", "message": err.Error()})
+			return
+		}
 	}
 
 	config, _ := initializers.LoadEnv(".")
@@ -268,14 +310,18 @@ func (ac *AuthController) ForgotPassword(ctx *gin.Context) {
 	}
 
 	// ? Send Email
-	emailData := mail_utils.EmailData{
+	emailData := mail_server.EmailData{
 		URL:              config.ClientOrigin + "/resetpassword/" + resetToken,
 		VerificationCode: resetToken,
 		FirstName:        firstName,
 		Subject:          "Your password reset token (valid for 10min)",
 	}
 
-	mail_utils.SendEmail(&user, &emailData, "resetPassword.html")
+	err = SendEmail(user.Email, &emailData, "verificationCode.html")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": err})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 }
@@ -375,17 +421,29 @@ func (ac *AuthController) AddUser(ctx *gin.Context) {
 		return
 	}
 
+	var maxCodeAmount int
+
+	if payload.Role == constants.RoleAdmin {
+		maxCodeAmount = constants.RoleAdminMaxCodeAmount
+	} else if payload.Role == constants.RoleEditor {
+		maxCodeAmount = constants.RoleEditorMaxCodeAmount
+	} else {
+		maxCodeAmount = constants.RoleUserMaxCodeAmount
+	}
+
 	now := time.Now()
 	newUser := models.User{
-		Name:      payload.Name,
-		Email:     strings.ToLower(payload.Email),
-		Password:  hashedPassword,
-		Role:      payload.Role, // 允许管理员设置用户角色
-		Verified:  true,         // 直接设置为已验证
-		Photo:     "test",
-		Provider:  "local",
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:              payload.Name,
+		Email:             strings.ToLower(payload.Email),
+		Password:          hashedPassword,
+		Role:              payload.Role, // 允许管理员设置用户角色
+		Verified:          true,         // 直接设置为已验证
+		Photo:             "test",
+		Provider:          "local",
+		FromCode:          payload.FromCode,
+		UserMaxCodeAmount: maxCodeAmount,
+		CreatedAt:         now,
+		UpdatedAt:         now,
 	}
 
 	result := ac.DB.Create(&newUser)
@@ -535,6 +593,15 @@ func (ac *AuthController) LoginWithWallet(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Invalid request"})
 		return
+	}
+
+	// Check if currentUser.Address exists
+	if currentUser.Address == "" {
+		err := currentUser.UpdateBalance(constants.WalletLinkPoints, "WalletLinkPoints")
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+			return
+		}
 	}
 
 	// 将 WalletAddress 转为小写
