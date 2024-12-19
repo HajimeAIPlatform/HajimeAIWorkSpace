@@ -302,7 +302,7 @@ class ExceptionStorage:
 
     async def add_exception(self, exception_message: str):
         """将错误信息存储到Redis中"""
-        await self.client.lpush("exceptions", json.dumps({"message": exception_message}))
+        await self.client.lpush("exceptions", json.dumps(exception_message).encode('utf-8'))
         logging.info(f"Stored exception: {exception_message}")
 
     async def get_exceptions(self):

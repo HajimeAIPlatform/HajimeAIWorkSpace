@@ -90,7 +90,7 @@ class EmailMonitor:
     async def _create_email_content(self):
         """创建邮件内容"""
         exceptions = await self.redis_client.lrange("exceptions", 0, -1)
-        subject = "Application Error Report"
+        subject = "TokenFate Error Report"
         body = "\n".join([exc for exc in exceptions])
         return subject, body
 

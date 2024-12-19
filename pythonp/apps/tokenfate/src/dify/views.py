@@ -79,7 +79,7 @@ def chat_blocking(data):
 
     except Exception as e:
         logging.error("Error during chat_blocking: %s", e)
-        return "An error occurred"
+        return None
 
 def chat_blocking_key_2(data):
     try:
@@ -190,7 +190,7 @@ def chat_decode(data):
 
     except Exception as e:
         logging.error("Error during chat_decode: %s", e)
-        return "An error occurred"
+        return None
 
 def chat_streaming(data):
     try:
