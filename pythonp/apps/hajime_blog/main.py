@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from blog.blog_router import router as blog_router
-from utils.common import get_redis
+from utils.redis import RedisClient  
 
 app = FastAPI()
+
+# 初始化 RedisClient
+redis_client = RedisClient()
 
 # 挂载博客模块的路由
 app.include_router(blog_router, prefix="/blog", tags=["Blog"])
@@ -10,7 +13,7 @@ app.include_router(blog_router, prefix="/blog", tags=["Blog"])
 # 启动事件
 @app.on_event("startup")
 async def startup():
-    app.state.redis = await get_redis()
+    app.state.redis = await redis_client.get_client()  # 获取 Redis 客户端
     print("Redis connected!")
 
 # 关闭事件
@@ -18,7 +21,7 @@ async def startup():
 async def shutdown():
     redis = app.state.redis
     if redis:
-        await redis.close()
+        await redis.close()  # 关闭 Redis 连接
         print("Redis connection closed.")
 
 # 测试路由

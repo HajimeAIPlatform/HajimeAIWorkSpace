@@ -1,13 +1,14 @@
 import os
-
 from dotenv import load_dotenv
 from fastapi.security import APIKeyHeader
 from fastapi import Depends, HTTPException, status
+from utils.redis import RedisClient
 
-from utils.common import get_redis
-
+# 加载环境变量
 load_dotenv()
 
+# 初始化 Redis 客户端
+redis_client = RedisClient()
 
 # 定义一个名为 X-Auth 的自定义头
 api_key_header = APIKeyHeader(name="X-Auth", auto_error=False)
@@ -15,11 +16,9 @@ api_biz_key_header = APIKeyHeader(name="X-Biz-Auth", auto_error=False)
 
 async def get_uid_by_token(x_auth: str = Depends(api_key_header)):
     if x_auth:
-        redis = await get_redis()
+        redis = await redis_client.get_client()
         uid = await redis.get(x_auth)
         if uid:
-            k = "login:"
-            # redis.inc()
             return uid
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -31,10 +30,9 @@ async def get_uid_by_token(x_auth: str = Depends(api_key_header)):
             detail="Invalid X-Auth Header",
         )
 
-
 async def get_biz_uid_by_token(x_auth: str = Depends(api_biz_key_header)):
     if x_auth:
-        redis = await get_redis()
+        redis = await redis_client.get_client()
         uid = await redis.get(x_auth)
         if uid:
             return uid

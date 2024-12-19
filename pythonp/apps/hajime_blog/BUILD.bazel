@@ -1,59 +1,34 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
-load("@py_deps//:requirements.bzl", "requirement")
+# 使用 Ubuntu 基础镜像
+FROM ubuntu:22.04
 
-# 定义 utils 库
-py_library(
-    name = "utils",
-    srcs = [
-        "utils/common.py",
-        "utils/fshelper.py",
-        "utils/x_auth.py",
-    ],
-    deps = [
-        requirement("redis"),
-        requirement("python-ulid"),
-        requirement("python-dotenv"),
-        requirement("pytz"),
-    ],
-)
+USER root
 
-# 定义 db 库
-py_library(
-    name = "db",
-    srcs = [
-        "db/file_meta.py",
-        "db/models.py",
-        "db/schemas.py",
-    ],
-    deps = [":utils"],
-)
+ENV DEBIAN_FRONTEND noninteractive
 
-# 定义 blog 库
-py_library(
-    name = "blog",
-    srcs = [
-        "blog/blog_model.py",
-        "blog/blog_router.py",
-        "blog/blog_schema.py",
-    ],
-    deps = [":db", ":utils"],
-)
+# 定义编码
+ENV LC_ALL="C.UTF-8"
+ENV LANG="C.UTF-8"
 
-# 定义主服务可执行文件
-py_binary(
-    name = "hajime_blog_service",
-    srcs = ["main.py"],
-     main = "main.py",
-    deps = [
-        ":blog",
-        ":utils",
-        requirement("fastapi"),
-        requirement("uvicorn"),
-        requirement("pymongo"),
-        requirement("pymysql"),
-        requirement("beanie"),
-        requirement("python-decouple"),
-        requirement("email-validator"),
-        
-    ],
-)
+# 更新 apt 并安装 Python 3.10 和其他依赖
+RUN apt-get update && \
+    apt-get install -y python3.10 python3.10-venv python3.10-dev build-essential libpq-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 设置 Python 3.10 为默认 Python
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
+    update-alternatives --config python3
+
+# 复制项目代码到容器
+COPY . /opt/hajimeblog
+
+# 设置工作目录为 blog 目录
+WORKDIR /opt/hajimeblog/blog
+
+
+
+# 暴露端口（如有需要）
+EXPOSE 8000
+
+# 设置容器启动命令，运行主服务
+CMD ["/opt/hajimeblog/venv/bin/python", "/opt/hajimeblog/blog/main.py"]
