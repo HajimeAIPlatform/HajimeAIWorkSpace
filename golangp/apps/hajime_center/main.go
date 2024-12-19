@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"hajime/golangp/apps/hajime_center/controllers"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/proxy"
@@ -17,6 +15,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -28,6 +29,9 @@ var (
 	AuthRouteController         routes.AuthRouteController
 	ReferralCodeController      controllers.ReferralCodeController
 	ReferralCodeRouteController routes.ReferralCodeRouteController
+
+	BalanceHistoryController      controllers.BalanceHistoryController
+	BalanceHistoryRouteController routes.BalanceHistoryRouteController
 
 	wg sync.WaitGroup
 )
@@ -46,6 +50,9 @@ func init() {
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 	ReferralCodeController = controllers.NewReferralCodeController(initializers.DB, CreditSystem)
 	ReferralCodeRouteController = routes.NewReferralCodeRouteController(ReferralCodeController)
+
+	BalanceHistoryController = controllers.NewBalanceHistoryController(initializers.DB)
+	BalanceHistoryRouteController = routes.NewBalanceHistoryRouteController(BalanceHistoryController)
 
 	server = gin.Default()
 }
@@ -91,7 +98,7 @@ func main() {
 
 	AuthRouteController.AuthRoute(router)
 	ReferralCodeRouteController.ReferralCodeRoute(router)
-
+	BalanceHistoryRouteController.BalanceHistoryRoute(router)
 	// Start the main server in a new goroutine
 	httpServer := &http.Server{
 		Addr:    ":" + conf.ServerPort,
