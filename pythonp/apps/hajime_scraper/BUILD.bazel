@@ -4,8 +4,8 @@ load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 py_library(
     name = "run_scraper_dexscreener_lib",
     srcs = ["run_scraper_dexscreener.py"],
-    visibility = ["//visibility:public"],
     data = ["scrapy.cfg"],
+    visibility = ["//visibility:public"],
     deps = [
         requirement("requests"),
         requirement("bs4"),
