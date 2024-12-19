@@ -9,8 +9,8 @@ from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMar
 from PIL import Image
 from telegram.ext import ApplicationBuilder, DictPersistence,CommandHandler
 
-from pythonp.apps.tokenfate.src.bot2.commands import set_bot_commands_handler
-from pythonp.apps.tokenfate.src.dify.views import chat_blocking_key_2
+from pythonp.apps.tokenfate.service.bot2.commands import set_bot_commands_handler
+from pythonp.apps.tokenfate.service.dify.views import chat_blocking_key_2
 
 
 # 获取Telegram Bot Token

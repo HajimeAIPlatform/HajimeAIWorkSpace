@@ -9,8 +9,8 @@ from telegram.ext import (
 )
 from os import getenv
 from typing import List, Optional
-from pythonp.apps.tokenfate.src.ton.views import send_tx, sell_transaction, buy_transaction, WAITING_FOR_INPUT, cancel
-from pythonp.apps.tokenfate.src.bot.i18n_helper import I18nHelper
+from pythonp.apps.tokenfate.service.ton.views import send_tx, sell_transaction, buy_transaction, WAITING_FOR_INPUT, cancel
+from pythonp.apps.tokenfate.service.bot.i18n_helper import I18nHelper
 from pythonp.apps.tokenfate.models.transaction import UserPoints
 from telegram import BotCommand, BotCommandScopeChat, BotCommandScopeDefault, Update
 

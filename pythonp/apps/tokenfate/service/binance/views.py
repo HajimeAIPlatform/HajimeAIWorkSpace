@@ -1,6 +1,6 @@
 # binance_module.py
 import logging
-from pythonp.apps.tokenfate.src.binance.utils import (convert_currency,
+from pythonp.apps.tokenfate.service.binance.utils import (convert_currency,
                                get_binance_client, get_common_currency_price,
                                create_order, get_all_prices)
 
