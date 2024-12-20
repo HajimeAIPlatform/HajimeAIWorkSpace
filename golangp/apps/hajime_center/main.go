@@ -7,7 +7,7 @@ import (
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/proxy"
 	"hajime/golangp/apps/hajime_center/routes"
-	"log"
+	"hajime/golangp/common/logging"
 	"net/http"
 	"os"
 	"os/signal"
@@ -39,7 +39,7 @@ var (
 func init() {
 	conf, err := initializers.LoadEnv(".")
 	if err != nil {
-		log.Fatal("🚀 Could not load environment variables", err)
+		logging.Danger("🚀 Could not load environment variables: %v", err)
 	}
 
 	initializers.ConnectDB(&conf)
@@ -60,7 +60,7 @@ func init() {
 func main() {
 	conf, err := initializers.LoadEnv(".")
 	if err != nil {
-		log.Fatal("🚀 Could not load environment variables", err)
+		logging.Danger("🚀 Could not load environment variables: %v", err)
 	}
 
 	// 将 DOMAIN 值解析为切片
@@ -92,7 +92,7 @@ func main() {
 
 	router := server.Group("/api")
 	router.GET("/healthcheck", func(ctx *gin.Context) {
-		message := "Welcome to ChatGPT!"
+		message := "Welcome to HajimeAI!"
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 	})
 
@@ -109,9 +109,9 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		log.Printf("Starting server on port %s", httpServer.Addr)
+		logging.Info("Starting server on port %s", httpServer.Addr)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("HTTP server error: %v", err)
+			logging.Danger("HTTP server error:  %v", err)
 		}
 	}()
 
@@ -123,19 +123,19 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	<-sigChan // Wait for a signal
 
-	log.Println("Shutting down server...")
+	logging.Info("Shutting down server...")
 
 	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownRelease()
 
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("HTTP server shutdown error: %v", err)
+		logging.Danger("HTTP server shutdown error:  %v", err)
 	}
 
 	if err := proxiedServer.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("ProxiedServer shutdown error: %v", err)
+		logging.Danger("ProxiedServer shutdown error:  %v", err)
 	}
 
 	wg.Wait()
-	log.Println("Server exited gracefully.")
+	logging.Info("Server exited gracefully.")
 }

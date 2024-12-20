@@ -7,7 +7,6 @@ import (
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/proxy/middleware"
 	"hajime/golangp/common/logging"
-	"log"
 	"net/http"
 	"sync"
 
@@ -117,11 +116,11 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Printf("Starting proxy server on port %s", server.Addr)
+		logging.Info("Starting proxy server on port %s", server.Addr)
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("HTTP server error: %v", err)
+			logging.Danger("HTTP server error: %v", err)
 		}
-		log.Println("Stopped serving new connections.")
+		logging.Info("Stopped serving new connections.")
 	}()
 
 	return server
