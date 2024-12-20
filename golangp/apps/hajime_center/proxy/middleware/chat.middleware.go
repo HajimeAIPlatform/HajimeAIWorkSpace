@@ -2,15 +2,17 @@ package middleware
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/models"
 	"hajime/golangp/common/logging"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 type ResponseWriterInterceptor struct {
@@ -65,6 +67,8 @@ func ChatMessageMiddleware(next http.Handler) http.Handler {
 		}
 
 		r.Header.Set("Authorization", "Bearer "+Token)
+		ctx := context.WithValue(r.Context(), "user", user)
+		r = r.WithContext(ctx)
 
 		// Call the next handler
 		next.ServeHTTP(rwi, r)

@@ -424,6 +424,7 @@ func (u *User) PreCheckBalance() bool {
 	return true
 }
 
+// UpdateUserFrom updates the user's FromCode field
 func UpdateUserFrom(id string, from string) error {
 	db := initializers.DB
 
