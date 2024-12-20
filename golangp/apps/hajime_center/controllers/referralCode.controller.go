@@ -88,7 +88,7 @@ func (rc *ReferralCodeController) GetInvitedUserInfo(ctx *gin.Context) {
 	currentUser := ctx.MustGet("currentUser").(models.User)
 
 	// Call the function to get invited users
-	invitedUsersMap, err := models.GetInvitedUsersByReferralCode(rc.DB, currentUser.ID.String())
+	invitedUsersMap, err := models.GetInvitedUsersByOwnerId(rc.DB, currentUser.ID.String())
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve invited users"})
 		return
