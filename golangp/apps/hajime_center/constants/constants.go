@@ -58,5 +58,7 @@ const (
 	UsageEarnPerToken     = 0.5
 
 	// 运营 / 市场
-	HajimeBotHolderMultiplier = 1.5
+	HajimeBotHolderMultiplier        = 1.5
+	InvitationBonusRate              = 0.1 // 10% of invite user amount (balance*(1 + 0.1*n))
+	InvitationUserGetBalanceRate     = 0.2 // 20% of the balance of the invited user (0.2*balance)
 )

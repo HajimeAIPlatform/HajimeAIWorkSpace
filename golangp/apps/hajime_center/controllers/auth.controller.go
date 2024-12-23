@@ -2,9 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/thanhpk/randstr"
-	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
@@ -14,6 +11,10 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/thanhpk/randstr"
+	"gorm.io/gorm"
 )
 
 type AuthController struct {
@@ -64,6 +65,8 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		return
 	}
 
+	encryptCode := utils.Encode(payload.FromCode)
+
 	now := time.Now()
 	newUser := models.User{
 		Name:              payload.Name,
@@ -73,11 +76,16 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		Verified:          false,
 		Photo:             "test",
 		Provider:          "local",
-		Balance:           constants.GiftedPoints,
-		FromCode:          payload.FromCode,
+		FromCode:          encryptCode,
 		UserMaxCodeAmount: constants.RoleEditorMaxCodeAmount,
 		CreatedAt:         now,
 		UpdatedAt:         now,
+	}
+
+	err = models.UpdateUserInviteAmount(encryptCode, 1)
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		return
 	}
 
 	result := ac.DB.Create(&newUser)
@@ -90,6 +98,7 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": "Something bad happened"})
 		return
 	}
+
 	// Generate Verification Code
 	code := randstr.String(6)
 
@@ -403,7 +412,7 @@ func (ac *AuthController) AddUser(ctx *gin.Context) {
 		return
 	}
 
-	var payload *models.SignUpInput
+	var payload *models.SignUpAdminInput
 
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})

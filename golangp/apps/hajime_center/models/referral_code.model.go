@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"hajime/golangp/common/utils"
 	"time"
@@ -80,6 +81,25 @@ func GetReferralCode(db *gorm.DB, code string) (*ReferralCode, error) {
 		return nil, err
 	}
 	return &referralCode, nil
+}
+
+func GetUserViaCode(db *gorm.DB, code string) (*User, error) {
+	var user User
+
+	// Step 1: Retrieve the referral code
+	var referralCode ReferralCode
+	if err := db.Where("code = ?", code).First(&referralCode).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	// Step 2: Retrieve the user who owns the referral code
+	if err := db.Where("id = ?", referralCode.Owner).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func GetReferralCodeViaOwner(db *gorm.DB, owner string) ([]ReferralCode, error) {

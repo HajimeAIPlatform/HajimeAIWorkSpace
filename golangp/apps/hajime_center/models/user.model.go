@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/common/logging"
 	"time"
+
+	"gorm.io/gorm"
 
 	"github.com/google/uuid"
 )
@@ -38,6 +39,7 @@ type User struct {
 	CreatedAt          time.Time  `gorm:"not null"`
 	UpdatedAt          time.Time  `gorm:"not null"`
 	FromCode           string     `gorm:"type:varchar(255)"`
+	InviteAmount       int        `gorm:"not null;default:0"`
 	UsedCodeAmount     int        `gorm:"not null;default:0"`
 	UserMaxCodeAmount  int        `gorm:"not null;default:0"`
 	LoginTime          *time.Time `gorm:"default:null"`
@@ -46,6 +48,15 @@ type User struct {
 }
 
 type SignUpInput struct {
+	Name            string `json:"name" binding:"required"`
+	Email           string `json:"email" binding:"required"`
+	Password        string `json:"password" binding:"required,min=8"`
+	PasswordConfirm string `json:"password_confirm" binding:"required"`
+	Photo           string `json:"photo,omitempty"`
+	FromCode        string `json:"from_code,omitempty"`
+}
+
+type SignUpAdminInput struct {
 	Name            string `json:"name" binding:"required"`
 	Email           string `json:"email" binding:"required"`
 	Password        string `json:"password" binding:"required,min=8"`
@@ -281,13 +292,33 @@ func (u *User) UpdateBalance(balance float64, operatorType string) error {
 	// Update the user's Balance field
 	db := initializers.DB
 	// 确定变动类型
-	changeType := "add"
-	if balance < 0 {
-		changeType = "subtract"
-	}
-	newBalance := u.Balance + balance
+	inviteBonusRateAddition := 0.0
 
-	err := AddBalanceHistory(db, u.ID, balance, changeType, operatorType, u.Balance, newBalance)
+	changeType := "subtract"
+	if balance > 0 {
+		changeType = "add"
+		inviteBonusRateAddition = float64(u.InviteAmount) * constants.InvitationBonusRate
+
+		// 获取邀请人信息
+		inviteUser, err := GetUserViaCode(db, u.FromCode)
+		if err != nil {
+			return err
+		}
+
+		//被邀请人获取积分时的加成
+		if inviteUser != nil {
+			inviteUserGetBalanceAddition := balance * constants.InvitationUserGetBalanceRate
+			newInviteUserBalance := inviteUser.Balance + inviteUserGetBalanceAddition
+			err = AddBalanceHistory(db, inviteUser.ID, inviteUserGetBalanceAddition, changeType, "InvitationUserGetBalanceAddition", inviteUser.Balance, newInviteUserBalance, 0.0)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	addBalance := balance * (1 + inviteBonusRateAddition)
+	newBalance := u.Balance + addBalance
+
+	err := AddBalanceHistory(db, u.ID, addBalance, changeType, operatorType, u.Balance, newBalance, inviteBonusRateAddition)
 	if err != nil {
 		return err
 	}
@@ -436,6 +467,30 @@ func UpdateUserFrom(id string, from string) error {
 
 	// 更新用户信息
 	user.FromCode = from
+
+	// 保存更新后的用户
+	if err := db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateUserInviteAmount(encryptCode string, amount int) error {
+	db := initializers.DB
+
+	// 查询邀请码
+	user, err := GetUserViaCode(db, encryptCode)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return errors.New("referral code not found")
+	}
+
+	// 更新用户信息
+	user.InviteAmount = user.InviteAmount + amount
 
 	// 保存更新后的用户
 	if err := db.Save(&user).Error; err != nil {
