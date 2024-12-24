@@ -4,9 +4,17 @@ go_test(
     name = "common_test",
     srcs = ["common_test.go"],
     deps = [
-        "//golangp/apps/AgentTown/task",
-        "//golangp/apps/AgentTown/runtime",
         "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
         "@com_github_magiconair_properties//assert",
+    ],
+)
+
+go_test(
+    name = "solana_test",
+    srcs = ["solana_test.go"],
+    deps = [
+        "//golangp/apps/AgentTown/solana",
     ],
 )

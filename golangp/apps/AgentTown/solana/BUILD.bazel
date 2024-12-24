@@ -1,0 +1,13 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "solana",
+    srcs = glob(["**/*.go"]),
+    importpath = "hajime/golangp/apps/AgentTown/solana",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_blocto_solana_go_sdk//client",
+        "@com_github_google_uuid//:uuid",
+        "@com_github_mr_tron_base58//:base58",
+    ],
+)
