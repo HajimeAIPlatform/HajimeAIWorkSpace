@@ -240,6 +240,49 @@ func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) e
 	return nil
 }
 
+func (u *User) UpdateWorkflowDraftUsage(appID string, workFlowTools bool) error {
+	db := initializers.DB
+	var configUsage map[string][]string
+
+	if u.ConfigUsage != "" {
+		// Parse JSON string into map
+		if err := json.Unmarshal([]byte(u.ConfigUsage), &configUsage); err != nil {
+			return err
+		}
+	} else {
+		configUsage = make(map[string][]string)
+	}
+
+	//Initialize or update the appID entry
+	if _, ok := configUsage[appID]; !ok {
+		configUsage[appID] = []string{"", "", ""}
+	}
+
+	// Check and update "Knowledge"
+	if workFlowTools && configUsage[appID][2] == "" {
+		configUsage[appID][2] = "UseToolsPoints"
+		err := u.UpdateBalance(constants.UseToolsPoints, "UseToolsPoints")
+		if err != nil {
+			return err
+		}
+	}
+
+	// Convert map back to JSON
+	updatedConfigUsage, err := json.Marshal(configUsage)
+	if err != nil {
+		return err
+	}
+	u.ConfigUsage = string(updatedConfigUsage)
+
+	// Save the user to the database
+	result := db.Save(u)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
 func (u *User) SaveUser(user *User) error {
 	db := initializers.DB
 	result := db.Save(user)
