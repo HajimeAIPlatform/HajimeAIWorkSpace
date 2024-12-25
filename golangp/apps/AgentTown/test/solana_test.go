@@ -8,8 +8,8 @@ import (
 
 	"hajime/golangp/apps/AgentTown/agent"
 	"hajime/golangp/apps/AgentTown/runtime"
-	"hajime/golangp/apps/AgentTown/solana"
 	"hajime/golangp/apps/AgentTown/task"
+	"hajime/golangp/apps/solana"
 )
 
 func TestGenerateWallet(t *testing.T) {

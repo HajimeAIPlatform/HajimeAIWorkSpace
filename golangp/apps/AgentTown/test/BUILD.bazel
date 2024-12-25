@@ -17,7 +17,7 @@ go_test(
     deps = [
         "//golangp/apps/AgentTown/agent",
         "//golangp/apps/AgentTown/runtime",
-        "//golangp/apps/AgentTown/solana",
         "//golangp/apps/AgentTown/task",
+        "//golangp/apps/solana",
     ],
 )
