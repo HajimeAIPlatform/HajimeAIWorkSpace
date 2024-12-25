@@ -1,0 +1,14 @@
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+# 定义 utils 库
+py_library(
+    name = "db",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("beanie"),
+        "//pythonp/apps/hajime_blog/config",
+        "//pythonp/apps/hajime_blog/utils",
+    ],
+)

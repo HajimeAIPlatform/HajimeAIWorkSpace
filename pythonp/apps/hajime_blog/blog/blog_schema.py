@@ -1,12 +1,10 @@
 import pymongo
-
-from db.models import BaseDocument
-
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, List, Set, Any
 
-from utils.common import get_unique_id, get_current_time
+from pythonp.apps.hajime_blog.db.models import BaseDocument
+from pythonp.apps.hajime_blog.utils.common import get_unique_id, get_current_time
 
 class EmailSubscribeModel(BaseModel):
     email: str

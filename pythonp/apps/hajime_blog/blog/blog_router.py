@@ -5,8 +5,8 @@ import pymongo
 import pymysql
 from fastapi import APIRouter, Depends, Response
 
-from blog.blog_model import Material, EmailSubscribe, Tag
-from blog.blog_schema import (
+from pythonp.apps.hajime_blog.blog.blog_model import Material, EmailSubscribe, Tag
+from pythonp.apps.hajime_blog.blog.blog_schema import (
     MaterialModel,
     AdminMaterialListRequestModel,
     AdminMaterialListItemModel,
@@ -14,14 +14,14 @@ from blog.blog_schema import (
     AdminTagListItemModel,
     PublishTypeModel,
 )
-from db.models import User
-from db.schemas import GenericResponseModel, IDModel
-from utils.common import success_return, error_return
-from utils.redis import RedisClient
-from utils.x_auth import get_biz_uid_by_token
+from pythonp.apps.hajime_blog.db.models import User
+from pythonp.apps.hajime_blog.db.schemas import GenericResponseModel, IDModel
+from pythonp.apps.hajime_blog.utils.common import success_return, error_return
+from pythonp.apps.hajime_blog.utils.redis import get_redis
+from pythonp.apps.hajime_blog.utils.x_auth import get_biz_uid_by_token
 
 router = APIRouter(prefix="/blog", tags=["blog"])
-redis_client = RedisClient()  # Redis 客户端实例
+
 
 from pydantic import BaseModel, Field
 
@@ -138,7 +138,7 @@ async def material_unpublish(form: IDModel, oid: int = Depends(get_biz_uid_by_to
 
 @router.post("/publish_www", response_model=GenericResponseModel, response_description="publish_www")
 async def publish_www(oid: int = Depends(get_biz_uid_by_token)):
-    client = await redis_client.get_client()
+    client = await get_redis()
     key = "publish"
     v = await client.get(key)
     if v is not None:
@@ -163,7 +163,7 @@ async def publish_www(oid: int = Depends(get_biz_uid_by_token)):
 
 @router.post("/publish_wwwtest", response_model=GenericResponseModel, response_description="publish_wwwtest")
 async def publish_wwwtest(oid: int = Depends(get_biz_uid_by_token)):
-    client = await redis_client.get_client()
+    client = await get_redis()
     key = "publish"
     v = await client.get(key)
     if v is not None:
