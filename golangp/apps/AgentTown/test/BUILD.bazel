@@ -15,6 +15,9 @@ go_test(
     name = "solana_test",
     srcs = ["solana_test.go"],
     deps = [
+        "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/runtime",
         "//golangp/apps/AgentTown/solana",
+        "//golangp/apps/AgentTown/task",
     ],
 )

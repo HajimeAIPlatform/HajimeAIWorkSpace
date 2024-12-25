@@ -36,6 +36,7 @@ bazel-bin
 bazel-out
 bazel-testlogs
 bazel-HajimeAIWorkSpace
+.cache/
 
 # Miscs
 *cmake-build-debug*

@@ -1,9 +1,15 @@
 package test
 
 import (
+	"context"
+	"sync"
 	"testing"
+	"time"
 
+	"hajime/golangp/apps/AgentTown/agent"
+	"hajime/golangp/apps/AgentTown/runtime"
 	"hajime/golangp/apps/AgentTown/solana"
+	"hajime/golangp/apps/AgentTown/task"
 )
 
 func TestGenerateWallet(t *testing.T) {
@@ -55,4 +61,58 @@ func TestGetWalletInfo(t *testing.T) {
 	}
 }
 
+func TestSolana(t *testing.T) {
+	// Use a WaitGroup to wait for tasks to complete.
+	var wg sync.WaitGroup
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Create agents and start them.
+	agentA := agent.NewAgent(nil)
+	runtime.AddAgent(agentA)
+	runtime.StartAgents(ctx)
+
+	// Create tasks with different execution times.
+	now := time.Now()
+	task1 := &task.Task{
+		ID:          "task1",
+		AssigneeIDs: []string{agentA.ID},
+		Description: "Generate 5 wallets for agent1",
+		Execute: func(params ...any) {
+			solana.GenerateMultipleWalletsWrapper(params...)
+			wg.Done() // Call wg.Done() after the task is completed
+		},
+		Parameters:  []any{5},
+		ExecuteTime: now.Add(1 * time.Second),
+		CreatedAt:   now,
+	}
+
+	// Create a TaskQueue and add tasks.
+	tq := runtime.NewTaskQueue()
+	if err := tq.AddTask(task1); err != nil {
+		t.Fatalf("Error adding task %s: %v", task1.ID, err)
+	}
+	wg.Add(len(task1.AssigneeIDs))
+
+	// Create and start the scheduler.
+	s := runtime.NewScheduler(tq)
+	go s.Start()
+
+	// Wait for a sufficient time for the tasks to be executed.
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// All tasks completed.
+	case <-time.After(5 * time.Second):
+		t.Fatal("Test timed out waiting for tasks to complete")
+	}
+
+	// Stop the scheduler.
+	s.Stop()
+}
