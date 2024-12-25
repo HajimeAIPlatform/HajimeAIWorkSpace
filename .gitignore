@@ -57,3 +57,5 @@ MODULE.bazel.lock
 
 *.tar.gz
 .history
+
+__pycache__

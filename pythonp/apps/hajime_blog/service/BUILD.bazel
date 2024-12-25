@@ -1,0 +1,19 @@
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+# 定义 utils 库
+py_library(
+    name = "service",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("fastapi"),
+        requirement("python-dotenv"),
+        requirement("pymysql"),
+        requirement("base58"),
+        requirement("pynacl"),
+        requirement("passlib"),
+        "//pythonp/apps/hajime_blog/db",
+        "//pythonp/apps/hajime_blog/utils",
+    ],
+)

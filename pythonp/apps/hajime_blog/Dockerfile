@@ -21,9 +21,9 @@ RUN apt-get update && \
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 && \
     update-alternatives --config python3
 
-COPY tokenfate_tar.tar.gz /opt/tokenfate_tar.tar.gz
-RUN tar -xzvf /opt/tokenfate_tar.tar.gz -C /opt
+COPY hajime_blog_tar.tar.gz /opt/hajime_blog_tar.tar.gz
+RUN tar -xzvf /opt/hajime_blog_tar.tar.gz -C /opt
 
-WORKDIR /opt/TokenFate
+WORKDIR /opt/HajimeBlog
 
-CMD ["/opt/TokenFate/wsgi"]
+CMD ["/opt/HajimeBlog/main"]

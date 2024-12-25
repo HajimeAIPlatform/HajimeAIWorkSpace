@@ -1,5 +1,3 @@
-from beanie import init_beanie
-
 import motor.motor_asyncio
 import os
 
@@ -14,11 +12,15 @@ db_connection = os.getenv("DB_CONNECTION")
 #mongodb://myDatabaseUser:D1fficultP%40ssw0rd@mongodb0.example.com:27017,mongodb1.example.com:27017,mongodb2.example.com:27017/?authSource=admin&replicaSet=myRepl
 # mongodb://myDatabaseUser:D1fficultP%40ssw0rd@mongodb0.example.com:27017/?authSource=admin
 
+if db_connection is None:
+    raise Exception("DB_CONNECTION is not set in .env file")
+if db_name is None:
+    raise Exception("DATABASE_NAME is not set in .env file")
+
 client = motor.motor_asyncio.AsyncIOMotorClient(
     db_connection
 )
 db = client[db_name]
-
 
 async def get_next_id(name: str)->int:
     counter = await db.counter.find_one_and_update(

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: redis_server
+    restart: always
+    ports:
+      - "0.0.0.0:6379:6379"
+    environment:
+      - REDIS_DB=0
+      - REDIS_DECODE_RESPONSES=true
+      - REDIS_PASSWORD=hajime888%^&
+    networks:
+      - hajime_blog
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_server
+    environment:
+      MONGO_INITDB_DATABASE: hajime
+    ports:
+      - "0.0.0.0:${MONGO_PORT:-27017}:27017"
+    volumes:
+      - ./docker-data/mongodb_data:/data/db
+    networks:
+      - hajime_blog
+
+  hajime_blog:
+    container_name: hajime_blog
+    build:
+      context: .
+    privileged: true
+    restart: always
+    ports:
+      - "0.0.0.0:${PORT:-8080}:${PORT:-8080}"
+    volumes:
+      - "./logs/:${LOG_DIR:-/opt/HajimeBlog/logs}"
+      - "./.env/:/opt/HajimeBlog/wsgi.runfiles/_main/pythonp/apps/hajime_blog/.env"
+    networks:
+      - hajime_blog
+    depends_on:
+      - mongodb
+      - redis
+
+networks:
+  hajime_blog:
+    driver: bridge
