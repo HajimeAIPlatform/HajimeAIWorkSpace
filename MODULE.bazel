@@ -46,6 +46,7 @@ use_repo(
     "io_gorm_driver_postgres",
     "io_gorm_gorm",
     "org_golang_x_crypto",
+    "com_github_adshao_go_binance_v2",
 )
 
 # python bazel config
