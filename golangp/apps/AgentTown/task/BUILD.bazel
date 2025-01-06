@@ -12,12 +12,11 @@ go_library(
     ],
 )
 
-
 go_library(
     name = "runnable",
     srcs = [
         "runnable.go",
-    ]
+    ],
     importpath = "hajime/golangp/apps/AgentTown/task",
     visibility = ["//visibility:public"],
     deps = [

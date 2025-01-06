@@ -80,19 +80,37 @@ func TestScheduler(t *testing.T) {
 		CreatedAt:   now,
 	}
 
-	// task4 := &task.Task{
-	// 	ID:          "task4",
-	// 	AssigneeIDs: []string{agentA.ID, agentB.ID},
-	// 	Description: "Task for both agent1 and agent2",
-	// 	Execute:     task.TestBinanceConnectivy,
-	// 	Parameters:  []any{"task4"},
-	// 	ExecuteTime: now.Add(3 * time.Second),
-	// 	CreatedAt:   now,
-	// }
+	task4 := &task.Task{
+		ID:          "task4",
+		AssigneeIDs: []string{agentA.ID, agentB.ID},
+		Description: "Task for both agent1 and agent2",
+		Execute: func(args ...any) {
+			// args[0] is actually []any{"ETHUSDT", &wg}
+			params := args[0].([]any)
+			task.CheckBinanceMarketData(params[0].(string), params[1].(*sync.WaitGroup))
+		},
+		Parameters:  []any{"ETHUSDT", &wg},
+		ExecuteTime: now.Add(3 * time.Second),
+		CreatedAt:   now,
+	}
+
+	task5 := &task.Task{
+		ID:          "task5",
+		AssigneeIDs: []string{agentA.ID, agentB.ID},
+		Description: "Task for both agent1 and agent2",
+		Execute: func(args ...any) {
+			// args[0] is actually []any{"ETHUSDT", &wg}
+			params := args[0].([]any)
+			task.CheckBinanceMarketData(params[0].(string), params[1].(*sync.WaitGroup))
+		},
+		Parameters:  []any{"BTCUSDT", &wg},
+		ExecuteTime: now.Add(5 * time.Second),
+		CreatedAt:   now,
+	}
 
 	// Create a TaskQueue and add tasks.
 	tq := runtime.NewTaskQueue()
-	for _, task := range []*task.Task{task1, task2, task3} {
+	for _, task := range []*task.Task{task1, task2, task3, task4, task5} {
 		if err := tq.AddTask(task); err != nil {
 			t.Fatalf("Error adding task %s: %v", task.ID, err)
 		}
