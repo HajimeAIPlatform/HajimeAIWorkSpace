@@ -7,7 +7,7 @@ import (
 	"github.com/adshao/go-binance/v2/futures"
 )
 
-func CheckConnectivity() {
+func TestGetAccount() {
 	// Create a new Binance futures client
 	futures.UseTestnet = true
 	ApiKey := "a2a7e65b0ccf7d4355074bcb1d1e29456d9fd518abbdaac308da4191cdfe4038"
@@ -20,15 +20,4 @@ func CheckConnectivity() {
 		return
 	}
 	fmt.Println(res)
-
-	klines, err := fc.NewKlinesService().Symbol("BTCUSDT").
-		Interval("15m").Do(context.Background())
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	for _, k := range klines {
-		fmt.Println(k)
-	}
-
 }

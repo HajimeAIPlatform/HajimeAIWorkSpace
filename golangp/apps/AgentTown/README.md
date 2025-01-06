@@ -24,14 +24,10 @@ A agent can receive two types of info:
 3. Agent can also send message and task to other agents.
 4. Task can also trigger other tasks and messages.
 
-Currently due to the transition to Bazel 8, the logging system is not yet merged. Eventually we will merge all code to 
-use Bazel 8 for code management.
+Currently due to the transition to Bazel 8, the logging system is not yet merged. Eventually we will merge all code to be
+using Bazel 8 for code management.
 
 ## FAQ
 
 1. Can I use older version of Bazel?
-    Currently we encourage using Bazel 8. If you modify the rule_go to be using io_bazel_rules_go in the build file for
-    the project, you can use Bazel 7.x. It works as now but may not work in the future.
-
-
-
+    No

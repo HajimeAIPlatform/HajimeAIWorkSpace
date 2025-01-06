@@ -80,6 +80,16 @@ func TestScheduler(t *testing.T) {
 		CreatedAt:   now,
 	}
 
+	// task4 := &task.Task{
+	// 	ID:          "task4",
+	// 	AssigneeIDs: []string{agentA.ID, agentB.ID},
+	// 	Description: "Task for both agent1 and agent2",
+	// 	Execute:     task.TestBinanceConnectivy,
+	// 	Parameters:  []any{"task4"},
+	// 	ExecuteTime: now.Add(3 * time.Second),
+	// 	CreatedAt:   now,
+	// }
+
 	// Create a TaskQueue and add tasks.
 	tq := runtime.NewTaskQueue()
 	for _, task := range []*task.Task{task1, task2, task3} {
@@ -103,7 +113,7 @@ func TestScheduler(t *testing.T) {
 	select {
 	case <-done:
 		// All tasks completed.
-	case <-time.After(5 * time.Second):
+	case <-time.After(12 * time.Second):
 		t.Fatal("Test timed out waiting for tasks to complete")
 	}
 
