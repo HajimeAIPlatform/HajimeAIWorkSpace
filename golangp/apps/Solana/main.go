@@ -2,12 +2,11 @@ package main
 
 import (
 	"log"
-
 	"HajimeAIWorkSpace/golangp/apps/Solana/pkg/account"
 	"HajimeAIWorkSpace/golangp/apps/Solana/pkg/airdrop"
 	"HajimeAIWorkSpace/golangp/apps/Solana/pkg/token"
-
 	"github.com/blocto/solana-go-sdk/common"
+	"path/filepath"
 )
 
 const (
@@ -23,6 +22,14 @@ var (
 )
 
 func main() {
+	dirPath := filepath.Join("/home/lio/HajimeAIWorkSpace", "golangp", "apps", "Solana", "assets")
+
+	publicKeys, err := account.CreateAccounts(dirPath, 5)
+	log.Println(publicKeys)
+	if err != nil {
+		log.Fatalf("failed to create accounts: %v", err)
+	}
+
 	feePayerAccount, err := account.LoadAccountFromFile(accountKeyPath1)
 	if err != nil {
 		log.Fatalf("failed to load feePayer account: %v", err)

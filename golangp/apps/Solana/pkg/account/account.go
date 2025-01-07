@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"github.com/blocto/solana-go-sdk/types"
 )
@@ -27,4 +28,35 @@ func LoadAccountFromFile(filePath string) (types.Account, error) {
 	}
 
 	return account, nil
+}
+
+func CreateAccounts(folderPath string, count int) ([]string, error) {
+	var publicKeys []string
+
+	if err := os.MkdirAll(folderPath, os.ModePerm); err != nil {
+		return nil, fmt.Errorf("unable to create folder: %v", err)
+	}
+
+	for i := 0; i < count; i++ {
+		account := types.NewAccount()
+
+		truncatedPublicKey := account.PublicKey.ToBase58()[:10]
+		filename := fmt.Sprintf("%s/wallet_%s.json", folderPath, truncatedPublicKey)
+
+		file, err := os.Create(filename)
+		if err != nil {
+			return nil, fmt.Errorf("unable to create file: %v", err)
+		}
+		defer file.Close()
+
+		if err := json.NewEncoder(file).Encode(account.PrivateKey); err != nil {
+			return nil, fmt.Errorf("unable to write to file: %v", err)
+		}
+
+		fmt.Printf("New account created with Public Key: %s, Private Key saved to %s\n", account.PublicKey.ToBase58(), filename)
+
+		publicKeys = append(publicKeys, account.PublicKey.ToBase58())
+	}
+
+	return publicKeys, nil
 }
