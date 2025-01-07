@@ -152,6 +152,7 @@ func ModelUpdateMiddleware(next http.Handler) http.Handler {
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 		knowledge := false
 		variables := false
+		tools := false
 
 		// 检查 dataset_configs.datasets.datasets 长度
 		if len(payload.DatasetConfigs.Datasets.Datasets) > 0 {
@@ -163,7 +164,12 @@ func ModelUpdateMiddleware(next http.Handler) http.Handler {
 			variables = true
 		}
 
-		err = user.UpdateConfigUsage(appID, knowledge, variables)
+		// 检查 tools 长度
+		if len(payload.AgentMode.Tools) > 0 {
+			tools = true
+		}
+
+		err = user.UpdateConfigUsage(appID, knowledge, variables, tools)
 		if err != nil {
 			logging.Warning("Failed to update config usage: " + err.Error())
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

@@ -188,7 +188,7 @@ func (u *User) UpdateAppUsage(appID string) (bool, error) {
 	return exceedsLimit, nil
 }
 
-func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) error {
+func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool, tools bool) error {
 	db := initializers.DB
 	var configUsage map[string][]string
 
@@ -203,7 +203,7 @@ func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) e
 
 	//Initialize or update the appID entry
 	if _, ok := configUsage[appID]; !ok {
-		configUsage[appID] = []string{"", ""}
+		configUsage[appID] = []string{"", "", ""}
 	}
 
 	// Check and update "Knowledge"
@@ -219,6 +219,15 @@ func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) e
 	if variables && configUsage[appID][1] == "" {
 		configUsage[appID][1] = "Variables"
 		err := u.UpdateBalance(constants.UseVariablesPoints, "UseVariablesPoints")
+		if err != nil {
+			return err
+		}
+	}
+
+	// Check and update "Tools"
+	if tools && configUsage[appID][2] == "" {
+		configUsage[appID][2] = "UseToolsPoints"
+		err := u.UpdateBalance(constants.UseToolsPoints, "UseToolsPoints")
 		if err != nil {
 			return err
 		}
