@@ -16,7 +16,7 @@ type BalanceHistory struct {
 	Type                    string    `gorm:"type:varchar(100);not null" json:"type"`
 	BalanceBefore           float64   `gorm:"not null" json:"balance_before"`
 	BalanceAfter            float64   `gorm:"not null" json:"balance_after"`
-	InviteBonusRateAddition float64   `gorm:"not null" json:"invite_bonus_rate_addition"`
+	InviteBonusRateAddition float64   `gorm:"not null;default:0.0" json:"invite_bonus_rate_addition"`
 	CreatedAt               time.Time `gorm:"autoCreateTime" json:"created_at"`
 }
 
