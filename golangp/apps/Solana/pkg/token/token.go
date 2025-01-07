@@ -19,7 +19,6 @@ func TransferTokens(feePayer types.Account, sender types.Account, senderTokenAcc
 		log.Fatalf("get recent block hash error, err: %v\n", err)
 		return err
 	}
-
 	tx, err := types.NewTransaction(types.NewTransactionParam{
 		Message: types.NewMessage(types.NewMessageParam{
 			FeePayer:        feePayer.PublicKey,
@@ -29,14 +28,14 @@ func TransferTokens(feePayer types.Account, sender types.Account, senderTokenAcc
 					From:     senderTokenAccount,
 					To:       receiverTokenAccount,
 					Mint:     mint,
-					Auth:     sender.PublicKey,
+					Auth:     feePayer.PublicKey,
 					Signers:  []common.PublicKey{},
 					Amount:   amount,
 					Decimals: decimals,
 				}),
 			},
 		}),
-		Signers: []types.Account{feePayer, sender},
+		Signers: []types.Account{feePayer, feePayer},
 	})
 	if err != nil {
 		log.Fatalf("failed to create transaction, err: %v", err)
