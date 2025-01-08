@@ -6,7 +6,7 @@ from os import getenv
 
 from flask import Blueprint, jsonify, request, Response
 
-from pythonp.apps.tokenfate.service.binance.utils import get_all_prices, process_recommendation
+# from pythonp.apps.tokenfate.service.binance.utils import process_recommendation
 from pythonp.apps.tokenfate.dify_client import Client, models
 from pythonp.apps.tokenfate.service.binance.schedule import get_random_dex_historical_prices
 
@@ -220,37 +220,81 @@ def chat_streaming(data):
         logging.error("Error during chat_streaming: %s", e)
         yield ""
 
+# test tarot
+client_tarot = Client(
+    api_key=getenv("DIFY_API_KEY_TAROT"),
+    api_base=dify_api_base,
+)
+def chat_tarot(inputs):
+    try:
+        user = str(uuid.uuid4())
+        logging.info("Generated user ID: %s", user)
 
-@dify.route('/chat', methods=['POST'])
-def handle_chat():
-    data = request.json
-    if not data or 'query' not in data:
-        return jsonify({"error": "Invalid request, 'query' is required"}), 400
+        blocking_workflows_req = models.WorkflowsRunRequest(
+            inputs=inputs,
+            user=user,
+            response_mode=models.ResponseMode.BLOCKING,
+        )
 
-    response_mode = data.get("response_mode", models.ResponseMode.BLOCKING)
+        logging.info("Sending blocking workflows request: %s", blocking_workflows_req)
 
-    if response_mode == models.ResponseMode.STREAMING:
-        try:
-            def generate():
-                for chunk in chat_streaming(data):
-                    yield f"data: {chunk}\n\n"
-            return Response(generate(), content_type='text/event-stream')
-        except Exception as e:
-            logging.error("Error handling streaming chat request: %s", e)
-            return jsonify({"error": "An error occurred while processing the request"}), 500
-    else:
-        try:
-            chat_res = chat_blocking(data)
-            result = process_recommendation(chat_res)
-            if isinstance(result, tuple):
-                token, action, amount = result
-                return jsonify({"answer": chat_res, "recommendation": {
-                    "token": token.upper(),
-                    "action": action.lower(),
-                    "amount": amount
-                }}), 200
+        chat_response = client_tarot.run_workflows(blocking_workflows_req, timeout=60.)
+        logging.info("Received chat response: %s", chat_response)
+        chat_response_dict = json.loads(
+            json.dumps(chat_response,
+                       default=lambda o: o.__dict__))  # Convert to dictionary
 
-            return jsonify({"answer": chat_res}), 200
-        except Exception as e:
-            logging.error("Error handling blocking chat request: %s", e)
-            return jsonify({"error": "An error occurred while processing the request"}), 500
+        logging.info("Convert to dictionary: %s", chat_response_dict)
+
+        # Extract the answer from the chat response
+        data = chat_response_dict.get('data', 'No answer found')
+        outputs = data.get('outputs', {})
+        text = outputs.get('text', 'No text found')
+        files = outputs.get('files', [])
+        url = files[0].get('url', '') if files else None
+        print(text, 'text')
+        print(url, 'url')
+        answer = {
+            'text': text,
+            'url': "http://hajime.pointer.ai" + url
+        }
+        return answer
+
+    except Exception as e:
+        logging.error("Error during chat_tarot: %s", e)
+        return None
+
+# @dify.route('/chat', methods=['POST'])
+# def handle_chat():
+#     data = request.json
+#     if not data or 'query' not in data:
+#         return jsonify({"error": "Invalid request, 'query' is required"}), 400
+
+#     response_mode = data.get("response_mode", models.ResponseMode.BLOCKING)
+
+#     if response_mode == models.ResponseMode.STREAMING:
+#         try:
+#             def generate():
+#                 for chunk in chat_streaming(data):
+#                     yield f"data: {chunk}\n\n"
+#             return Response(generate(), content_type='text/event-stream')
+#         except Exception as e:
+#             logging.error("Error handling streaming chat request: %s", e)
+#             return jsonify({"error": "An error occurred while processing the request"}), 500
+#     else:
+#         try:
+#             chat_res = chat_blocking(data)
+#             result = process_recommendation(chat_res)
+#             if isinstance(result, tuple):
+#                 token, action, amount = result
+#                 return jsonify({"answer": chat_res, "recommendation": {
+#                     "token": token.upper(),
+#                     "action": action.lower(),
+#                     "amount": amount
+#                 }}), 200
+
+#             return jsonify({"answer": chat_res}), 200
+#         except Exception as e:
+#             logging.error("Error handling blocking chat request: %s", e)
+#             return jsonify({"error": "An error occurred while processing the request"}), 500
+

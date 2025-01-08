@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: redis_server222
+    ports:
+      - "0.0.0.0:6399:${REDIS_PORT:-6379}"
+    restart: always
+
+  postgres:
+    image: postgres:14
+    container_name: postgres_server22
+    environment:
+      POSTGRES_USER: "${POSTGRESQL_USER:-telebot}"
+      POSTGRES_PASSWORD: "${POSTGRESQL_PASSWORD:-telebot}"
+      POSTGRES_DB: "${POSTGRESQL_DATABASE:-telebot}"
+    ports:
+      - "0.0.0.0:5442:5432"
+    volumes:
+      - ./docker-data/postgres_data:/var/lib/postgresql/data

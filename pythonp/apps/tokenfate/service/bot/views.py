@@ -17,9 +17,9 @@ from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMar
     InlineQueryResultsButton, InputMediaPhoto, Message, CallbackQuery
 from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
 
-from pythonp.apps.tokenfate.service.dify.views import chat_blocking, chat_streaming, chat_workflow, chat_decode
-from pythonp.apps.tokenfate.service.binance.views import handle_binance_command
-from pythonp.apps.tokenfate.service.binance.utils import get_all_prices, process_recommendation
+from pythonp.apps.tokenfate.service.dify.views import chat_blocking, chat_streaming, chat_workflow, chat_decode, chat_tarot
+# from pythonp.apps.tokenfate.service.binance.views import handle_binance_command
+# from pythonp.apps.tokenfate.service.binance.utils import get_all_prices, process_recommendation
 import pythonp.apps.tokenfate.service.ton.views as ton_module
 from pythonp.apps.tokenfate.service.bot.commands import set_commands
 from pythonp.apps.tokenfate.service.bot.wallet_menu_callback import set_handlers
@@ -30,6 +30,7 @@ from pythonp.apps.tokenfate.service.ton.tc_storage import DailyFortune, UserActi
 from pythonp.apps.tokenfate.models.transaction import UserPoints
 from pythonp.apps.tokenfate.static.static import get_images_path
 from pythonp.apps.tokenfate.utils.debug_tools import get_user_friendly_error_info
+from pythonp.apps.tokenfate.service.bot3.views import run_bot3
 
 # 获取Telegram Bot Token
 telegram_bot_token = getenv('TELEGRAM_BOT_TOKEN')
@@ -52,9 +53,9 @@ WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
 
 async def run_bot():
     await set_commands(telegram_app.bot)
-    # await set_bot_commands_handler(telegram_app)
     await telegram_app.initialize()
     await telegram_app.start()
+    # await run_bot3()
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(run_bot())
@@ -117,9 +118,9 @@ async def ton_command_handle(update):
         }
 
 
-@bot.route('/binance/price', methods=['GET'])
-async def binance_price():
-    return get_all_prices(10000, "USDT")
+# @bot.route('/binance/price', methods=['GET'])
+# async def binance_price():
+#     return get_all_prices(10000, "USDT")
 
 
 # async def start(update):
@@ -328,13 +329,13 @@ async def webhook():
                 return jsonify({'status': 'ok'}), 200
 
             chat_id = update.message.chat_id
-            binance_response = handle_binance_command(update.message.text)
-            if binance_response:
-                return {
-                    "method": "sendMessage",
-                    "chat_id": chat_id,
-                    "text": binance_response,
-                }
+            # binance_response = handle_binance_command(update.message.text)
+            # if binance_response:
+            #     return {
+            #         "method": "sendMessage",
+            #         "chat_id": chat_id,
+            #         "text": binance_response,
+            #     }
 
             if update.message.text == '/start':
                 await start(update)
@@ -355,6 +356,25 @@ async def webhook():
             if update.message.text == '/language':
                 await set_language(update)
                 return jsonify({'status': 'ok'}), 200
+            
+            if update.message.text.startswith('Talk with Tarot Sakura:'):
+                data = update.message.text
+                logging.info(f"data: {data}")
+                _, question = data.split(":")
+                inputs = {
+                    "input": question
+                }
+                # answer = chat_tarot({})
+                answer = chat_tarot(inputs)
+                print(answer, 'answer')
+
+                await update.message.reply_photo(
+                    photo=answer["url"],
+                    caption=escape(answer["text"]),
+                    parse_mode="MarkdownV2",
+                )
+                return jsonify({'status': 'ok'}), 200
+                
 
             if update.message.text.startswith('$') and validate_ticker(update.message.text[1:]):
                 chat_id = update.message.chat_id
@@ -382,65 +402,65 @@ async def webhook():
                     await update.message.reply_text(escape(dialog), parse_mode="MarkdownV2", reply_markup=reply_markup)
                 return jsonify({'status': 'ok'}), 200
 
-            if update.message.photo:
-                file_id = update.message.photo[-1].file_id
-                logging.info(f"Images file id is {file_id}")
-                file = await telegram_app.bot.get_file(file_id)
-                logging.info("Image file found")
-                bytes_array = await file.download_as_bytearray()
-                bytesIO = BytesIO(bytes_array)
-                logging.info("Images file as bytes")
-                image = Image.open(bytesIO)
-                logging.info("Image opened")
+            # if update.message.photo:
+            #     file_id = update.message.photo[-1].file_id
+            #     logging.info(f"Images file id is {file_id}")
+            #     file = await telegram_app.bot.get_file(file_id)
+            #     logging.info("Image file found")
+            #     bytes_array = await file.download_as_bytearray()
+            #     bytesIO = BytesIO(bytes_array)
+            #     logging.info("Images file as bytes")
+            #     image = Image.open(bytesIO)
+            #     logging.info("Image opened")
 
-                prompt = 'Describe the image'
+            #     prompt = 'Describe the image'
 
-                if update.message.caption:
-                    prompt = update.message.caption
-                logging.info(f"Prompt is {prompt}")
+            #     if update.message.caption:
+            #         prompt = update.message.caption
+            #     logging.info(f"Prompt is {prompt}")
 
-                text = e
+            #     text = e
 
-                return {
-                    "method": "sendMessage",
-                    "chat_id": chat_id,
-                    "text": escape(text),
-                    "parse_mode": "MarkdownV2"
-                }
-            else:
-                api_responseponse = chat_blocking({
-                    "query": update.message.text,
-                    "user": chat_id
-                })
-                if api_responseponse is None:
-                    dialog = i18n.get_dialog('error_chat')
-                    await update.message.reply_text(escape(dialog), parse_mode="MarkdownV2")
-                    return jsonify({'status': 'ok'}), 200
-                # await handle_streaming_chat(chat_id, update.message.text)
-                text = api_responseponse
-                result = process_recommendation(api_responseponse)
-                if isinstance(result, tuple):
-                    token, action, amount = result
-                    # 创建按钮
-                    button_text = f"{action} {token}:{amount}"
+            #     return {
+            #         "method": "sendMessage",
+            #         "chat_id": chat_id,
+            #         "text": escape(text),
+            #         "parse_mode": "MarkdownV2"
+            #     }
+            # else:
+                # api_responseponse = chat_blocking({
+                #     "query": update.message.text,
+                #     "user": chat_id
+                # })
+                # if api_responseponse is None:
+                #     dialog = i18n.get_dialog('error_chat')
+                #     await update.message.reply_text(escape(dialog), parse_mode="MarkdownV2")
+                #     return jsonify({'status': 'ok'}), 200
+                # # await handle_streaming_chat(chat_id, update.message.text)
+                # text = api_responseponse
+                # result = process_recommendation(api_responseponse)
+                # if isinstance(result, tuple):
+                #     token, action, amount = result
+                #     # 创建按钮
+                #     button_text = f"{action} {token}:{amount}"
 
-                    # 构建小程序的 URL
-                    miniapp_url = f"{WEB_MINI_APP_URL}/transaction?action={urllib.parse.quote(action)}&token={urllib.parse.quote(token)}&amount={urllib.parse.quote(str(amount))}"
-                    print(miniapp_url, 'miniapp_url')
-                    web_app_info = WebAppInfo(url=miniapp_url)
-                    button = InlineKeyboardButton(text=f"{action.upper()} {token}:{amount}", web_app=web_app_info)
-                    keyboard = InlineKeyboardMarkup([[button]])
+                #     # 构建小程序的 URL
+                #     miniapp_url = f"{WEB_MINI_APP_URL}/transaction?action={urllib.parse.quote(action)}&token={urllib.parse.quote(token)}&amount={urllib.parse.quote(str(amount))}"
+                #     print(miniapp_url, 'miniapp_url')
+                #     web_app_info = WebAppInfo(url=miniapp_url)
+                #     button = InlineKeyboardButton(text=f"{action.upper()} {token}:{amount}", web_app=web_app_info)
+                #     keyboard = InlineKeyboardMarkup([[button]])
 
-                    await update.message.reply_text(escape(text), parse_mode="MarkdownV2", reply_markup=keyboard)
-                else:
-                    await update.message.reply_text(escape(text), parse_mode="MarkdownV2")
-                return jsonify({'status': 'ok'}), 200
+                #     await update.message.reply_text(escape(text), parse_mode="MarkdownV2", reply_markup=keyboard)
+                # else:
+                #     await update.message.reply_text(escape(text), parse_mode="MarkdownV2")
+                # return jsonify({'status': 'ok'}), 200
         return jsonify({'status': 'ok'}), 200
 
     except Exception as e:
         logging.info(f"update: {update}")
         logging.error(f"Error Occurred: {e}")
-        await handle_exception(chat_id, e)
+        # await handle_exception(chat_id, e)
         return {
             "method":
                 "sendMessage",
@@ -828,7 +848,6 @@ async def handle_daily_checkin(update):
 
     except Exception as e:
         logging.error(f"Error in handle_daily_checkin: {str(e)}")
-        await handle_exception(user_id, e, i18n.get_dialog('error_chat'))
         await get_aura_status(update, "aura_action_invalid")
 
 
@@ -847,7 +866,6 @@ async def update_default_language(update, lang: str):
         return 
     except Exception as e:
         logging.error(f"Error in update_default_language: {e}")
-        await handle_exception(user_id, e, i18n.get_dialog('error_chat'))
         await target.message.reply_text("Sorry, something went wrong while setting your language.")
         return
 
@@ -873,7 +891,6 @@ async def get_chat_id(update):
         return user_id
     except Exception as e:
         logging.error(f"Error in get_chat_id: {e}")
-        await handle_exception(user_id, e, i18n.get_dialog('error_chat'))
         # await target.message.reply_text("Sorry, something went wrong while getting your chat ID.")
         return
     

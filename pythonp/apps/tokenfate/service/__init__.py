@@ -1,6 +1,7 @@
 from flask import Blueprint
-from pythonp.apps.tokenfate.service.bot.views import bot, run_bot
+from pythonp.apps.tokenfate.service.bot.views import bot
 from pythonp.apps.tokenfate.service.bot2.views import bot2
+from pythonp.apps.tokenfate.service.bot3.views import bot3
 from pythonp.apps.tokenfate.service.ton.web import ton
 from pythonp.apps.tokenfate.service.dify.views import dify
 
@@ -9,5 +10,6 @@ from pythonp.apps.tokenfate.service.dify.views import dify
 blueprint = Blueprint('api', __name__, url_prefix='/telebot')
 blueprint.register_blueprint(bot, url_prefix='/bot')
 blueprint.register_blueprint(bot2, url_prefix='/bot2')
+blueprint.register_blueprint(bot3, url_prefix='/bot3')
 blueprint.register_blueprint(ton, url_prefix='/ton')
 blueprint.register_blueprint(dify, url_prefix='/dify')

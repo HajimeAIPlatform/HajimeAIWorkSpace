@@ -1,0 +1,33 @@
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "service",
+    srcs = glob(["**/*.py"]),
+    data = [
+        "//pythonp/apps/tokenfate/static:assets",
+        "//pythonp/apps/tokenfate/static:images",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("flask"),
+        requirement("python-telegram-bot"),
+        requirement("tonutils"),
+        requirement("redis"),
+        requirement("pytoniq-core"),
+        requirement("pytonconnect"),
+        requirement("md2tgmd"),
+        requirement("qrcode"),
+        requirement("nest-asyncio"),
+        requirement("Pillow"),
+        requirement("schedule"),
+        requirement("python-binance"),
+        "//pythonp/apps/hajime_scraper:run_scraper_dexscreener_lib",
+        "//pythonp/apps/tokenfate/dify_client",
+        "//pythonp/apps/tokenfate/email_service",
+        "//pythonp/apps/tokenfate/mock_service",
+        "//pythonp/apps/tokenfate/models",
+        "//pythonp/apps/tokenfate/static",
+        "//pythonp/apps/tokenfate/utils",
+    ],
+)
