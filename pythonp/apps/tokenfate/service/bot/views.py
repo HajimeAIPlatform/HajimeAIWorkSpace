@@ -18,8 +18,8 @@ from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMar
 from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
 
 from pythonp.apps.tokenfate.service.dify.views import chat_blocking, chat_streaming, chat_workflow, chat_decode, chat_tarot
-# from pythonp.apps.tokenfate.service.binance.views import handle_binance_command
-# from pythonp.apps.tokenfate.service.binance.utils import get_all_prices, process_recommendation
+from pythonp.apps.tokenfate.service.binance.views import handle_binance_command
+from pythonp.apps.tokenfate.service.binance.utils import get_all_prices, process_recommendation
 import pythonp.apps.tokenfate.service.ton.views as ton_module
 from pythonp.apps.tokenfate.service.bot.commands import set_commands
 from pythonp.apps.tokenfate.service.bot.wallet_menu_callback import set_handlers
@@ -55,7 +55,7 @@ async def run_bot():
     await set_commands(telegram_app.bot)
     await telegram_app.initialize()
     await telegram_app.start()
-    # await run_bot3()
+    await run_bot3()
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(run_bot())

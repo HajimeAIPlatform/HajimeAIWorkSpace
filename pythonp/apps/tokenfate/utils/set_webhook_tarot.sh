@@ -26,7 +26,7 @@ curl -F "url=$WEBHOOK_URL" https://api.telegram.org/bot$BOT_TOKEN/setWebhook
 # bash utils/set_webhook_tarot.sh https://hajimedev.pointer.ai/telebot/bot/webhook
 
 
-# bash utils/set_webhook_tarot.sh https://fa94-14-153-101-159.ngrok-free.app/telebot/bot3/webhook
+# bash utils/set_webhook_tarot.sh https://fd1c-14-155-37-248.ngrok-free.app/telebot/bot3/webhook
 
 # # company:
 # export http_proxy="http://10.10.100.72:7897"

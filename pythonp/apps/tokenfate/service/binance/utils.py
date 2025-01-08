@@ -28,7 +28,7 @@ if not binance_api_key or not binance_api_secret:
     raise ValueError("Binance API key/secret is not set in the environment")
 
 # 初始化Binance客户端
-binance_client = Client(binance_api_key, binance_api_secret, testnet=TESTNET)
+binance_client = Client(binance_api_key, binance_api_secret)
 
 
 def generate_symbol(currency):

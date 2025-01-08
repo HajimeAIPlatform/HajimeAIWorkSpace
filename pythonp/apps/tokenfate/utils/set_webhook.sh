@@ -19,7 +19,7 @@ BOT_TOKEN="7886534816:AAF6GrZXaESSw0c7sFdWEbCrBQAd3_vJZ04"
 # 使用 curl 命令设置 Telegram bot 的 webhook
 curl -F "url=$WEBHOOK_URL" https://api.telegram.org/bot$BOT_TOKEN/setWebhook
 
-# bash utils/set_webhook.sh  https://fa94-14-153-101-159.ngrok-free.app/telebot/bot/webhook
+# bash utils/set_webhook.sh  https://fd1c-14-155-37-248.ngrok-free.app/telebot/bot/webhook
 # Dev服务器:
 # bash utils/set_webhook.sh https://hajimedev.pointer.ai/telebot/bot/webhook
 
