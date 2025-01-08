@@ -99,7 +99,7 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
 	router.Handle("/console/api/apps/{app_id}/model-config", middleware.ModelUpdateMiddleware(http.HandlerFunc(DifyHandler)))
 
-	router.Handle("/console/api/apps/{app_id}/workflows/draft", middleware.WorkflowDraftMiddleware(http.HandlerFunc(DifyHandler)))
+	router.Handle("/console/api/apps/{app_id}/workflows/draft", middleware.WorkflowDraftMiddleware(http.HandlerFunc(DifyHandler))).Methods("POST", "PUT")
 
 	//chat
 	for _, path := range apiPaths {
