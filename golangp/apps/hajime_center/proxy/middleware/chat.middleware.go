@@ -52,8 +52,9 @@ func ChatMessageMiddleware(next http.Handler) http.Handler {
 			WriteErrorResponse(w, "401", err.Error(), http.StatusBadRequest)
 			return
 		}
-
-		Token, err := difyClient.GetUserToken(user.Role)
+		// TODO: Replace with the user.Role
+		Token, err := difyClient.GetUserToken(constants.RoleAdmin)
+		// Token, err := difyClient.GetUserToken(user.Role)
 		if err != nil {
 			logging.Warning("Token retrieval failed: " + err.Error())
 			WriteErrorResponse(w, "401", err.Error(), http.StatusBadRequest)
