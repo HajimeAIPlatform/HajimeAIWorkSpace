@@ -10,7 +10,6 @@ import os
 import re
 from typing import List, Dict, Union
 import sys
-
 from flask import Blueprint, jsonify, request
 from md2tgmd import escape
 from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, \
@@ -20,6 +19,7 @@ from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
 from pythonp.apps.tokenfate.service.dify.views import chat_blocking, chat_streaming, chat_workflow, chat_decode, chat_tarot
 # import pythonp.apps.tokenfate.service.ton.views as ton_module
 from pythonp.apps.tokenfate.service.bot3.commands import set_commands
+import pythonp.apps.tokenfate.service.bot3.command_handlers as command_handlers
 from pythonp.apps.tokenfate.static.static import get_images_path
 from pythonp.apps.tokenfate.utils.debug_tools import get_user_friendly_error_info
 
@@ -31,19 +31,29 @@ if not telegram_bot3_token:
 
 # 创建Telegram应用
 persistence = DictPersistence()
-telegram_app = ApplicationBuilder().token(telegram_bot3_token).persistence(
-    persistence).build()
+telegram_app = ApplicationBuilder().token(telegram_bot3_token).persistence(persistence).build()
 
 async def run_bot3():
-    await set_commands(telegram_app.bot)
-    await telegram_app.initialize()
-    await telegram_app.start()
+    try:
+        logging.info("Setting commands for the bot tarot...")
+        await set_commands(telegram_app.bot)
+        
+        logging.info("Initializing the bot tarot...")
+        await telegram_app.initialize()
+        
+        logging.info("Starting the bot tarot...")
+        await telegram_app.start()
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+
+telegram_app.add_handler(CommandHandler('start', command_handlers.start))
+telegram_app.add_handler(CommandHandler('history', command_handlers.history))
+telegram_app.add_handler(CommandHandler('community', command_handlers.community))
+telegram_app.add_handler(CommandHandler('integral', command_handlers.integral))
 
 # 创建Flask Blueprint
 bot3 = Blueprint('bot3', __name__)
-
-async def start(update: Update):
-    await update.message.reply_text("Please send me your Twitter handle to get your Fortune today!")
 
 async def handle_streaming_chat(chat_id, query):
     data = {"query": query}

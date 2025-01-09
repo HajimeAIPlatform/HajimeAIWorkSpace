@@ -47,14 +47,30 @@ daily_fortune = DailyFortune()
 user_activity_tracker = UserActivityTracker()
 exception_storage = ExceptionStorage()
 
-WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
 
-
+# async def run_bot():
+#     print("Bot 1 started")
+#     await asyncio.sleep(200)  # 模拟一些异步操作
+#     print("Bot 1 finished")
 async def run_bot():
-    await set_commands(telegram_app.bot)
-    # await set_bot_commands_handler(telegram_app)
-    await telegram_app.initialize()
-    await telegram_app.start()
+    try:
+        logging.info("Setting commands for the bot tokenfate...")
+        await set_commands(telegram_app.bot)
+        
+        logging.info("Initializing the bot tokenfate...")
+        await telegram_app.initialize()
+        
+        logging.info("Starting the bot tokenfate...")
+        await telegram_app.start()
+        
+        # logging.info("Running bot3...")
+        # await run_bot3()
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+# async def run_bot():
+#     await set_commands(telegram_app.bot)
+#     await telegram_app.initialize()
+#     await telegram_app.start()
 
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(run_bot())
