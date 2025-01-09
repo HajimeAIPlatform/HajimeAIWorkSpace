@@ -109,9 +109,10 @@ func (tc *TokenClaimController) GetSolanaAddressInfo(ctx *gin.Context) {
 	})
 }
 
+// golangp/apps/hajime_center/solana__transactions.csv
 // getSolanaDataFromCSV reads the CSV file and retrieves the data for a specific address
 func (tc *TokenClaimController) getSolanaDataFromCSV(address string) (*SolanaData, error) {
-	file, err := os.Open("golangp/apps/hajime_center/solana__transactions.csv")
+	file, err := os.Open(tc.CSVFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open CSV file: %w", err)
 	}

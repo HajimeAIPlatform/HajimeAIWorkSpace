@@ -44,7 +44,7 @@ func init() {
 	initializers.ConnectDB(&conf)
 	//initializers.ConnectDBDify(&conf)
 	CreditSystem = controllers.NewCreditSystem(initializers.DB)
-	csvFilePath := "HajimeAIWorkSpace/golangp/apps/hajime_center/solana__transactions.csv"
+	csvFilePath := "./solana_transactions.csv"
 
 	AuthController = controllers.NewAuthController(initializers.DB, CreditSystem)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
