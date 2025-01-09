@@ -56,6 +56,10 @@ var productMap = map[string]struct {
 		Name:  "Hajime Node A",
 		Price: 100000,
 	},
+	"HajimeTestDqYBcoCHJnXgQM368qPWVaTi2XNLRE5MmM": {
+		Name:  "Hajime Node Test",
+		Price: 100000,
+	},
 }
 
 // NewTokenClaimController creates a new TokenClaimController
