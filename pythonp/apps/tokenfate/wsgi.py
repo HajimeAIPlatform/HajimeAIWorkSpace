@@ -4,10 +4,13 @@ from gunicorn.app.base import BaseApplication
 from uvicorn.workers import UvicornWorker
 import multiprocessing
 import logging
+import asyncio
 
 # 加载环境变量
 load_dotenv()
 from pythonp.apps.tokenfate.email_service.email_monitor_thread import EmailMonitor
+from pythonp.apps.tokenfate.service.bot.views import run_bot
+from pythonp.apps.tokenfate.service.bot3.views import run_bot3
 
 smtp_config = {
     'smtp_host': os.getenv('SMTP_HOST'),
@@ -18,6 +21,8 @@ smtp_config = {
     'email_to': os.getenv('EMAIL_TO')
 }
 
+async def run_bots():
+    await asyncio.gather(run_bot(), run_bot3())
 
 class StandaloneApplication(BaseApplication):
     def __init__(self, app, options=None):
@@ -67,3 +72,4 @@ if __name__ == "__main__":
     monitor = EmailMonitor(smtp_config)
     monitor.start()
     run_gunicorn()
+    asyncio.run(run_bots())

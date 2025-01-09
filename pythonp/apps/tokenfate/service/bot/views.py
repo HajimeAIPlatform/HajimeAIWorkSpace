@@ -56,8 +56,8 @@ async def run_bot():
     await telegram_app.initialize()
     await telegram_app.start()
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(run_bot())
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(run_bot())
 
 # 创建Flask Blueprint
 bot = Blueprint('bot', __name__)
