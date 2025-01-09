@@ -9,10 +9,13 @@ exports_files(
 
 go_binary(
     name = "hajime_center",
-    data = ["app.env"],
     embed = [":hajime_center_lib"],
     importpath = "hajime/golangp/apps/hajime_center",
     visibility = ["//visibility:public"],
+    data = [
+        "app.env",
+        "solana__transactions.csv",
+    ],
 )
 
 exports_files(["app.dev.env"])
@@ -49,7 +52,9 @@ go_library(
         "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/proxy",
         "//golangp/apps/hajime_center/routes",
+        "//golangp/apps/hajime_center/solanaTask",
         "@com_github_gin_contrib_cors//:cors",
         "@com_github_gin_gonic_gin//:gin",
     ],
 )
+

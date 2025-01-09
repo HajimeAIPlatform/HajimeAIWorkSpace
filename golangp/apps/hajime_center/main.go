@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"hajime/golangp/apps/hajime_center/controllers"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/proxy"
@@ -17,6 +15,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -28,6 +29,8 @@ var (
 	AuthRouteController         routes.AuthRouteController
 	ReferralCodeController      controllers.ReferralCodeController
 	ReferralCodeRouteController routes.ReferralCodeRouteController
+	TokenClaimController        controllers.TokenClaimController
+	TokenClaimRouteController   routes.TokenClaimRouteController
 
 	wg sync.WaitGroup
 )
@@ -41,11 +44,14 @@ func init() {
 	initializers.ConnectDB(&conf)
 	//initializers.ConnectDBDify(&conf)
 	CreditSystem = controllers.NewCreditSystem(initializers.DB)
+	csvFilePath := "HajimeAIWorkSpace/golangp/apps/hajime_center/solana__transactions.csv"
 
 	AuthController = controllers.NewAuthController(initializers.DB, CreditSystem)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 	ReferralCodeController = controllers.NewReferralCodeController(initializers.DB, CreditSystem)
 	ReferralCodeRouteController = routes.NewReferralCodeRouteController(ReferralCodeController)
+	TokenClaimController = controllers.NewTokenClaimController(csvFilePath)
+	TokenClaimRouteController = routes.NewTokenClaimRouteController(csvFilePath)
 
 	server = gin.Default()
 }
@@ -91,6 +97,7 @@ func main() {
 
 	AuthRouteController.AuthRoute(router)
 	ReferralCodeRouteController.ReferralCodeRoute(router)
+	TokenClaimRouteController.TokenClaimRoute(router)
 
 	// Start the main server in a new goroutine
 	httpServer := &http.Server{
@@ -107,6 +114,9 @@ func main() {
 			log.Fatalf("HTTP server error: %v", err)
 		}
 	}()
+
+	// // 启动定时任务
+	// go solanaTask.ScheduledTask()
 
 	//proxy serve
 	proxiedServer := proxy.CreateProxiedServer(&wg)
