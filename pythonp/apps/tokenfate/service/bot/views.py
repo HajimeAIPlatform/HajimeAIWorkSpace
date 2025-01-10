@@ -62,18 +62,9 @@ async def run_bot():
         
         logging.info("Starting the bot tokenfate...")
         await telegram_app.start()
-        
-        # logging.info("Running bot3...")
-        # await run_bot3()
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-# async def run_bot():
-#     await set_commands(telegram_app.bot)
-#     await telegram_app.initialize()
-#     await telegram_app.start()
-
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(run_bot())
+        
 
 # 创建Flask Blueprint
 bot = Blueprint('bot', __name__)

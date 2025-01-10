@@ -22,6 +22,7 @@ from pythonp.apps.tokenfate.service.bot3.commands import set_commands
 import pythonp.apps.tokenfate.service.bot3.command_handlers as command_handlers
 from pythonp.apps.tokenfate.static.static import get_images_path
 from pythonp.apps.tokenfate.utils.debug_tools import get_user_friendly_error_info
+from pythonp.apps.tokenfate.models.transaction import TarotUser
 
 # 获取Telegram Bot Token
 telegram_bot3_token = getenv('TELEGRAM_BOT3_TOKEN')
@@ -36,7 +37,7 @@ telegram_app = ApplicationBuilder().token(telegram_bot3_token).persistence(persi
 async def run_bot3():
     try:
         logging.info("Setting commands for the bot tarot...")
-        await set_commands(telegram_app.bot)
+        # await set_commands(telegram_app.bot)
         
         logging.info("Initializing the bot tarot...")
         await telegram_app.initialize()
@@ -54,6 +55,7 @@ telegram_app.add_handler(CommandHandler('integral', command_handlers.integral))
 
 # 创建Flask Blueprint
 bot3 = Blueprint('bot3', __name__)
+
 
 async def handle_streaming_chat(chat_id, query):
     data = {"query": query}
@@ -101,6 +103,28 @@ async def webhook():
         if update.edited_message:
             return 'OK'
         if update.message:
+            chat_id = update.message.chat.id
+
+            result = TarotUser.check_first(chat_id)
+            if result.get("status") == "success":
+                await update.message.reply_text(
+                    "Welcome to Tarot Bot! \n\n" +
+                    "You can ask me to generate tarot cards for you. \n\n" +
+                    "Please send me a message to get started.",
+                    parse_mode="MarkdownV2",
+                )
+                return jsonify({'status': 'ok'}), 200
+            
+            result = TarotUser.sign_in(chat_id)
+            if result.get("status") == "success":
+                await update.message.reply_text(
+                    "+ 20 points for signing in successfully! \n\n",
+                    parse_mode="MarkdownV2",
+                )
+                return jsonify({'status': 'ok'}), 200
+            
+            
+            
             inputs = {
                 "input": update.message.text,
             }

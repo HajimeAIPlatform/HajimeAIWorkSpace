@@ -1,4 +1,12 @@
-from telegram import Update, ContextTypes
+from telegram import Update
+from telegram.ext import (
+    CommandHandler,
+    MessageHandler,
+    ConversationHandler,
+    ContextTypes,
+    filters,
+    Application
+)
 
 # 定义每个命令的处理逻辑
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
