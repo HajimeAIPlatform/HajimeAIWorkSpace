@@ -236,15 +236,16 @@ def chat_tarot(inputs):
             response_mode=models.ResponseMode.BLOCKING,
         )
 
-        logging.info("Sending blocking workflows request: %s", blocking_workflows_req)
+        # logging.info("Sending blocking workflows request: %s", blocking_workflows_req)
 
         chat_response = client_tarot.run_workflows(blocking_workflows_req, timeout=60.)
-        logging.info("Received chat response: %s", chat_response)
+        # logging.info("Received chat response: %s", chat_response)
+
         chat_response_dict = json.loads(
             json.dumps(chat_response,
                        default=lambda o: o.__dict__))  # Convert to dictionary
 
-        logging.info("Convert to dictionary: %s", chat_response_dict)
+        # logging.info("Convert to dictionary: %s", chat_response_dict)
 
         # Extract the answer from the chat response
         data = chat_response_dict.get('data', 'No answer found')
@@ -252,8 +253,8 @@ def chat_tarot(inputs):
         text = outputs.get('text', 'No text found')
         files = outputs.get('files', [])
         url = files[0].get('url', '') if files else None
-        print(text, 'text')
-        print(url, 'url')
+        # print(text, 'text')
+        # print(url, 'url')
         answer = {
             'text': text,
             'url': "http://hajime.pointer.ai" + url

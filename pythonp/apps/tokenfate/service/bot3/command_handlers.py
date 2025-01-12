@@ -1,11 +1,6 @@
 from telegram import Update
 from telegram.ext import (
-    CommandHandler,
-    MessageHandler,
-    ConversationHandler,
     ContextTypes,
-    filters,
-    Application
 )
 
 # 定义每个命令的处理逻辑

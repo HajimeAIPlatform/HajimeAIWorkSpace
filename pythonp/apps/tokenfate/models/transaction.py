@@ -443,13 +443,13 @@ class TarotUser(db.Model):
                 nullable=False)
     chat_id = Column(String(36), nullable=False)
     amount = Column(Integer, nullable=False, default=100)
-    last_sign_in = Column(Date, nullable=False, default=datetime.today().date())
+    last_sign_in = Column(Date)
 
 
     @classmethod
-    def _update_amount(cls, user_id, delta):
+    def _update_amount(cls, chat_id, delta):
         """
-        使用 SELECT ... FOR UPDATE 对指定 user_id 的用户进行行级锁定，
+        使用 SELECT ... FOR UPDATE 对指定 chat_id 的用户进行行级锁定，
         并在同一事务中完成积分加减操作，保证数据原子性。
         """
         # 如果积分更新后可能为负，需要在逻辑内进行校验并抛出异常
@@ -457,7 +457,7 @@ class TarotUser(db.Model):
             try:
                 # 1) 行级锁
                 user = session.query(TarotUser)\
-                            .filter(TarotUser.id == user_id)\
+                            .filter(TarotUser.chat_id == chat_id)\
                             .with_for_update()\
                             .one()
 
@@ -513,13 +513,13 @@ class TarotUser(db.Model):
 
     # 6. 获取用户信息函数
     @classmethod
-    def get_user_info(cls, user_id):
+    def get_user_info(cls, chat_id):
         """
-        根据用户ID获取用户信息。
+        根据用户chat_id获取用户信息。
         """
         with transaction_scope() as session:
             try:
-                user = session.query(TarotUser).filter(TarotUser.id == user_id).one_or_none()
+                user = session.query(TarotUser).filter(TarotUser.chat_id == chat_id).one_or_none()
                 if user is None:
                     return {"error": "User not found", "status": "failed"}
                 
@@ -531,35 +531,16 @@ class TarotUser(db.Model):
                 }
             except SQLAlchemyError as e:
                 return {"error": str(e), "status": "failed"}
-            
-    # 检查用户是否已经注册, 如果没注册则创建用户
-    @classmethod
-    def check_first(cls, user_id):
-        """
-        检查用户是否已经注册，如果没有则创建用户。
-        """
-        with transaction_scope() as session:
-            user = session.query(cls).filter(cls.id == user_id).one_or_none()
-            if user is None:
-                result = cls.create_user(user_id)
-                return {
-                    "message": result["message"],
-                    "status": result["status"]
-                }
-            return {
-                "message": "User already exists.",
-                "status": "failed"
-            }
     
     @classmethod
-    def sign_in(cls, user_id):
+    def sign_in(cls, chat_id):
         """
         用户签到，奖励20分。
         """
         with transaction_scope() as session:
-            user = session.query(cls).filter(cls.id == user_id).one_or_none()
+            user = session.query(cls).filter(cls.chat_id == chat_id).one_or_none()
             if user is None:
-                return {"error": "User not found"}
+                return {"error": "User not found", "status": "failed"}
             today = datetime.today().date()
             # 检查用户是否今日已签到
             if user.last_sign_in == today:
@@ -571,26 +552,33 @@ class TarotUser(db.Model):
 
             # 更新签到日期并奖励20分
             user.last_sign_in = today  # 更新签到日期
-            result = cls.update_amount(user.id, 20)  # 奖励20分
+            result = cls._update_amount(user.chat_id, 20)  # 奖励20分
 
+            if result.get("status") == "failed":
+                return {
+                    "message": "Sign-in failed.",
+                    "amount": user.amount,  # 返回原始积分
+                    "status": "failed"
+                }
+            
             return {
                 "message": "Sign-in successful.",
                 "amount": result["new_amount"],  # 返回更新后的积分
                 "status": "success"
             }
-
+                
     # 抽牌函数
     @classmethod
-    def draw_card(cls, user_id):
+    def draw_card(cls, chat_id):
         """
         用户抽牌，扣除20分。
         """
-        return cls._update_amount(user_id, -20)
+        return cls._update_amount(chat_id, -20)
 
     # 生成图像展示函数
     @classmethod
-    def generate_image(cls, user_id):
+    def generate_image(cls, chat_id):
         """
         生成塔罗牌图像展示，扣除20分。
         """
-        return cls._update_amount(user_id, -20)
+        return cls._update_amount(chat_id, -20)

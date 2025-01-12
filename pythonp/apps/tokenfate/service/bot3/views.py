@@ -12,17 +12,23 @@ from typing import List, Dict, Union
 import sys
 from flask import Blueprint, jsonify, request
 from md2tgmd import escape
-from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, \
-    InlineQueryResultsButton, InputMediaPhoto, Message, CallbackQuery
-from telegram.ext import ApplicationBuilder, DictPersistence, CommandHandler
+from telegram import (
+    Update, 
+)
+from telegram.ext import (
+    ApplicationBuilder, 
+    DictPersistence, 
+    ContextTypes,
+    CommandHandler, 
+    MessageHandler, 
+    filters
+)
 
-from pythonp.apps.tokenfate.service.dify.views import chat_blocking, chat_streaming, chat_workflow, chat_decode, chat_tarot
 # import pythonp.apps.tokenfate.service.ton.views as ton_module
 from pythonp.apps.tokenfate.service.bot3.commands import set_commands
 import pythonp.apps.tokenfate.service.bot3.command_handlers as command_handlers
-from pythonp.apps.tokenfate.static.static import get_images_path
-from pythonp.apps.tokenfate.utils.debug_tools import get_user_friendly_error_info
-from pythonp.apps.tokenfate.models.transaction import TarotUser
+from pythonp.apps.tokenfate.service.bot3.checks_before_handler import check_status
+from pythonp.apps.tokenfate.service.bot3.message_handlers import reply_chat_tarot
 
 # 获取Telegram Bot Token
 telegram_bot3_token = getenv('TELEGRAM_BOT3_TOKEN')
@@ -37,7 +43,7 @@ telegram_app = ApplicationBuilder().token(telegram_bot3_token).persistence(persi
 async def run_bot3():
     try:
         logging.info("Setting commands for the bot tarot...")
-        # await set_commands(telegram_app.bot)
+        await set_commands(telegram_app.bot)
         
         logging.info("Initializing the bot tarot...")
         await telegram_app.initialize()
@@ -48,51 +54,32 @@ async def run_bot3():
     except Exception as e:
         logging.error(f"An error occurred: {e}")
 
-telegram_app.add_handler(CommandHandler('start', command_handlers.start))
-telegram_app.add_handler(CommandHandler('history', command_handlers.history))
-telegram_app.add_handler(CommandHandler('community', command_handlers.community))
-telegram_app.add_handler(CommandHandler('integral', command_handlers.integral))
-
 # 创建Flask Blueprint
 bot3 = Blueprint('bot3', __name__)
 
+# 注册消息处理器
+def register_handlers(telegram_app):
+    # 状态检查处理器 (较高优先级组)
+    telegram_app.add_handler(
+        MessageHandler(filters.ALL, check_status), 
+        group=1
+    )
 
-async def handle_streaming_chat(chat_id, query):
-    data = {"query": query}
-    generator = chat_streaming(data)
+    # 命令处理器
+    telegram_app.add_handler(CommandHandler('start', command_handlers.start))
+    telegram_app.add_handler(CommandHandler('history', command_handlers.history)) 
+    telegram_app.add_handler(CommandHandler('community', command_handlers.community))
+    telegram_app.add_handler(CommandHandler('integral', command_handlers.integral))
+    
+    # 文本消息处理器 - 需要放在命令处理器之后
+    telegram_app.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        reply_chat_tarot
+    ))
 
-    try:
-        # 先发送一条初始消息，并获取 message_id
-        initial_message = await telegram_app.bot.send_message(
-            chat_id=chat_id,
-            text="Generating content, please wait...",
-        )
-        message_id = initial_message.message_id
-        current_message_content = initial_message.text
-        message = ""
-        # 使用 message_id 更新消息内容
-        for chunk in generator:
-            if chunk == "" or chunk is None: continue
-            message = message + chunk
-            escaped_chunk = escape(message)
-            logging.debug(f"Escaped chunk: {escaped_chunk}")
 
-            # 仅在新内容与当前内容不同时更新消息
-            if message != current_message_content:
-                await telegram_app.bot.edit_message_text(
-                    chat_id=chat_id,
-                    message_id=message_id,
-                    text=escaped_chunk,
-                    parse_mode="MarkdownV2"
-                )
-                current_message_content = message
-
-    except Exception as e:
-        logging.error(f"Error occurred during streaming: {e}")
-        await telegram_app.bot.send_message(
-            chat_id=chat_id,
-            text='Sorry, I am not able to generate content for you right now. Please try again later.'
-        )
+# 初始化时注册所有处理器
+register_handlers(telegram_app)
 
 @bot3.route('/webhook', methods=['POST'])
 async def webhook():
@@ -100,45 +87,15 @@ async def webhook():
     try:
         body = request.get_json()
         update = Update.de_json(body, telegram_app.bot)
-        if update.edited_message:
-            return 'OK'
-        if update.message:
-            chat_id = update.message.chat.id
 
-            result = TarotUser.check_first(chat_id)
-            if result.get("status") == "success":
-                await update.message.reply_text(
-                    "Welcome to Tarot Bot! \n\n" +
-                    "You can ask me to generate tarot cards for you. \n\n" +
-                    "Please send me a message to get started.",
-                    parse_mode="MarkdownV2",
-                )
-                return jsonify({'status': 'ok'}), 200
-            
-            result = TarotUser.sign_in(chat_id)
-            if result.get("status") == "success":
-                await update.message.reply_text(
-                    "+ 20 points for signing in successfully! \n\n",
-                    parse_mode="MarkdownV2",
-                )
-                return jsonify({'status': 'ok'}), 200
-            
-            
-            
-            inputs = {
-                "input": update.message.text,
-            }
-            answer = chat_tarot(inputs)
-            await update.message.reply_photo(
-                photo=answer["url"],
-                caption=escape(answer["text"]),
-                parse_mode="MarkdownV2",
-            )
-            return jsonify({'status': 'ok'}), 200
+        # 统一使用 process_update 处理所有更新
+        await telegram_app.process_update(update)
+
+        # 确保总是返回一个响应
+        return jsonify({'status': 'ok'})
     
-        
     except Exception as e:
-        logging.error(f"Error parsing update: {e}")
+        logging.error(f"Error processing update: {e}")
         return {
             "method":
                 "sendMessage",
