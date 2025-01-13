@@ -19,7 +19,7 @@ DEFAULT_COMMANDS = [
     ("tarot", "description_tarot"),
     ("history", "description_quest"),
     ("community", "description_connect"),
-    ("integral", "despcription_integral"),
+    ("amount", "despcription_integral"),
 ]
 
 def get_command_list(commands: List[tuple]) -> List[BotCommand]:

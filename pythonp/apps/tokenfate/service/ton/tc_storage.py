@@ -318,4 +318,39 @@ class ExceptionStorage:
     async def is_empty(self):
         """检查错误信息列表是否为空"""
         return await self.client.llen("exceptions") == 0
-  
+
+class TarotStorage:
+    def __init__(self):
+        REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+        REDIS_PORT = os.getenv("REDIS_PORT", 6379)
+        if not REDIS_HOST or not REDIS_PORT:
+            raise Exception("REDIS_HOST and REDIS_PORT must be set")
+
+        self.client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
+
+        logging.info(f"Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
+    def _calculate_seconds_until_midnight(self):
+        now = datetime.now()
+        midnight = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        return int((midnight - now).total_seconds())
+    
+    async def is_today_drawn(self, chat_id):
+        key = f"tarot:{chat_id}:today"
+        return await self.client.exists(key)
+
+    async def store_today_draw(self, chat_id, card):
+        key = f"tarot:{chat_id}:today"
+        if await self.client.exists(key):
+            return "You have already drawn your card today!"
+        
+        ttl = self._calculate_seconds_until_midnight()
+        await self.client.set(key, json.dumps(card), ex=ttl)
+        return card
+    
+    async def get_today_draw(self, chat_id):
+        key = f"tarot:{chat_id}:today"
+        today_history = await self.client.get(key)
+        if not today_history:
+            return "You haven't drawn a card today yet!"
+        return json.loads(today_history)
+

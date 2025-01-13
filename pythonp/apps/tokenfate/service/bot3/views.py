@@ -68,7 +68,7 @@ def register_handlers(telegram_app):
     telegram_app.add_handler(CommandHandler('tarot', command_handlers.tarot))
     telegram_app.add_handler(CommandHandler('history', command_handlers.history)) 
     telegram_app.add_handler(CommandHandler('community', command_handlers.community))
-    telegram_app.add_handler(CommandHandler('integral', command_handlers.integral))
+    telegram_app.add_handler(CommandHandler('amount', command_handlers.amount))
     
     # 文本消息处理器 - 需要放在命令处理器之后
     telegram_app.add_handler(MessageHandler(
