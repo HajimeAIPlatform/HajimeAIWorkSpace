@@ -74,7 +74,7 @@ async def check_before_tarot(update: Update, context: ContextTypes.DEFAULT_TYPE)
     result = TarotUser.get_user_info(str(chat_id))
     if result.get("status") == "success":
         if result.get("amount") < 20:
-            text="You don't have enough points to draw a tarot. Please use /integral to check your current balance."
+            text="You don't have enough points to draw a tarot. Please use /amount to check your current balance."
             await update.message.reply_text(
                 text=escape(text),
                 parse_mode="MarkdownV2",
