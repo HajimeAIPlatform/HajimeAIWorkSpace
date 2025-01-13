@@ -35,4 +35,3 @@ async def check_sign_in(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text=escape(text),
             parse_mode="MarkdownV2",
         )
-    

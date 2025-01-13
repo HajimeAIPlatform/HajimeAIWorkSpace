@@ -16,6 +16,7 @@ from telegram import BotCommand, BotCommandScopeChat, BotCommandScopeDefault, Up
 DEFAULT_COMMANDS = [
     # example: ("command", "description")
     ("start", "description_start"),
+    ("tarot", "description_tarot"),
     ("history", "description_quest"),
     ("community", "description_connect"),
     ("integral", "despcription_integral"),

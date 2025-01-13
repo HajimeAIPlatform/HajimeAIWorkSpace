@@ -11,24 +11,22 @@ import re
 from typing import List, Dict, Union
 import sys
 from flask import Blueprint, jsonify, request
-from md2tgmd import escape
 from telegram import (
     Update, 
 )
 from telegram.ext import (
     ApplicationBuilder, 
     DictPersistence, 
-    ContextTypes,
     CommandHandler, 
     MessageHandler, 
     filters
 )
 
-# import pythonp.apps.tokenfate.service.ton.views as ton_module
 from pythonp.apps.tokenfate.service.bot3.commands import set_commands
 import pythonp.apps.tokenfate.service.bot3.command_handlers as command_handlers
 from pythonp.apps.tokenfate.service.bot3.checks_before_handler import check_status
 from pythonp.apps.tokenfate.service.bot3.message_handlers import reply_chat_tarot
+from pythonp.apps.tokenfate.service.bot3.error_handlers import error_handler
 
 # 获取Telegram Bot Token
 telegram_bot3_token = getenv('TELEGRAM_BOT3_TOKEN')
@@ -67,6 +65,7 @@ def register_handlers(telegram_app):
 
     # 命令处理器
     telegram_app.add_handler(CommandHandler('start', command_handlers.start))
+    telegram_app.add_handler(CommandHandler('tarot', command_handlers.tarot))
     telegram_app.add_handler(CommandHandler('history', command_handlers.history)) 
     telegram_app.add_handler(CommandHandler('community', command_handlers.community))
     telegram_app.add_handler(CommandHandler('integral', command_handlers.integral))
@@ -77,13 +76,14 @@ def register_handlers(telegram_app):
         reply_chat_tarot
     ))
 
+    # 错误处理器
+    telegram_app.add_error_handler(error_handler)
 
 # 初始化时注册所有处理器
 register_handlers(telegram_app)
 
 @bot3.route('/webhook', methods=['POST'])
 async def webhook():
-    chat_id = None
     try:
         body = request.get_json()
         update = Update.de_json(body, telegram_app.bot)
@@ -96,11 +96,4 @@ async def webhook():
     
     except Exception as e:
         logging.error(f"Error processing update: {e}")
-        return {
-            "method":
-                "sendMessage",
-            "chat_id":
-                chat_id,
-            "text":
-                'Sorry, I am not able to generate content for you right now. Please try again later.'
-        }
+        return jsonify({'status': 'error'}), 500
