@@ -23,7 +23,7 @@ async def tarot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tarot_storage = TarotStorage()
     if not context.args:
         # 如果没有参数，提示用户 /tarot 的使用方法
-        text="Usage: /tarot question"
+        text="Usage: /tarot <Question>"
         await update.message.reply_text(
             text=escape(text),
             parse_mode="MarkdownV2",
@@ -45,7 +45,6 @@ async def tarot(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Question": user_question,
             "Answer": answer["text"],
             # "Cards": answer["cards"],
-            "Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), # 当前时间 
         }
         await tarot_storage.store_today_draw(update.message.chat_id, today_history)
 

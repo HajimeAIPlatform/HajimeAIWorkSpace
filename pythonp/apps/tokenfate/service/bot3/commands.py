@@ -15,17 +15,17 @@ from telegram import BotCommand, BotCommandScopeChat, BotCommandScopeDefault, Up
 
 DEFAULT_COMMANDS = [
     # example: ("command", "description")
-    ("start", "description_start"),
-    ("tarot", "description_tarot"),
-    ("history", "description_quest"),
-    ("community", "description_connect"),
-    ("amount", "despcription_integral"),
+    ("start", "Introduction"),
+    ("tarot", "Usage: /tarot <Question>"),
+    ("history", "View today's tarot history highlights"),
+    ("community", "Learn more"),
+    ("amount", "Check your current amount"),
 ]
 
 def get_command_list(commands: List[tuple]) -> List[BotCommand]:
     """生成命令列表"""
     print("Generating command list...")
-    return [BotCommand(command, "loading...") for command, description in commands]
+    return [BotCommand(command, description) for command, description in commands]
 
 async def set_commands(bot):
     """设置命令，支持全局命令和特定用户命令"""
