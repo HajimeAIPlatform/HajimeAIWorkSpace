@@ -18,7 +18,7 @@ DEFAULT_COMMANDS = [
     ("start", "Introduction"),
     ("tarot", "Usage: /tarot <Question>"),
     ("history", "View today's tarot history highlights"),
-    ("community", "Learn more"),
+    ("community", "Join our community for discussions and events"),
     ("amount", "Check your current amount"),
 ]
 
