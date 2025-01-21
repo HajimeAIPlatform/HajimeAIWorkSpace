@@ -5,11 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"hajime/golangp/apps/trading/dex/solana/wallet"
+
 	"github.com/stretchr/testify/assert"
 )
 
 // MockQuoteResponse is a mock struct for testing purposes.
-type MockQuoteResponse struct {
+type QuoteResponse struct {
 	Quote string `json:"quote"`
 }
 
@@ -58,7 +60,7 @@ func TestGetQuote(t *testing.T) {
 			}))
 			defer server.Close()
 
-			wm := &WalletManager{}
+			wm := &wallet.WalletManager{}
 			quote, err := wm.getQuote(server.URL)
 
 			if test.expectedError != "" {
