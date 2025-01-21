@@ -7,15 +7,20 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+exports_files(
+    ["solana_transactions.csv"],
+    visibility = ["//visibility:public"],
+)
+
 go_binary(
     name = "hajime_center",
+    data = [
+        "app.env",
+        "solana_transactions.csv",
+    ],
     embed = [":hajime_center_lib"],
     importpath = "hajime/golangp/apps/hajime_center",
     visibility = ["//visibility:public"],
-    data = [
-        "app.env",
-        "solana__transactions.csv",
-    ],
 )
 
 exports_files(["app.dev.env"])
@@ -57,4 +62,3 @@ go_library(
         "@com_github_gin_gonic_gin//:gin",
     ],
 )
-

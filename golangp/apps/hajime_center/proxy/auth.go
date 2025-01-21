@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
 	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/proxy/middleware"
@@ -12,6 +11,8 @@ import (
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/gorilla/mux"
 )
 
 // Check if the path is /dify/console/api/setup
@@ -26,6 +27,7 @@ var excludedPathsPrefix = []string{
 	"/api",
 	"/console/api/installed-apps",
 	"/console/api/apps/",
+	"/console/api/workspaces/current/tool-provider/builtin/", //icon
 }
 
 // AuthMiddleware adds authentication headers to the request
