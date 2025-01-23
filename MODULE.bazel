@@ -47,6 +47,7 @@ use_repo(
     "in_gopkg_gomail_v2",
     "io_gorm_driver_postgres",
     "io_gorm_gorm",
+    "org_golang_google_grpc",
     "org_golang_x_crypto",
 )
 
@@ -64,3 +65,13 @@ pip.parse(
     requirements_lock = "//:requirements_lock.txt",
 )
 use_repo(pip, "py_deps")
+
+## proto
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "rules_proto_grpc", version = "5.0.1")
+bazel_dep(name = "rules_proto_grpc_cpp", version = "5.0.1")
+bazel_dep(name = "rules_proto_grpc_go", version = "5.0.1")
+bazel_dep(name = "rules_proto_grpc_python", version = "5.0.1")
+bazel_dep(name = "protobuf", version = "29.1", repo_name = "com_google_protobuf")
+bazel_dep(name = "toolchains_protoc", version = "0.3.1")
+bazel_dep(name = "rules_kotlin", version = "2.1.0")

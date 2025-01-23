@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package raydium;
+
+option go_package = "hajime/protos";
+
+service SwapService {
+  rpc Swap(SwapRequest) returns (SwapResponse);
+}
+
+message SwapRequest {
+  string tokenIn = 1;
+  string tokenOut = 2;
+  string privateKey = 3;
+  int64 amountIn = 4;
+  int64 microLamports = 5;
+}
+
+message Data {
+  string txId = 1;
+}
+
+message SwapResponse {
+  int32 status = 1;
+  string message = 2;
+  Data data = 3;
+}
