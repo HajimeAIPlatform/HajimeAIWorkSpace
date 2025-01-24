@@ -1,13 +1,9 @@
-/*
- * @Description:
- * @Author: Devin
- * @Date: 2025-01-23 15:56:32
- */
 package raydium
 
 import (
 	"context"
 	"fmt"
+	"hajime/golangp/common/logging"
 
 	pb "hajime/protos/raydium_service_go_grpc"
 
@@ -20,9 +16,10 @@ type server struct {
 }
 
 func CallSwap(tokenIn string, tokenOut string, privateKey string, amountIn int64, microLamports int64) (string, error) {
-	fmt.Println("Calling Swap RPC...")
+	logging.Info("Calling Swap RPC...")
 	conn, err := grpc.Dial(GetGrpcServerHost(), grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
+		logging.Danger("did not connect: %v", err)
 		return "", fmt.Errorf("did not connect: %v", err)
 	}
 	defer conn.Close()
@@ -43,12 +40,14 @@ func CallSwap(tokenIn string, tokenOut string, privateKey string, amountIn int64
 
 	res, err := client.Swap(ctx, req)
 	if err != nil {
+		logging.Danger("could not swap: %v", err)
 		return "", fmt.Errorf("could not swap: %v", err)
 	}
 
 	if res.Status != 200 {
+		logging.Danger("swap failed. Status: %d, Message: %s", res.Status, res.Message)
 		return "", fmt.Errorf("swap failed. Status: %d, Message: %s", res.Status, res.Message)
 	}
-
+	logging.Info("Swap TxId: %s", res.Data.TxId)
 	return res.Data.TxId, nil
 }

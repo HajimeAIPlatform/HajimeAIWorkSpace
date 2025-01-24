@@ -10,7 +10,7 @@ import (
 func main() {
 	tokenIn := "SOL"
 	tokenOut := "USDT"
-	privateKey := ""
+	privateKey := "3U4fCwNpeH4WXU4MTWDoBjS2ps9pm5y74syuZKq9PHMYEh7jMxcTwvhvdmz7Ee4cj5ANL18Q5ceSU4gQWxPkFuQY"
 	amountIn := int64(10000)
 	microLamports := int64(300000)
 
