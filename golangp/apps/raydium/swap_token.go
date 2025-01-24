@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"hajime/golangp/common/logging"
+	"time"
 
 	pb "hajime/protos/raydium_service_go_grpc"
 
@@ -26,8 +27,8 @@ func CallSwap(tokenIn string, tokenOut string, privateKey string, amountIn int64
 
 	client := pb.NewSwapServiceClient(conn)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	// ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
+	// ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
 	req := &pb.SwapRequest{
