@@ -3,11 +3,12 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/common/logging"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type ListDatasetsModelConfigDetail struct {
@@ -123,15 +124,15 @@ func ModelUpdateMiddleware(next http.Handler) http.Handler {
 		// 读取请求体
 		bodyBytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			logging.Warning("无法读取请求体: " + err.Error())
-			http.Error(w, "无法读取请求体", http.StatusBadRequest)
+			logging.Warning("Unable to read the request body: " + err.Error())
+			http.Error(w, "Unable to read the request body", http.StatusBadRequest)
 			return
 		}
 
 		// 检查请求体是否为空
 		if len(bodyBytes) == 0 {
-			logging.Warning("请求体为空")
-			http.Error(w, "请求体为空", http.StatusBadRequest)
+			logging.Warning("The request body is empty")
+			http.Error(w, "The request body is empty", http.StatusBadRequest)
 			return
 		}
 
@@ -151,6 +152,7 @@ func ModelUpdateMiddleware(next http.Handler) http.Handler {
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 		knowledge := false
 		variables := false
+		tools := false
 
 		// 检查 dataset_configs.datasets.datasets 长度
 		if len(payload.DatasetConfigs.Datasets.Datasets) > 0 {
@@ -162,7 +164,12 @@ func ModelUpdateMiddleware(next http.Handler) http.Handler {
 			variables = true
 		}
 
-		err = user.UpdateConfigUsage(appID, knowledge, variables)
+		// 检查 tools 长度
+		if len(payload.AgentMode.Tools) > 0 {
+			tools = true
+		}
+
+		err = user.UpdateConfigUsage(appID, knowledge, variables, tools)
 		if err != nil {
 			logging.Warning("Failed to update config usage: " + err.Error())
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

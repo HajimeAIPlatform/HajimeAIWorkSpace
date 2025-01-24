@@ -3,13 +3,11 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"hajime/golangp/apps/hajime_center/controllers"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/proxy"
 	"hajime/golangp/apps/hajime_center/routes"
-	"log"
+	"hajime/golangp/common/logging"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +15,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -29,13 +30,16 @@ var (
 	ReferralCodeController      controllers.ReferralCodeController
 	ReferralCodeRouteController routes.ReferralCodeRouteController
 
+	BalanceHistoryController      controllers.BalanceHistoryController
+	BalanceHistoryRouteController routes.BalanceHistoryRouteController
+
 	wg sync.WaitGroup
 )
 
 func init() {
 	conf, err := initializers.LoadEnv(".")
 	if err != nil {
-		log.Fatal("🚀 Could not load environment variables", err)
+		logging.Danger("🚀 Could not load environment variables: %v", err)
 	}
 
 	initializers.ConnectDB(&conf)
@@ -47,13 +51,16 @@ func init() {
 	ReferralCodeController = controllers.NewReferralCodeController(initializers.DB, CreditSystem)
 	ReferralCodeRouteController = routes.NewReferralCodeRouteController(ReferralCodeController)
 
+	BalanceHistoryController = controllers.NewBalanceHistoryController(initializers.DB)
+	BalanceHistoryRouteController = routes.NewBalanceHistoryRouteController(BalanceHistoryController)
+
 	server = gin.Default()
 }
 
 func main() {
 	conf, err := initializers.LoadEnv(".")
 	if err != nil {
-		log.Fatal("🚀 Could not load environment variables", err)
+		logging.Danger("🚀 Could not load environment variables: %v", err)
 	}
 
 	// 将 DOMAIN 值解析为切片
@@ -85,13 +92,13 @@ func main() {
 
 	router := server.Group("/api")
 	router.GET("/healthcheck", func(ctx *gin.Context) {
-		message := "Welcome to ChatGPT!"
+		message := "Welcome to HajimeAI!"
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
 	})
 
 	AuthRouteController.AuthRoute(router)
 	ReferralCodeRouteController.ReferralCodeRoute(router)
-
+	BalanceHistoryRouteController.BalanceHistoryRoute(router)
 	// Start the main server in a new goroutine
 	httpServer := &http.Server{
 		Addr:    ":" + conf.ServerPort,
@@ -102,9 +109,9 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		log.Printf("Starting server on port %s", httpServer.Addr)
+		logging.Info("Starting server on port %s", httpServer.Addr)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("HTTP server error: %v", err)
+			logging.Danger("HTTP server error:  %v", err)
 		}
 	}()
 
@@ -116,19 +123,19 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	<-sigChan // Wait for a signal
 
-	log.Println("Shutting down server...")
+	logging.Info("Shutting down server...")
 
 	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownRelease()
 
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("HTTP server shutdown error: %v", err)
+		logging.Danger("HTTP server shutdown error:  %v", err)
 	}
 
 	if err := proxiedServer.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("ProxiedServer shutdown error: %v", err)
+		logging.Danger("ProxiedServer shutdown error:  %v", err)
 	}
 
 	wg.Wait()
-	log.Println("Server exited gracefully.")
+	logging.Info("Server exited gracefully.")
 }

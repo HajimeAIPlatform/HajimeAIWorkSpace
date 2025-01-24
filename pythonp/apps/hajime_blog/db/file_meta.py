@@ -2,9 +2,10 @@ import pymongo
 from beanie import Document
 from bson import ObjectId
 
-from db.models import BaseDocument
-from utils.common import get_unique_id
+from pythonp.apps.hajime_blog.db.models import BaseDocument
+from pythonp.apps.hajime_blog.utils.common import get_unique_id
 from pydantic import BaseModel, Field
+
 class FileMetaInfo(BaseModel):
     id:str=""
     uid:str=""

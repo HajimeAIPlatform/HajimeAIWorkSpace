@@ -18,7 +18,7 @@ RUN tar -xzvf /tmp/hajime_center_tar.tar.gz -C /tmp && mv /tmp/Hajime/* /srv/Haj
 
 
 # 使用 dos2unix 转换配置文件格式
-RUN cp /srv/HajimeCenter//HajimeCenter.conf  /etc/supervisor/conf.d/HajimeCenter.conf
+RUN cp /srv/HajimeCenter/HajimeCenter.conf  /etc/supervisor/conf.d/HajimeCenter.conf
 RUN dos2unix /etc/supervisor/conf.d/HajimeCenter.conf
 
 # 设置可执行权限

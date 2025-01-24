@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"sync"
+	"time"
 )
 
 var Logger *log.Logger
@@ -21,35 +23,40 @@ func init() {
 				log.Fatalf("Failed to open log file: %v", err)
 			}
 			// 初始化日志记录器，输出到文件
-			Logger = log.New(file, "INFO", log.Ldate|log.Ltime|log.Lshortfile)
+			Logger = log.New(file, "", 0)
 		} else {
 			// 初始化日志记录器，输出到标准输出
-			Logger = log.New(os.Stdout, "INFO", log.Ldate|log.Ltime|log.Lshortfile)
+			Logger = log.New(os.Stdout, "", 0)
 		}
 	})
 }
 
-func Info(format string, args ...interface{}) {
-	Logger.SetPrefix("[INFO]")
-	message := fmt.Sprintf(format, args...)
+func logWithCaller(prefix, format string, args ...interface{}) {
+	_, file, line, ok := runtime.Caller(2)
+	if !ok {
+		file = "???"
+		line = 0
+	}
 
-	Logger.Println(message)
+	message := fmt.Sprintf(format, args...)
+	timestamp := time.Now().Format("2006/01/02 15:04:05")
+	Logger.Printf("%-8s %s %s:%d: %s", prefix, timestamp, file, line, message)
+}
+
+func Info(format string, args ...interface{}) {
+	logWithCaller("[INFO]", format, args...)
 }
 
 func Danger(format string, args ...interface{}) {
-	Logger.SetPrefix("[ERROR]")
-	message := fmt.Sprintf(format, args...)
+	logWithCaller("[ERROR]", format, args...)
+	message := fmt.Sprintf("[ERROR] "+format, args...)
 	Logger.Fatal(message)
 }
 
 func Warning(format string, args ...interface{}) {
-	Logger.SetPrefix("[WARNING]")
-	message := fmt.Sprintf(format, args...)
-	Logger.Println(message)
+	logWithCaller("[WARNING]", format, args...)
 }
 
 func DeBug(format string, args ...interface{}) {
-	Logger.SetPrefix("[DeBug]")
-	message := fmt.Sprintf(format, args...)
-	Logger.Println(message)
+	logWithCaller("[DeBug]", format, args...)
 }

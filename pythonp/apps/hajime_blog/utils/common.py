@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from ulid import ULID
 import pytz
-from db.schemas import GenericResponseModel
+from pythonp.apps.hajime_blog.db.schemas import GenericResponseModel
 
 T = TypeVar('T')
 

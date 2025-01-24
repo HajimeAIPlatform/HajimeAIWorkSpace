@@ -1,0 +1,14 @@
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+# 定义 utils 库
+py_library(
+    name = "config",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("python-decouple"),
+        requirement("pydantic"),
+        requirement("python-dotenv"),
+    ],
+)

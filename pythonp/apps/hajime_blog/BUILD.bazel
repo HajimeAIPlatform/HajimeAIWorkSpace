@@ -1,55 +1,29 @@
 load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
-# 定义 utils 库
-py_library(
-    name = "utils",
-    srcs = [
-        "utils/common.py",
-        "utils/fshelper.py",
-        "utils/x_auth.py",
-    ],
-    deps = [
-        requirement("redis"),
-        requirement("python-ulid"),
-        requirement("python-dotenv"),
-        requirement("pytz"),
-    ],
+exports_files(
+    [".env"],
+    visibility = ["//visibility:public"],
 )
 
-# 定义 db 库
-py_library(
-    name = "db",
-    srcs = [
-        "db/file_meta.py",
-        "db/models.py",
-        "db/schemas.py",
-    ],
-    deps = [":utils"],
-)
-
-# 定义 blog 库
-py_library(
-    name = "blog",
-    srcs = [
-        "blog/blog_model.py",
-        "blog/blog_router.py",
-        "blog/blog_schema.py",
-    ],
-    deps = [
-        ":db",
-        ":utils",
-    ],
+exports_files(
+    [".env.example"],
+    visibility = ["//visibility:public"],
 )
 
 # 定义主服务可执行文件
 py_binary(
-    name = "hajime_blog_service",
+    name = "hajime_blog",
     srcs = ["main.py"],
+    data = [".env"],
     main = "main.py",
     deps = [
-        ":blog",
-        ":utils",
+        "//pythonp/apps/hajime_blog/blog",
+        "//pythonp/apps/hajime_blog/db",
+        "//pythonp/apps/hajime_blog/routers",
+        "//pythonp/apps/hajime_blog/service",
+        "//pythonp/apps/hajime_blog/utils",
         requirement("fastapi"),
         requirement("uvicorn"),
         requirement("pymongo"),
@@ -57,5 +31,18 @@ py_binary(
         requirement("beanie"),
         requirement("python-decouple"),
         requirement("email-validator"),
+        requirement("apscheduler"),
+        requirement("python-multipart"),
     ],
+)
+
+pkg_tar(
+    name = "hajime_blog_tar",
+    srcs = [
+        ".env",
+        ":hajime_blog",
+    ],  #
+    extension = "tar.gz",
+    include_runfiles = True,
+    package_dir = "HajimeBlog",
 )

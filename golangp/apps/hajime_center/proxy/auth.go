@@ -3,15 +3,14 @@ package proxy
 import (
 	"context"
 	"errors"
-	"fmt"
-	"github.com/gorilla/mux"
 	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/dify"
 	"hajime/golangp/apps/hajime_center/proxy/middleware"
 	"hajime/golangp/common/logging"
-	"log"
 	"net/http"
 	"sync"
+
+	"github.com/gorilla/mux"
 )
 
 // Check if the path is /dify/console/api/setup
@@ -38,9 +37,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+		user, err := middleware.DeserializeUser(r)
 
 		if !middleware.IsPathExcluded(r.URL.Path, excludedPaths, constants.DifyServerPrefix) && !middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix, constants.DifyServerPrefix) {
-			user, err := middleware.DeserializeUser(r)
+
 			if err != nil {
 				logging.Warning("Auth Failed: " + err.Error())
 				middleware.WriteErrorResponse(w, "401", err.Error(), http.StatusBadRequest)
@@ -49,7 +49,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 			Token, err := difyClient.GetUserToken(user.Role)
 			//Token, err := difyClient.GetUserToken("admin")
-			fmt.Println(Token)
 
 			if err != nil {
 				logging.Warning("Token retrieval failed: " + err.Error())
@@ -58,9 +57,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			}
 			// Add the token to the request header
 			r.Header.Set("Authorization", "Bearer "+Token)
-
-			ctx := context.WithValue(r.Context(), "user", user)
-			r = r.WithContext(ctx)
 		}
 
 		if middleware.IsPathExcluded(r.URL.Path, excludedPaths, constants.DifyServerPrefix) || middleware.IsPathPrefix(r.URL.Path, excludedPathsPrefix, constants.DifyServerPrefix) {
@@ -72,6 +68,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			}
 			r.Header.Set("Authorization", "Bearer "+Token)
 		}
+
+		ctx := context.WithValue(r.Context(), "user", user)
+		r = r.WithContext(ctx)
 
 		// Call the next handler
 		next.ServeHTTP(w, r)
@@ -100,12 +99,14 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 
 	router.Handle("/console/api/apps/{app_id}/model-config", middleware.ModelUpdateMiddleware(http.HandlerFunc(DifyHandler)))
 
+	router.Handle("/console/api/apps/{app_id}/workflows/draft", middleware.WorkflowDraftMiddleware(http.HandlerFunc(DifyHandler))).Methods("POST", "PUT")
+
 	//chat
 	for _, path := range apiPaths {
 		router.Handle(path, middleware.ChatMessageMiddleware(http.HandlerFunc(DifyHandler)))
 	}
-
 	router.Handle("/console/api/apps", AuthMiddleware(http.HandlerFunc(DifyHandler)))
+
 	router.PathPrefix("/").Handler(AuthMiddleware(http.HandlerFunc(DifyHandler)))
 
 	server := &http.Server{
@@ -117,11 +118,11 @@ func CreateProxiedServer(wg *sync.WaitGroup) *http.Server {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Printf("Starting proxy server on port %s", server.Addr)
+		logging.Info("Starting proxy server on port %s", server.Addr)
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("HTTP server error: %v", err)
+			logging.Danger("HTTP server error: %v", err)
 		}
-		log.Println("Stopped serving new connections.")
+		logging.Info("Stopped serving new connections.")
 	}()
 
 	return server

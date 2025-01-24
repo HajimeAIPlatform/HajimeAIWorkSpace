@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/constants"
 	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/common/logging"
 	"time"
+
+	"gorm.io/gorm"
 
 	"github.com/google/uuid"
 )
@@ -38,6 +39,7 @@ type User struct {
 	CreatedAt          time.Time  `gorm:"not null"`
 	UpdatedAt          time.Time  `gorm:"not null"`
 	FromCode           string     `gorm:"type:varchar(255)"`
+	InviteAmount       int        `gorm:"not null;default:0"`
 	UsedCodeAmount     int        `gorm:"not null;default:0"`
 	UserMaxCodeAmount  int        `gorm:"not null;default:0"`
 	LoginTime          *time.Time `gorm:"default:null"`
@@ -46,6 +48,15 @@ type User struct {
 }
 
 type SignUpInput struct {
+	Name            string `json:"name" binding:"required"`
+	Email           string `json:"email" binding:"required"`
+	Password        string `json:"password" binding:"required,min=8"`
+	PasswordConfirm string `json:"password_confirm" binding:"required"`
+	Photo           string `json:"photo,omitempty"`
+	FromCode        string `json:"from_code,omitempty"`
+}
+
+type SignUpAdminInput struct {
 	Name            string `json:"name" binding:"required"`
 	Email           string `json:"email" binding:"required"`
 	Password        string `json:"password" binding:"required,min=8"`
@@ -177,7 +188,7 @@ func (u *User) UpdateAppUsage(appID string) (bool, error) {
 	return exceedsLimit, nil
 }
 
-func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) error {
+func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool, tools bool) error {
 	db := initializers.DB
 	var configUsage map[string][]string
 
@@ -192,7 +203,7 @@ func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) e
 
 	//Initialize or update the appID entry
 	if _, ok := configUsage[appID]; !ok {
-		configUsage[appID] = []string{"", ""}
+		configUsage[appID] = []string{"", "", ""}
 	}
 
 	// Check and update "Knowledge"
@@ -208,6 +219,58 @@ func (u *User) UpdateConfigUsage(appID string, knowledge bool, variables bool) e
 	if variables && configUsage[appID][1] == "" {
 		configUsage[appID][1] = "Variables"
 		err := u.UpdateBalance(constants.UseVariablesPoints, "UseVariablesPoints")
+		if err != nil {
+			return err
+		}
+	}
+
+	// Check and update "Tools"
+	if tools && configUsage[appID][2] == "" {
+		configUsage[appID][2] = "UseToolsPoints"
+		err := u.UpdateBalance(constants.UseToolsPoints, "UseToolsPoints")
+		if err != nil {
+			return err
+		}
+	}
+
+	// Convert map back to JSON
+	updatedConfigUsage, err := json.Marshal(configUsage)
+	if err != nil {
+		return err
+	}
+	u.ConfigUsage = string(updatedConfigUsage)
+
+	// Save the user to the database
+	result := db.Save(u)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (u *User) UpdateWorkflowDraftUsage(appID string, workFlowTools bool) error {
+	db := initializers.DB
+	var configUsage map[string][]string
+
+	if u.ConfigUsage != "" {
+		// Parse JSON string into map
+		if err := json.Unmarshal([]byte(u.ConfigUsage), &configUsage); err != nil {
+			return err
+		}
+	} else {
+		configUsage = make(map[string][]string)
+	}
+
+	//Initialize or update the appID entry
+	if _, ok := configUsage[appID]; !ok {
+		configUsage[appID] = []string{"", "", ""}
+	}
+
+	// Check and update "Knowledge"
+	if workFlowTools && configUsage[appID][2] == "" {
+		configUsage[appID][2] = "UseToolsPoints"
+		err := u.UpdateBalance(constants.UseToolsPoints, "UseToolsPoints")
 		if err != nil {
 			return err
 		}
@@ -281,13 +344,33 @@ func (u *User) UpdateBalance(balance float64, operatorType string) error {
 	// Update the user's Balance field
 	db := initializers.DB
 	// 确定变动类型
-	changeType := "add"
-	if balance < 0 {
-		changeType = "subtract"
-	}
-	newBalance := u.Balance + balance
+	inviteBonusRateAddition := 0.0
 
-	err := AddBalanceHistory(db, u.ID, balance, changeType, operatorType, u.Balance, newBalance)
+	changeType := "subtract"
+	if balance > 0 {
+		changeType = "add"
+		inviteBonusRateAddition = float64(u.InviteAmount) * constants.InvitationBonusRate
+
+		// 获取邀请人信息
+		inviteUser, err := GetUserViaCode(db, u.FromCode)
+		if err != nil {
+			return err
+		}
+
+		//被邀请人获取积分时的加成
+		if inviteUser != nil {
+			inviteUserGetBalanceAddition := balance * constants.InvitationUserGetBalanceRate
+			newInviteUserBalance := inviteUser.Balance + inviteUserGetBalanceAddition
+			err = AddBalanceHistory(db, inviteUser.ID, inviteUserGetBalanceAddition, changeType, "InvitationUserGetBalanceAddition", inviteUser.Balance, newInviteUserBalance, 0.0)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	addBalance := balance * (1 + inviteBonusRateAddition)
+	newBalance := u.Balance + addBalance
+
+	err := AddBalanceHistory(db, u.ID, addBalance, changeType, operatorType, u.Balance, newBalance, inviteBonusRateAddition)
 	if err != nil {
 		return err
 	}
@@ -424,6 +507,7 @@ func (u *User) PreCheckBalance() bool {
 	return true
 }
 
+// UpdateUserFrom updates the user's FromCode field
 func UpdateUserFrom(id string, from string) error {
 	db := initializers.DB
 
@@ -435,6 +519,30 @@ func UpdateUserFrom(id string, from string) error {
 
 	// 更新用户信息
 	user.FromCode = from
+
+	// 保存更新后的用户
+	if err := db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateUserInviteAmount(encryptCode string, amount int) error {
+	db := initializers.DB
+
+	// 查询邀请码
+	user, err := GetUserViaCode(db, encryptCode)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return errors.New("referral code not found")
+	}
+
+	// 更新用户信息
+	user.InviteAmount = user.InviteAmount + amount
 
 	// 保存更新后的用户
 	if err := db.Save(&user).Error; err != nil {

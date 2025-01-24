@@ -3,10 +3,12 @@ package middleware
 import (
 	"encoding/json"
 	"errors"
-	"gorm.io/gorm"
+	"fmt"
 	"hajime/golangp/apps/hajime_center/models"
 	"hajime/golangp/common/logging"
 	"net/http"
+
+	"gorm.io/gorm"
 )
 
 type ConversationResponse struct {
@@ -33,13 +35,18 @@ func HandleGetConversation(resp *http.Response, r *http.Request, db *gorm.DB, us
 }
 
 func HandleConversationData(resp *http.Response, body []byte, db *gorm.DB, user models.User) error {
+
+	if resp == nil || db == nil || user.ID.String() == "" {
+		return fmt.Errorf("invalid input: nil or uninitialized parameter")
+	}
+
 	var originalResponse ConversationResponse
 	if err := json.Unmarshal(body, &originalResponse); err != nil {
 		logging.Warning("Failed to decode incoming data: " + err.Error())
 		return err
 	}
 
-	var filteredConversations []ConversationData
+	filteredConversations := make([]ConversationData, 0)
 
 	for _, conversation := range originalResponse.Data {
 		conversationID := conversation.ID
@@ -48,24 +55,21 @@ func HandleConversationData(resp *http.Response, body []byte, db *gorm.DB, user 
 			continue
 		}
 
-		// Check if conversation exists in the database
 		dbConversation, err := models.GetConversationByID(conversationID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				if dbConversation.Owner == user.ID.String() {
-					// Create new conversation entry
-					filteredConversations = append(filteredConversations, conversation)
-				}
+				// filteredConversations = append(filteredConversations, conversation)
 			} else {
 				logging.Warning("Error checking conversation existence: " + err.Error())
 				return err
 			}
 		} else {
-			return err
+			if dbConversation.Owner == user.ID.String() {
+				filteredConversations = append(filteredConversations, conversation)
+			}
 		}
 	}
 
-	// Update the original data with filtered conversations
 	originalResponse.Data = filteredConversations
 
 	modifiedBody, err := json.Marshal(originalResponse)

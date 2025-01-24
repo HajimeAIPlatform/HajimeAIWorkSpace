@@ -49,6 +49,7 @@ go_library(
         "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/proxy",
         "//golangp/apps/hajime_center/routes",
+        "//golangp/common/logging:logger",
         "@com_github_gin_contrib_cors//:cors",
         "@com_github_gin_gonic_gin//:gin",
     ],
