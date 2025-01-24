@@ -1,0 +1,18 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "service",
+    srcs = ["web.go"],
+    importpath = "hajime/golangp/apps/AgentTown/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/config",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/AgentTown/telemetry",
+        "//golangp/common/logging:logger",
+        "@com_github_gin_contrib_cors//:cors",
+        "@com_github_gin_gonic_gin//:gin",
+    ],
+)
