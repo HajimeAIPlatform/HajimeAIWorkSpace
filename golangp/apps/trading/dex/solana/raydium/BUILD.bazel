@@ -3,7 +3,7 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "raydium",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/raydium",
+    importpath = "hajime/golangp/apps/trading/dex/solana/raydium",
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/common/logging:logger",

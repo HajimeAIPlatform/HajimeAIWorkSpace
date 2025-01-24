@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"hajime/golangp/apps/raydium"
+	"hajime/golangp/apps/trading/dex/solana/raydium"
 )
 
 func main() {

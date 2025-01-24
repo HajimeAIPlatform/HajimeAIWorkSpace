@@ -4,6 +4,6 @@ go_binary(
     name = "server",
     srcs = ["main.go"],
     deps = [
-        "//golangp/apps/raydium",
+        "//golangp/apps/trading/dex/solana/raydium",
     ],
 )
