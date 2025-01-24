@@ -10,10 +10,10 @@ go_test(
 )
 
 go_test(
-    name = "test_test",
-    srcs = ["common_test.go"],
+    name = "solana_token_test",
+    srcs = ["solana_token_test.go"],
     deps = [
-        "//golangp/common/utils",
-        "@com_github_magiconair_properties//assert",
+        "hajime/golangp/apps/Solana/pkg/token",
+        "@com_github_blocto_solana_go_sdk//common",
     ],
 )
