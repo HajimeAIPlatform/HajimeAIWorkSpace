@@ -1,9 +1,9 @@
 package proxy
 
 import (
-	"hajime/golangp/apps/hajime_center/initializers"
-	"hajime/golangp/apps/hajime_center/models"
 	"hajime/golangp/apps/hajime_center/constants"
+	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/common/initializers"
 	"net/http"
 	"net/http/httputil"
 	"net/url"

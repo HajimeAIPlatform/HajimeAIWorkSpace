@@ -3,7 +3,8 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "initializers",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/hajime_center/initializers",
+    data = glob(["*.env"]),
+    importpath = "hajime/golangp/common/initializers",
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/common/logging:logger",

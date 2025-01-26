@@ -1,9 +1,10 @@
 package models
 
 import (
-	"github.com/google/uuid"
-	"hajime/golangp/apps/hajime_center/initializers"
+	"hajime/golangp/common/initializers"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type BillingHistory struct {

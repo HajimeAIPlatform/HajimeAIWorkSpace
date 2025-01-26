@@ -1,7 +1,7 @@
 package models
 
 import (
-	"hajime/golangp/apps/hajime_center/initializers"
+	"hajime/golangp/common/initializers"
 )
 
 type Conversation struct {

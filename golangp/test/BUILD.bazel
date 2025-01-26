@@ -17,3 +17,11 @@ go_test(
         "@com_github_blocto_solana_go_sdk//common",
     ],
 )
+
+go_test(
+    name = "config_test",
+    srcs = ["config_test.go"],
+    deps = [
+        "//golangp/common/initializers",
+    ],
+)

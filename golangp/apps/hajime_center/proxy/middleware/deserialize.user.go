@@ -3,12 +3,13 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
-	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/utils"
 	"net/http"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func DeserializeUser(r *http.Request) (*models.User, error) {

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/constants"
-	"hajime/golangp/apps/hajime_center/initializers"
+	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/logging"
 	"time"
+
+	"gorm.io/gorm"
 
 	"github.com/google/uuid"
 )
