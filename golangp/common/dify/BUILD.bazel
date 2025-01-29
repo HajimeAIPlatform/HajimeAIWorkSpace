@@ -3,7 +3,7 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "dify",
     srcs = glob(["**/*.go"]),
-    importpath = "hajime/golangp/apps/hajime_center/dify",
+    importpath = "hajime/golangp/common/dify",
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/apps/hajime_center/constants",

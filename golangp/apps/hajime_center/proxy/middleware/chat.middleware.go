@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"hajime/golangp/apps/hajime_center/constants"
-	"hajime/golangp/apps/hajime_center/dify"
+	"hajime/golangp/common/dify"
 	"hajime/golangp/apps/hajime_center/models"
 	"hajime/golangp/common/logging"
 	"net/http"

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/logging"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -95,11 +94,6 @@ func CreateDifyClient(config DifyClientConfig) (*DifyClient, error) {
 }
 
 func GetDifyClient() (*DifyClient, error) { // 修改返回类型为 (*DifyClient, error)
-	files, err := ioutil.ReadDir(".")
-
-	for _, file := range files {
-		fmt.Println(file.Name())
-	}
 	client, err := CreateDifyClient(DifyClientConfig{})
 	if err != nil {
 		logging.Warning("failed to create DifyClient: %v\n", err)
