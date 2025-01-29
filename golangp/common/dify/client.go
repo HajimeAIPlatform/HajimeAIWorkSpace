@@ -84,7 +84,7 @@ func CreateDifyClient(config DifyClientConfig) (*DifyClient, error) {
 	return &DifyClient{
 		Key:         key,
 		Host:        host,
-		HostUrl:     host + "/api",
+		HostUrl:     host + "/v1",
 		ConsoleHost: consoleURL,
 		Timeout:     timeout,
 		SkipTLS:     skipTLS,
