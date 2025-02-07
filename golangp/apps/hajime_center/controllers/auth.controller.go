@@ -2,18 +2,19 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/thanhpk/randstr"
-	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/constants"
-	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/logging"
 	"hajime/golangp/common/mail_server"
 	"hajime/golangp/common/utils"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/thanhpk/randstr"
+	"gorm.io/gorm"
 )
 
 type AuthController struct {

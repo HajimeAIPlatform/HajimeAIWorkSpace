@@ -3,11 +3,12 @@ package models
 import (
 	"errors"
 	"fmt"
+	"hajime/golangp/apps/hajime_center/constants"
+	"hajime/golangp/common/initializers"
+	"hajime/golangp/common/logging"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"hajime/golangp/apps/hajime_center/constants"
-	"hajime/golangp/apps/hajime_center/initializers"
-	"hajime/golangp/common/logging"
 )
 
 type UnixTime int64

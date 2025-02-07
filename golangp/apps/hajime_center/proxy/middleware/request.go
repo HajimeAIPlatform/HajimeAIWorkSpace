@@ -3,7 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"hajime/golangp/apps/hajime_center/dify"
+	"hajime/golangp/common/dify"
 	"hajime/golangp/common/logging"
 	"io/ioutil"
 	"net/http"

@@ -15,7 +15,7 @@ type ChatMessagesPayload struct {
 	Query          string                    `json:"query"`
 	ResponseMode   string                    `json:"response_mode,omitempty"`
 	ConversationID string                    `json:"conversation_id,omitempty"`
-	User           string                    `json:"user ,omitempty"`
+	User           string                    `json:"user,omitempty"`
 	Files          []ChatMessagesPayloadFile `json:"files,omitempty"`
 }
 

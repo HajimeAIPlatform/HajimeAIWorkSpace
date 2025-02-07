@@ -1,0 +1,10 @@
+load("@rules_go//go:def.bzl",  "go_binary")
+
+# This binary is used to test if initializers can find correct config file in go_binary rule
+go_binary(
+    name = "binary_config_test",
+    srcs = ["main.go"],
+    deps = [
+        "//golangp/common/initializers",
+    ],
+)

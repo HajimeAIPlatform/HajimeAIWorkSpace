@@ -1,7 +1,7 @@
 package dify
 
 const (
-	DEFAULT_TIMEOUT = 10
+	DEFAULT_TIMEOUT = 45
 	DEFAULT_USER    = "admin"
 
 	RESPONSE_MODE_STREAMING = "streaming"

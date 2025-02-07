@@ -3,12 +3,10 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"hajime/golangp/apps/hajime_center/controllers"
-	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/proxy"
 	"hajime/golangp/apps/hajime_center/routes"
+	"hajime/golangp/common/initializers"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +15,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 var (
