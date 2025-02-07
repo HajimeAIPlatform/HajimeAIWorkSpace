@@ -1,0 +1,24 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_binary(
+    name = "solana_token_transfer",
+    srcs = ["main.go"],
+    importpath = "HajimeAIWorkSpace/golangp/apps/Solana",
+    deps = [
+        "//golangp/apps/Solana/pkg/account:account",   # 引用 account 包
+        "//golangp/apps/Solana/pkg/airdrop",   # 引用 airdrop 包
+        "//golangp/apps/Solana/pkg/token",     # 引用 token 包
+        "@com_github_blocto_solana_go_sdk//client",  # 其他依赖
+        "@com_github_blocto_solana_go_sdk//common",
+        "@com_github_blocto_solana_go_sdk//program/token",
+        "@com_github_blocto_solana_go_sdk//types",
+    ],
+    visibility = ["//visibility:public"],
+    data = [
+        "assets/wallet_7dEc3i8Niz.json",
+        "assets/wallet_3qQEWctNXM.json",
+    ],
+)
+
+
+

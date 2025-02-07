@@ -1,0 +1,15 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "token",
+    srcs = glob(["**/*.go"]),
+    importpath = "hajime/golangp/apps/Solana/pkg/token",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_blocto_solana_go_sdk//client",
+        "@com_github_blocto_solana_go_sdk//common",
+        "@com_github_blocto_solana_go_sdk//program/token",
+        "@com_github_blocto_solana_go_sdk//types",
+        "@com_github_gagliardetto_solana_go//rpc",
+    ],
+)

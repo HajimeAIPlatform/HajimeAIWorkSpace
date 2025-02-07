@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"hajime/golangp/apps/hajime_center/dify"
+	"hajime/golangp/common/dify"
 	"hajime/golangp/common/logging"
 	"io/ioutil"
 	"net/http"

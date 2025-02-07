@@ -3,14 +3,15 @@ package xminio
 import (
 	"bytes"
 	"context"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-	"hajime/golangp/apps/hajime_center/initializers"
+	"hajime/golangp/common/initializers"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 type Config struct {

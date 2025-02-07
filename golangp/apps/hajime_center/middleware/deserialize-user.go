@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
-	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/utils"
+
+	"github.com/gin-gonic/gin"
 )
 
 func DeserializeUser() gin.HandlerFunc {

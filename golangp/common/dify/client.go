@@ -3,7 +3,7 @@ package dify
 import (
 	"crypto/tls"
 	"fmt"
-	"hajime/golangp/apps/hajime_center/initializers"
+	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/logging"
 	"net/http"
 	"strings"
@@ -84,7 +84,7 @@ func CreateDifyClient(config DifyClientConfig) (*DifyClient, error) {
 	return &DifyClient{
 		Key:         key,
 		Host:        host,
-		HostUrl:     host + "/api",
+		HostUrl:     host + "/v1",
 		ConsoleHost: consoleURL,
 		Timeout:     timeout,
 		SkipTLS:     skipTLS,

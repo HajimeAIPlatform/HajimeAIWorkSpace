@@ -23,8 +23,6 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-exports_files(["app.dev.env"])
-
 pkg_files(
     name = "hajime_templates_tar",
     srcs = [
@@ -54,10 +52,10 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//golangp/apps/hajime_center/controllers",
-        "//golangp/apps/hajime_center/initializers",
         "//golangp/apps/hajime_center/proxy",
         "//golangp/apps/hajime_center/routes",
         "//golangp/apps/hajime_center/solanaTask",
+        "//golangp/common/initializers",
         "@com_github_gin_contrib_cors//:cors",
         "@com_github_gin_gonic_gin//:gin",
     ],

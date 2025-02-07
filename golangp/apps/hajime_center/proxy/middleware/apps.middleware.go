@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"gorm.io/gorm"
-	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/logging"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
 func HandleGetApp(resp *http.Response, r *http.Request, user models.User) error {

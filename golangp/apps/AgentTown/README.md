@@ -10,7 +10,6 @@ We enforce using bzlmod and rely on the dependencies to be managed by MODULES.bz
 
 Currently most bazel plugins are not compatible with Bazel 8. But eventually they will be.
 
-
 ## Introduction
 
 Agent Town is designed to simulate a group of agent that can interact with each other using message chan and task chan.

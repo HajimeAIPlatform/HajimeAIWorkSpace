@@ -3,10 +3,11 @@ package models
 import (
 	"errors"
 	"fmt"
+	"hajime/golangp/apps/hajime_center/constants"
+	"hajime/golangp/common/initializers"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"hajime/golangp/apps/hajime_center/constants"
-	"hajime/golangp/apps/hajime_center/initializers"
 )
 
 type Dataset struct {

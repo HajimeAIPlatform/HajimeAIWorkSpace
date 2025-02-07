@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hajime/golangp/apps/hajime_center/constants"
-	"hajime/golangp/apps/hajime_center/initializers"
+	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/logging"
 )
 

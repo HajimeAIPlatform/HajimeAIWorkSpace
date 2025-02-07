@@ -1,0 +1,10 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_test(
+    name = "wallet_test",
+    srcs = ["wallet_test.go"],
+    deps = [
+        "hajime/golangp/apps/trading/dex/solana/wallet",
+        "@com_github_stretchr_testify//assert",
+    ],
+)

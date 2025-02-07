@@ -3,10 +3,11 @@ package models
 import (
 	"errors"
 	"fmt"
+	"hajime/golangp/common/initializers"
+	"time"
+
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
-	"hajime/golangp/apps/hajime_center/initializers"
-	"time"
 )
 
 type UserAsset struct {

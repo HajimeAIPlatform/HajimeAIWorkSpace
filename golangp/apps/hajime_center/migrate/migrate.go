@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"hajime/golangp/apps/hajime_center/constants"
-	"hajime/golangp/apps/hajime_center/initializers"
 	"hajime/golangp/apps/hajime_center/models"
+	"hajime/golangp/common/initializers"
 	"hajime/golangp/common/logging"
 	"hajime/golangp/common/utils"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func init() {

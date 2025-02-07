@@ -4,9 +4,33 @@ go_test(
     name = "common_test",
     srcs = ["common_test.go"],
     deps = [
-        "//golangp/apps/AgentTown/task",
-        "//golangp/apps/AgentTown/runtime",
         "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/AgentTown/task:runnable",
         "@com_github_magiconair_properties//assert",
+    ],
+)
+
+go_test(
+    name = "solana_swap_test",
+    srcs = ["solana_swap_test.go"],
+    deps = [
+        "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/AgentTown/task:runnable",
+        "//golangp/apps/trading/dex/solana/raydium",
+        "@com_github_magiconair_properties//assert",
+    ],
+)
+
+go_test(
+    name = "trade_agent_test",
+    srcs = ["trade_agent_test.go"],
+    deps = [
+        "//golangp/apps/AgentTown/agent_adapter",
+        "//golangp/apps/trading/dex/solana/raydium",
+        "//golangp/common/logging:logger"
     ],
 )

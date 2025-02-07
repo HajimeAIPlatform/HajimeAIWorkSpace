@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"hajime/golangp/apps/hajime_center/constants"
-	"hajime/golangp/apps/hajime_center/dify"
+	"hajime/golangp/common/dify"
 	"hajime/golangp/apps/hajime_center/proxy/middleware"
 	"hajime/golangp/common/logging"
 	"log"
