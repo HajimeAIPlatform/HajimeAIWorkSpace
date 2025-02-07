@@ -1,12 +1,18 @@
+/*
+ * @Description:
+ * @Author: Devin
+ * @Date: 2025-02-07 16:19:15
+ */
 package main
 
 import (
+	"hajime/golangp/apps/Solana/pkg/account"
+	"hajime/golangp/apps/Solana/pkg/airdrop"
+	"hajime/golangp/apps/Solana/pkg/token"
 	"log"
-	"HajimeAIWorkSpace/golangp/apps/Solana/pkg/account"
-	"HajimeAIWorkSpace/golangp/apps/Solana/pkg/airdrop"
-	"HajimeAIWorkSpace/golangp/apps/Solana/pkg/token"
-	"github.com/blocto/solana-go-sdk/common"
 	"path/filepath"
+
+	"github.com/blocto/solana-go-sdk/common"
 )
 
 const (
@@ -16,13 +22,13 @@ const (
 )
 
 var (
-	tokenMintPubkey             = common.PublicKeyFromString("3bsQNidmWGYJZ4W8d1AtDPKomZC3RCgrfssm7f14dAeH")
-	senderTokenAccountPubkey    = common.PublicKeyFromString("rXCWwt3Nx9coEubo2Xxh4bPyU6hi3pCgFzHzAsybaKH")
-	receiverTokenAccountPubkey  = common.PublicKeyFromString("B5fyaWUMLd2GAxEmQSEqcZ874WwEY6tfd5X6ZRQzzhC6")
+	tokenMintPubkey            = common.PublicKeyFromString("3bsQNidmWGYJZ4W8d1AtDPKomZC3RCgrfssm7f14dAeH")
+	senderTokenAccountPubkey   = common.PublicKeyFromString("rXCWwt3Nx9coEubo2Xxh4bPyU6hi3pCgFzHzAsybaKH")
+	receiverTokenAccountPubkey = common.PublicKeyFromString("B5fyaWUMLd2GAxEmQSEqcZ874WwEY6tfd5X6ZRQzzhC6")
 )
 
 func main() {
-	dirPath := filepath.Join("/home/lio/HajimeAIWorkSpace", "golangp", "apps", "Solana", "assets")
+	dirPath := filepath.Join("/home/lio/hajime", "golangp", "apps", "Solana", "assets")
 
 	publicKeys, err := account.CreateAccounts(dirPath, 5)
 	log.Println(publicKeys)

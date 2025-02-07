@@ -3,11 +3,11 @@ load("@rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "airdrop",
     srcs = glob(["**/*.go"]),
-    importpath = "HajimeAIWorkSpace/golangp/apps/Solana/pkg/airdrop",
+    importpath = "hajime/golangp/apps/Solana/pkg/airdrop",
+    visibility = ["//visibility:public"],
     deps = [
         "@com_github_blocto_solana_go_sdk//client",
         "@com_github_blocto_solana_go_sdk//rpc",
         "@com_github_blocto_solana_go_sdk//types",
     ],
-     visibility = ["//visibility:public"],
 )
