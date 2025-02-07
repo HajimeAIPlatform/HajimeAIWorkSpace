@@ -29,6 +29,8 @@ var (
 	AuthRouteController         routes.AuthRouteController
 	ReferralCodeController      controllers.ReferralCodeController
 	ReferralCodeRouteController routes.ReferralCodeRouteController
+	TokenClaimController        controllers.TokenClaimController
+	TokenClaimRouteController   routes.TokenClaimRouteController
 
 	wg sync.WaitGroup
 )
@@ -42,11 +44,14 @@ func init() {
 	initializers.ConnectDB(&conf)
 	//initializers.ConnectDBDify(&conf)
 	CreditSystem = controllers.NewCreditSystem(initializers.DB)
+	csvFilePath := "./solana_transactions.csv"
 
 	AuthController = controllers.NewAuthController(initializers.DB, CreditSystem)
 	AuthRouteController = routes.NewAuthRouteController(AuthController)
 	ReferralCodeController = controllers.NewReferralCodeController(initializers.DB, CreditSystem)
 	ReferralCodeRouteController = routes.NewReferralCodeRouteController(ReferralCodeController)
+	TokenClaimController = controllers.NewTokenClaimController(csvFilePath)
+	TokenClaimRouteController = routes.NewTokenClaimRouteController(csvFilePath)
 
 	server = gin.Default()
 }
@@ -92,6 +97,7 @@ func main() {
 
 	AuthRouteController.AuthRoute(router)
 	ReferralCodeRouteController.ReferralCodeRoute(router)
+	TokenClaimRouteController.TokenClaimRoute(router)
 
 	// Start the main server in a new goroutine
 	httpServer := &http.Server{
@@ -108,6 +114,9 @@ func main() {
 			log.Fatalf("HTTP server error: %v", err)
 		}
 	}()
+
+	// // 启动定时任务
+	// go solanaTask.ScheduledTask()
 
 	//proxy serve
 	proxiedServer := proxy.CreateProxiedServer(&wg)

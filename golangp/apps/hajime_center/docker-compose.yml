@@ -28,6 +28,7 @@ services:
     #   - "0.0.0.0:8001:8001"
     volumes:
       - ./app.env:/srv/HajimeCenter/app.env
+      - ./solana_transactions.csv:/srv/HajimeCenter/solana_transactions.csv
       - ./logs:/srv/HajimeCenter/logs
       - ./storage:/srv/storage
     # networks:

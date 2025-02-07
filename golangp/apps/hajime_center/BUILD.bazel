@@ -2,14 +2,25 @@ load("@rules_go//go:def.bzl", "go_binary", "go_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
+exports_files(
+    ["app.env"],
+    visibility = ["//visibility:public"],
+)
+
+exports_files(
+    ["solana_transactions.csv"],
+    visibility = ["//visibility:public"],
+)
+
 go_binary(
     name = "hajime_center",
+    data = [
+        "app.env",
+        "solana_transactions.csv",
+    ],
     embed = [":hajime_center_lib"],
     importpath = "hajime/golangp/apps/hajime_center",
     visibility = ["//visibility:public"],
-    deps = [
-        "//golangp/common/initializers"
-    ]
 )
 
 pkg_files(
@@ -43,6 +54,8 @@ go_library(
         "//golangp/apps/hajime_center/controllers",
         "//golangp/apps/hajime_center/proxy",
         "//golangp/apps/hajime_center/routes",
+        "//golangp/apps/hajime_center/solanaTask",
+        "//golangp/common/initializers",
         "@com_github_gin_contrib_cors//:cors",
         "@com_github_gin_gonic_gin//:gin",
     ],
