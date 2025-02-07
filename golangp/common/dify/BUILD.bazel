@@ -9,5 +9,6 @@ go_library(
         "//golangp/apps/hajime_center/constants",
         "//golangp/common/initializers",
         "//golangp/common/logging:logger",
+        "//golangp/common/utils",
     ],
 )

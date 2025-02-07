@@ -14,7 +14,7 @@ func TestDify(t *testing.T) {
 
 	t.Logf("Dify client: %v", difyClient)
 
-	const accessKey = "Bearer app-oMRgU9QIJKP2NBYw25EpkPyD"
+	const accessKey = "Bearer app-RaG6pT0giNLBm3DmWXlPRWPL"
 	result, err := difyClient.ChatMessages("What are the specs of the iPhone 13 Pro Max?", nil, "", nil, accessKey)
 
 	if err != nil {
