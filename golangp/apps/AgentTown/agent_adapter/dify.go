@@ -65,7 +65,7 @@ func (c *DifyConversation) processResponse(message string) error {
 		actionDict[GetFunctionName(action)] = action
 	}
 
-	hasResult := false
+	endConversation := false
 	for _, action := range response.Actions {
 		if action.Name == "" {
 			continue
@@ -76,24 +76,32 @@ func (c *DifyConversation) processResponse(message string) error {
 			continue
 		}
 
-		values := CallWithJSON(actionDict[action.Name], action.Arguments)
-		result := ""
-		for _, value := range values {
-			result += fmt.Sprintf("%v", value)
-		}
-		if result != "" {
-			hasResult = true
+		values, err := CallWithJSON(actionDict[action.Name], action.Arguments)
+
+		if err != nil {
+			action.Result = fmt.Sprintf("Error: %v", err)
+		} else {
+			result := ""
+			for _, value := range values {
+				result += fmt.Sprintf("%v", value)
+			}
 			action.Result = result
+			if result == END_CONVERSATION {
+				endConversation = true
+			}
 		}
 
 	}
 
-	if hasResult {
+	if !endConversation {
 		jsonByte, err := json.Marshal(response)
 		if err != nil {
 			return err
 		}
-		c.SendMessage(string(jsonByte))
+		err = c.SendMessage(fmt.Sprintf("Action Result:\n%s", string(jsonByte)))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

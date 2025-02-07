@@ -8,15 +8,35 @@ import (
 	"strings"
 )
 
-func CallWithJSON(function any, rawjson string) []reflect.Value {
+func CatchPanic(f func()) (panicked bool, reseaon interface{}) {
+	defer func() {
+		if r := recover(); r != nil {
+			panicked = true
+			reseaon = r
+		}
+	}()
+	f()
+	return
+}
+
+func CallWithJSON(function any, rawjson string) ([]reflect.Value, error) {
 	funcValue := reflect.ValueOf(function)
 	paramType := funcValue.Type().In(0)
 	argPtr := reflect.New(paramType)
 	if err := json.Unmarshal([]byte(rawjson), argPtr.Interface()); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return funcValue.Call([]reflect.Value{argPtr.Elem()})
+	var values []reflect.Value
+	panicked, reseaon := CatchPanic(func() {
+		values = funcValue.Call([]reflect.Value{argPtr.Elem()})
+	})
+
+	if panicked {
+		return nil, fmt.Errorf("Panic: %v", reseaon)
+	}
+
+	return values, nil
 }
 
 type Parameter struct {

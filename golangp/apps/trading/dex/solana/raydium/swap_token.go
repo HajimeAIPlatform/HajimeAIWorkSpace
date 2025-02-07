@@ -41,12 +41,12 @@ func CallSwap(tokenIn string, tokenOut string, privateKey string, amountIn int64
 
 	res, err := client.Swap(ctx, req)
 	if err != nil {
-		logging.Danger("could not swap: %v", err)
+		logging.Warning("could not swap: %v", err)
 		return "", fmt.Errorf("could not swap: %v", err)
 	}
 
 	if res.Status != 200 {
-		logging.Danger("swap failed. Status: %d, Message: %s", res.Status, res.Message)
+		logging.Warning("swap failed. Status: %d, Message: %s", res.Status, res.Message)
 		return "", fmt.Errorf("swap failed. Status: %d, Message: %s", res.Status, res.Message)
 	}
 	logging.Info("Swap TxId: %s", res.Data.TxId)
