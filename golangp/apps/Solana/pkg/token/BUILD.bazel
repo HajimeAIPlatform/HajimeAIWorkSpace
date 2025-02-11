@@ -2,7 +2,11 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "token",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "convertToken.go",
+        "token.go",
+        "utils.go",
+    ],
     importpath = "hajime/golangp/apps/Solana/pkg/token",
     visibility = ["//visibility:public"],
     deps = [

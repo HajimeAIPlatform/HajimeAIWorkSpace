@@ -2,7 +2,7 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "account",
-    srcs = glob(["**/*.go"]),
+    srcs = ["account.go"],
     importpath = "hajime/golangp/apps/Solana/pkg/account",
     visibility = ["//visibility:public"],
     deps = [

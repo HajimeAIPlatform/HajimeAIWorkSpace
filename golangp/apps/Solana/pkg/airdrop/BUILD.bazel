@@ -2,7 +2,7 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "airdrop",
-    srcs = glob(["**/*.go"]),
+    srcs = ["airdrop.go"],
     importpath = "hajime/golangp/apps/Solana/pkg/airdrop",
     visibility = ["//visibility:public"],
     deps = [

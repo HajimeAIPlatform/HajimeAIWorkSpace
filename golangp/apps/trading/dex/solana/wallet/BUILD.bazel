@@ -2,9 +2,10 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "solana_wallet",
-    srcs = glob(
-        ["**/*.go"],
-    ),
+    srcs = [
+        "utils.go",
+        "wallet.go",
+    ],
     importpath = "hajime/golangp/apps/trading/dex/solana/wallet",
     visibility = ["//visibility:public"],
     deps = [

@@ -2,7 +2,18 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "middleware",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "apps.middleware.go",
+        "chat.middleware.go",
+        "config.middleware.go",
+        "conversations.middleware.go",
+        "datasets.middleware.go",
+        "deserialize.user.go",
+        "install.apps.middleware.go",
+        "models.go",
+        "request.go",
+        "utils.go",
+    ],
     importpath = "hajime/golangp/apps/hajime_center/proxy/middleware",
     visibility = ["//visibility:public"],
     deps = [

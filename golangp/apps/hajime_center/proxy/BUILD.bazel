@@ -2,7 +2,11 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "proxy",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "auth.go",
+        "middleware.go",
+        "proxies.go",
+    ],
     importpath = "hajime/golangp/apps/hajime_center/proxy",
     visibility = ["//visibility:public"],
     deps = [
