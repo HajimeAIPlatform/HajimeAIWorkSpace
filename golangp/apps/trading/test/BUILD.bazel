@@ -8,3 +8,12 @@ go_test(
         "@com_github_magiconair_properties//assert",
     ],
 )
+
+go_test(
+    name = "test_test",
+    srcs = ["trading_test.go"],
+    deps = [
+        "//golangp/apps/trading/cex/binance:binance_apis",
+        "@com_github_magiconair_properties//assert",
+    ],
+)

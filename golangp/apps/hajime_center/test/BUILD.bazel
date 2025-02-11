@@ -2,7 +2,10 @@ load("@rules_go//go:def.bzl", "go_test")
 
 go_test(
     name = "hajime_golang_test",
-    srcs = glob(["**/*.go"],allow_empty = True),
+    srcs = glob(
+        ["**/*.go"],
+        allow_empty = True,
+    ),
     importpath = "hajime/golangp/apps/hajime_center/test",
     visibility = ["//visibility:public"],
     deps = [

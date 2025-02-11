@@ -1,13 +1,9 @@
 load("@rules_go//go:def.bzl", "go_library")
 
-
 go_library(
     name = "binance_apis",
     srcs = glob(["**/*.go"]),
     importpath = "hajime/golangp/apps/trading/cex/binance",
     visibility = ["//visibility:public"],
-    deps = [
-        "@com_github_adshao_go_binance_v2//:go_default_library",
-        "@com_github_adshao_go_binance_v2//futures:go_default_library"
-    ]
+    deps = ["@com_github_adshao_go_binance_v2//futures"],
 )

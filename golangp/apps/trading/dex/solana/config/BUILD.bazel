@@ -1,4 +1,4 @@
-load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "solana_config",
@@ -7,6 +7,4 @@ go_library(
     ),
     importpath = "hajime/golangp/apps/trading/dex/solana/config",
     visibility = ["//visibility:public"],
-    deps = [
-    ],
 )

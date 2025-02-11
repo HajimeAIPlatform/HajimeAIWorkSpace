@@ -40,8 +40,8 @@ py_binary(
         "//pythonp/apps/tokenfate:common_deps",
         "//pythonp/apps/tokenfate/models",
         "//pythonp/apps/tokenfate/service",
+        "//pythonp/common/email_notifications",
         "//pythonp/common/logging:logger",
-        "//pythonp/common/email_notifications:email_notifications",
     ],
 )
 

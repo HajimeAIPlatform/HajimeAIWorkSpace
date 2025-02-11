@@ -1,11 +1,11 @@
-load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "account",
     srcs = glob(["**/*.go"]),
     importpath = "hajime/golangp/apps/Solana/pkg/account",
+    visibility = ["//visibility:public"],
     deps = [
         "@com_github_blocto_solana_go_sdk//types",
     ],
-     visibility = ["//visibility:public"],
 )

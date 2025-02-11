@@ -1,9 +1,15 @@
-load("@rules_go//go:def.bzl", "go_binary")
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_binary(
     name = "server",
+    embed = [":raydium_test_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "raydium_test_lib",
     srcs = ["main.go"],
-    deps = [
-        "//golangp/apps/trading/dex/solana/raydium",
-    ],
+    importpath = "hajime/golangp/apps/trading/dex/solana/raydium/raydium_test",
+    visibility = ["//visibility:private"],
+    deps = ["//golangp/apps/trading/dex/solana/raydium"],
 )

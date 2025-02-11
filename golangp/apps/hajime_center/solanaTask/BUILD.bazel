@@ -5,6 +5,4 @@ go_library(
     srcs = glob(["**/*.go"]),
     importpath = "hajime/golangp/apps/hajime_center/solanaTask",
     visibility = ["//visibility:public"],
-    deps = [
-    ],
 )

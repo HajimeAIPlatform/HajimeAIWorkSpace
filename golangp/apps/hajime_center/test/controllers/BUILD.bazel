@@ -3,8 +3,5 @@ load("@rules_go//go:def.bzl", "go_test")
 go_test(
     name = "controllers_test",
     srcs = ["app.controller_test.go"],
-    deps = [
-        "//golangp/apps/hajime_center/controllers",
-        "@com_github_magiconair_properties//assert",
-    ],
+    deps = ["@com_github_magiconair_properties//assert"],
 )
