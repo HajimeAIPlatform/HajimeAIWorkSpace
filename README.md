@@ -9,14 +9,38 @@ We recommend you use VSCode and CLion as the developing tool.
 
 Clion also support python.
 
-You can try the demo c++ app / python app
+## Recommand GO practice
+### Run application
 ```shell
-
-bazel run //pythonp/apps/python_example_app:hello_hajime
-
+bazel run //golangp/apps/hajime_center
 ```
 
-Dependent Compilation
+### Add external dependencies
+Please regenerate BUILD file to ensure compile success.
+```shell
+bazel run @rules_go//go get example.com/package
+```
+
+### Auto (re)generate BUILD file
+In most cases, manual editing of the BUILD file is not necessary.  
+It is recommanded to use the command to automatically update dependencies.  
+```shell
+bazel run //:gazelle
+```
+
+### Run testcase
+```shell
+bazel test --test_filter=TestSmokeTest //golangp/apps/AgentTown/test:common_test
+```
+
+### Recommand VScode plugin
+- https://marketplace.visualstudio.com/items?itemName=NVIDIA.bluebazel
+
+### Reference
+https://github.com/bazel-contrib/rules_go/blob/master/docs/go/core/bzlmod.md
+
+## Python
+### Dependent Compilation
 
 - python
 
@@ -29,25 +53,7 @@ bazel run //:requirements.update
 The requirements_lock.txt will be updated. If you need to create a new version set of python
 packages, you need to create a separate requirements.in file.
 
-- golang
-
-Add a New Dependency:
-```shell
-bazel run @rules_go//go get example.com/package
-
-```
-go get example.com/package
-This will add example.com/package to your `go.mod` file.
-
-Dependencies are defined in the `go.mod` file. To integrate these dependencies into the Bazel build system, execute the following command:
-```shell
-# tidy
-bazel run @rules_go//go -- mod tidy -v
-# bazel run //:gazelle-update-repos
-```
-This command uses the Gazelle tool to read the go.mod file and update the deps.bzl file, which contains all the Go dependencies.
-
-Coding style formatter for Python
+### Coding style formatter for Python
 
 We will be using yapf managing our code style.
 
