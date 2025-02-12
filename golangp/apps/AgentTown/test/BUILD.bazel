@@ -19,7 +19,6 @@ go_test(
         "//golangp/apps/AgentTown/agent",
         "//golangp/apps/AgentTown/runtime",
         "//golangp/apps/AgentTown/task",
-        "//golangp/apps/AgentTown/task:runnable",
         "//golangp/apps/trading/dex/solana/raydium",
         "@com_github_magiconair_properties//assert",
     ],
