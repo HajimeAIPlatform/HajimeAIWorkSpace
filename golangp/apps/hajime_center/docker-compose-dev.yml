@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: hajime_postgres_container
+    environment:
+      POSTGRES_USER: hajime
+      POSTGRES_PASSWORD: hajime
+      POSTGRES_DB: hajime
+    restart: always
+    ports:
+      - "0.0.0.0:5435:5432"
+    volumes:
+      - ./docker-data/postgres_data:/var/lib/postgresql/data
