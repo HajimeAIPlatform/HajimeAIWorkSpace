@@ -4,10 +4,7 @@ package raydium;
 
 option go_package = "hajime/protos";
 
-service SwapService {
-  rpc Swap(SwapRequest) returns (SwapResponse);
-}
-
+// raydium swap 
 message SwapRequest {
   string tokenIn = 1;
   string tokenOut = 2;
@@ -24,4 +21,87 @@ message SwapResponse {
   int32 status = 1;
   string message = 2;
   Data data = 3;
+}
+
+// create token
+message TokenInfo {
+  string token_name = 1;
+  string token_symbol = 2;
+  string description = 3;
+  string uri = 4;
+  uint64 token_supply = 5;
+  uint64 token_decimals = 6;
+}
+
+message CreateTokenRequest {
+  string privateKey = 1;
+  TokenInfo token_info = 2;
+}
+
+message CreateTokenData {
+  string tokenName = 1;
+  string tokenMint = 2;
+  string txId = 3;
+  string supply = 4;
+}
+
+message CreateTokenResponse {
+  int32 status = 1;
+  string message = 2;
+  CreateTokenData data = 3;
+}
+
+
+// create market
+message CreateMarketRequest {
+  string mintAAddress = 1;
+  uint64 mintADecimals = 2;
+  string mintBAddress = 3;
+  uint64 mintBDecimals = 4;
+  string privateKey = 5;
+}
+
+message CreateMarketData {
+  string marketId = 1;
+  repeated string txIds = 2;
+  string message = 3;
+}
+
+message CreateMarketResponse {
+  int32 status = 1;
+  string message = 2;
+  CreateMarketData data = 3;
+}
+
+// create pool
+message CreatePoolRequest {
+  string mintAAddress = 1;
+  uint64 mintADecimals = 2;
+  string mintBAddress = 3;
+  uint64 mintBDecimals = 4;
+  string privateKey = 5;
+  string marketId = 6;
+  uint64 mintAInitialAmount = 7; // 使用字符串来表示大整数
+  uint64 mintBInitialAmount = 8; // 使用字符串来表示大整数
+}
+
+message CreatePoolData {
+  string marketId = 1;
+  string poolId = 2;
+  string txId = 3;
+  string message = 4;
+}
+
+// 响应消息
+message CreatePoolResponse {
+  int32 status = 1;
+  string message = 2;
+  CreatePoolData data = 3;
+}
+
+service HajimeGrpcService {
+  rpc Swap(SwapRequest) returns (SwapResponse);
+  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse);
+  rpc CreateMarket(CreateMarketRequest) returns (CreateMarketResponse);
+  rpc CreatePool(CreatePoolRequest) returns (CreatePoolResponse);
 }
