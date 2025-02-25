@@ -11,7 +11,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-func CallCreateToken(privateKey string, tokenName string, tokenSymbol string, description string, uri string, tokenSupply int64, tokenDecimals int64) (*pb.CreateTokenData, error) {
+type CreateTokenDataResponse struct {
+	TokenName string
+	TokenMint string
+	TxId      string
+	Supply    int64
+}
+
+func CallCreateToken(privateKey string, tokenName string, tokenSymbol string, description string, uri string, tokenSupply int64, tokenDecimals int64) (*CreateTokenDataResponse, error) {
 	logging.Info("Calling CreateToken RPC...")
 
 	// 使用 WithTransportCredentials 代替 WithInsecure
@@ -55,5 +62,12 @@ func CallCreateToken(privateKey string, tokenName string, tokenSymbol string, de
 	logging.Info("CreateToken TxId: %s", res.Data.TxId)
 	logging.Info("CreateToken Supply: %d", res.Data.Supply)
 
-	return res.Data, nil
+	resData := &CreateTokenDataResponse{
+		TokenName: res.Data.TokenName,
+		TokenMint: res.Data.TokenMint,
+		TxId:      res.Data.TxId,
+		Supply:    int64(res.Data.Supply),
+	}
+
+	return resData, nil
 }

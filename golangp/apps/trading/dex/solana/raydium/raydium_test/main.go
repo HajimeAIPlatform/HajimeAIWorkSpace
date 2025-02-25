@@ -25,18 +25,32 @@ func TestSwap() {
 
 func TestCreateToken() {
 	privateKey := "WEZT6Wdau5GDz2HCygJxZheWzZodkGUX5Yz3bgqWJCuJL7ccVk4cfP1oFyDxpv2Ak8hacyvTyPspQ3f66oxNfHd"
-	tokenName := "HAJIME_F"
-	tokenSymbol := "HAJIME_F"
-	description := "HAJIME_M.\n\nTELEGRAM:  \nTWITTER:  \n WEBSITE: "
+	tokenName := "HAJIME_O"
+	tokenSymbol := "HAJIME_O"
+	description := "HAJIME_O.\n\nTELEGRAM:  \nTWITTER:  \n WEBSITE: "
 	uri := "https://devixyz.github.io/telegram/hajime.json"
 	tokenSupply := int64(1_500_000)
 	tokenDecimals := int64(6)
 	Data, err := raydium.CallCreateToken(privateKey, tokenName, tokenSymbol, description, uri, tokenSupply, tokenDecimals)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
+
+	}
+	fmt.Printf("create token successful. Data: %s\n", Data)
+
+}
+
+func TestRevokeMintAuthority() {
+	privateKey := "WEZT6Wdau5GDz2HCygJxZheWzZodkGUX5Yz3bgqWJCuJL7ccVk4cfP1oFyDxpv2Ak8hacyvTyPspQ3f66oxNfHd"
+	tokenMint := "5oHJoPT3EU4VUFeaDjDeNPMngQ2zByFTxbEsArA1EUtM"
+	Data, err := raydium.CallRevokeMintAuthority(privateKey, tokenMint)
+
+	if err != nil {
+		log.Fatalf("Error: %v", err)
 	}
 
 	fmt.Printf("create token successful. Data: %s\n", Data)
+
 }
 
 func TestCreateMarket() {
@@ -75,6 +89,7 @@ func TestCreatePool() {
 func main() {
 	// TestSwap()
 	// TestCreateToken()
+	// TestRevokeMintAuthority()
 	// TestCreateMarket()
-	TestCreatePool()
+	// TestCreatePool()
 }

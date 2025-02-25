@@ -42,13 +42,30 @@ message CreateTokenData {
   string tokenName = 1;
   string tokenMint = 2;
   string txId = 3;
-  string supply = 4;
+  uint64 supply = 4;
 }
 
 message CreateTokenResponse {
   int32 status = 1;
   string message = 2;
   CreateTokenData data = 3;
+}
+
+// revoke mint token authority
+message RevokeMintAuthorityRequest {
+  string privateKey = 1;
+  string tokenMint = 2;
+}
+
+message RevokeMintAuthorityData {
+  string tokenMint = 1;
+  string txId = 2;
+}
+
+message RevokeMintAuthorityResponse {
+  int32 status = 1;
+  string message = 2;
+  RevokeMintAuthorityData data = 3;
 }
 
 
@@ -102,6 +119,7 @@ message CreatePoolResponse {
 service HajimeGrpcService {
   rpc Swap(SwapRequest) returns (SwapResponse);
   rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse);
+  rpc RevokeMintAuthority(RevokeMintAuthorityRequest) returns (RevokeMintAuthorityResponse);
   rpc CreateMarket(CreateMarketRequest) returns (CreateMarketResponse);
   rpc CreatePool(CreatePoolRequest) returns (CreatePoolResponse);
 }

@@ -1,7 +1,6 @@
 # gazelle:ignore
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_proto_grpc_go//:defs.bzl", "go_grpc_library", "go_proto_library")
-load("@rules_proto_grpc_python//:defs.bzl", "python_grpc_library", "python_proto_library")
 
 proto_library(
     name = "raydium_proto",
