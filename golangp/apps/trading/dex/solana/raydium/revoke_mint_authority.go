@@ -11,7 +11,12 @@ import (
 	"google.golang.org/grpc"
 )
 
-func CallRevokeMintAuthority(privateKey string, tokenMint string) (*pb.RevokeMintAuthorityData, error) {
+type RevokeMintAuthorityData struct {
+	TokenMint string
+	TxId      string
+}
+
+func CallRevokeMintAuthority(privateKey string, tokenMint string) (*RevokeMintAuthorityData, error) {
 	logging.Info("Calling RevokeMintAuthority RPC...")
 
 	// 使用 WithTransportCredentials 代替 WithInsecure
@@ -46,5 +51,10 @@ func CallRevokeMintAuthority(privateKey string, tokenMint string) (*pb.RevokeMin
 	logging.Info("Revoke mint authority TokenMint: %s", res.Data.TokenMint)
 	logging.Info("Revoke mint authority TxId: %s", res.Data.TxId)
 
-	return res.Data, nil
+	resData := &RevokeMintAuthorityData{
+		TokenMint: res.Data.TokenMint,
+		TxId:      res.Data.TxId,
+	}
+
+	return resData, nil
 }

@@ -11,7 +11,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-func CallCreatePool(privateKey string, mintAAddress string, mintADecimals int, mintAInitialAmount int64, mintBAddress string, mintBDecimals int, mintBInitialAmount int64, marketId string) (*pb.CreatePoolData, error) {
+type CreatePoolDataRes struct {
+	PoolId   string
+	MarketId string
+	TxId     string
+}
+
+func CallCreatePool(privateKey string, mintAAddress string, mintADecimals int, mintAInitialAmount int64, mintBAddress string, mintBDecimals int, mintBInitialAmount int64, marketId string) (*CreatePoolDataRes, error) {
 	logging.Info("Calling CreateToken RPC...")
 
 	// 使用 WithTransportCredentials 代替 WithInsecure
@@ -53,5 +59,11 @@ func CallCreatePool(privateKey string, mintAAddress string, mintADecimals int, m
 	logging.Info("CreatePool MarketId: %s", res.Data.MarketId)
 	logging.Info("CreatePool txId: %s", res.Data.TxId)
 
-	return res.Data, nil
+	resData := &CreatePoolDataRes{
+		PoolId:   res.Data.PoolId,
+		MarketId: res.Data.MarketId,
+		TxId:     res.Data.TxId,
+	}
+
+	return resData, nil
 }

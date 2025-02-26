@@ -1,3 +1,8 @@
+/*
+ * @Description:
+ * @Author: Devin
+ * @Date: 2025-02-18 17:30:27
+ */
 package raydium
 
 import (
@@ -11,7 +16,12 @@ import (
 	"google.golang.org/grpc"
 )
 
-func CallCreateMarket(privateKey string, mintAAddress string, mintADecimals int, mintBAddress string, mintBDecimals int) (*pb.CreateMarketData, error) {
+type CreateMarketData struct {
+	MarketId string
+	TxIds    []string
+}
+
+func CallCreateMarket(privateKey string, mintAAddress string, mintADecimals int, mintBAddress string, mintBDecimals int) (*CreateMarketData, error) {
 	logging.Info("Calling CreateToken RPC...")
 
 	// 使用 WithTransportCredentials 代替 WithInsecure
@@ -49,5 +59,10 @@ func CallCreateMarket(privateKey string, mintAAddress string, mintADecimals int,
 	logging.Info("CreateMarket marketId: %s", res.Data.MarketId)
 	logging.Info("CreateMarket txIds: %s", res.Data.TxIds)
 
-	return res.Data, nil
+	resData := &CreateMarketData{
+		MarketId: res.Data.MarketId,
+		TxIds:    res.Data.TxIds,
+	}
+
+	return resData, nil
 }
