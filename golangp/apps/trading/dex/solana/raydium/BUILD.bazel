@@ -4,6 +4,10 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "raydium",
     srcs = [
+        "create_market.go",
+        "create_pool.go",
+        "create_token.go",
+        "revoke_mint_authority.go",
         "swap_token.go",
         "utils.go",
     ],
