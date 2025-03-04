@@ -6,6 +6,5 @@ py_library(
     srcs = [
         "email_sender.py",
     ],
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
 )
-

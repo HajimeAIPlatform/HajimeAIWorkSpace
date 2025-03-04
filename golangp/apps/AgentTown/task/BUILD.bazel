@@ -3,23 +3,13 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "task",
     srcs = [
+        "runnable.go",
         "task.go",
     ],
     importpath = "hajime/golangp/apps/AgentTown/task",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_google_uuid//:uuid",
-    ],
-)
-
-go_library(
-    name = "runnable",
-    srcs = [
-        "runnable.go",
-    ],
-    importpath = "hajime/golangp/apps/AgentTown/task",
-    visibility = ["//visibility:public"],
-    deps = [
         "//golangp/apps/trading/cex/binance:binance_apis",
+        "@com_github_google_uuid//:uuid",
     ],
 )

@@ -2,7 +2,11 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "routes",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "auth.routes.go",
+        "referralCode.routes.go",
+        "tokenClaim.routes.go",
+    ],
     importpath = "hajime/golangp/apps/hajime_center/routes",
     visibility = ["//visibility:public"],
     deps = [

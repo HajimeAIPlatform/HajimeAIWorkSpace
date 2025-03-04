@@ -2,7 +2,12 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "node",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "configs.go",
+        "model.go",
+        "node_Info.go",
+        "utils.go",
+    ],
     importpath = "hajime/golangp/common/node",
     visibility = ["//visibility:public"],
     deps = [

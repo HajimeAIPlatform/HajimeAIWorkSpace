@@ -30,7 +30,25 @@ go_test(
     name = "dify_test",
     srcs = ["dify_test.go"],
     deps = [
-        "//golangp/common/dify",
         "//golangp/apps/hajime_center/constants",
+        "//golangp/common/dify",
+    ],
+)
+
+go_test(
+    name = "test_test",
+    srcs = [
+        "common_test.go",
+        "dify_test.go",
+        "initializers_test.go",
+        "solana_token_test.go",
+    ],
+    deps = [
+        "//golangp/apps/Solana/pkg/token",
+        "//golangp/common/dify",
+        "//golangp/common/initializers",
+        "//golangp/common/utils",
+        "@com_github_blocto_solana_go_sdk//common",
+        "@com_github_magiconair_properties//assert",
     ],
 )

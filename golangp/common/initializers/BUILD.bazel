@@ -2,7 +2,11 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "initializers",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "config_struct.go",
+        "connectDB.go",
+        "loadEnv.go",
+    ],
     data = glob(["*.env"]),
     importpath = "hajime/golangp/common/initializers",
     visibility = ["//visibility:public"],

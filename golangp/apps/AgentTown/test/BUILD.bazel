@@ -13,13 +13,48 @@ go_test(
 )
 
 go_test(
+    name = "create_token_test",
+    srcs = ["create_token_test.go"],
+    deps = [
+        "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/trading/dex/solana/raydium",
+        "@com_github_magiconair_properties//assert",
+    ],
+)
+
+go_test(
+    name = "revoke_mint_authority_test",
+    srcs = ["revoke_mint_authority_test.go"],
+    deps = [
+        "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/trading/dex/solana/raydium",
+        "@com_github_magiconair_properties//assert",
+    ],
+)
+
+go_test(
+    name = "create_pool_test",
+    srcs = ["create_pool_test.go"],
+    deps = [
+        "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/trading/dex/solana/raydium",
+        "@com_github_magiconair_properties//assert",
+    ],
+)
+
+go_test(
     name = "solana_swap_test",
     srcs = ["solana_swap_test.go"],
     deps = [
         "//golangp/apps/AgentTown/agent",
         "//golangp/apps/AgentTown/runtime",
         "//golangp/apps/AgentTown/task",
-        "//golangp/apps/AgentTown/task:runnable",
         "//golangp/apps/trading/dex/solana/raydium",
         "@com_github_magiconair_properties//assert",
     ],
@@ -31,6 +66,23 @@ go_test(
     deps = [
         "//golangp/apps/AgentTown/agent_adapter",
         "//golangp/apps/trading/dex/solana/raydium",
-        "//golangp/common/logging:logger"
+        "//golangp/common/logging:logger",
+    ],
+)
+
+go_test(
+    name = "test_test",
+    srcs = [
+        "common_test.go",
+        "solana_swap_test.go",
+        "trade_agent_test.go",
+    ],
+    deps = [
+        "//golangp/apps/AgentTown/agent",
+        "//golangp/apps/AgentTown/agent_adapter",
+        "//golangp/apps/AgentTown/runtime",
+        "//golangp/apps/AgentTown/task",
+        "//golangp/apps/trading/dex/solana/raydium",
+        "@com_github_magiconair_properties//assert",
     ],
 )

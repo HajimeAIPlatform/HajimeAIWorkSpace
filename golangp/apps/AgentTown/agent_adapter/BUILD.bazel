@@ -3,7 +3,12 @@ load("@rules_go//go:def.bzl", "go_library")
 # Provide a unified abstract interface for agent to access LLM API
 go_library(
     name = "agent_adapter",
-    srcs = glob(["*.go"]),
+    srcs = [
+        "constant.go",
+        "dify.go",
+        "function_call.go",
+        "interface.go",
+    ],
     importpath = "hajime/golangp/apps/AgentTown/agent_adapter",
     visibility = ["//visibility:public"],
     deps = [

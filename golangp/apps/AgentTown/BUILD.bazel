@@ -12,10 +12,10 @@ go_library(
     importpath = "hajime/golangp/apps/AgentTown",
     visibility = ["//visibility:private"],
     deps = [
+        "//golangp/apps/AgentTown/agent",
         "//golangp/apps/AgentTown/config",
         "//golangp/apps/AgentTown/runtime",
         "//golangp/apps/AgentTown/task",
         "//golangp/apps/AgentTown/telemetry",
-        "//golangp/apps/AgentTown/agent",
     ],
 )

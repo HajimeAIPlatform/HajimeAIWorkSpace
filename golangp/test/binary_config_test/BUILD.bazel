@@ -1,10 +1,16 @@
-load("@rules_go//go:def.bzl",  "go_binary")
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
 
 # This binary is used to test if initializers can find correct config file in go_binary rule
 go_binary(
     name = "binary_config_test",
+    embed = [":binary_config_test_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "binary_config_test_lib",
     srcs = ["main.go"],
-    deps = [
-        "//golangp/common/initializers",
-    ],
+    importpath = "hajime/golangp/test/binary_config_test",
+    visibility = ["//visibility:private"],
+    deps = ["//golangp/common/initializers"],
 )

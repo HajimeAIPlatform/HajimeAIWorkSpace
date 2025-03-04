@@ -1,14 +1,15 @@
-load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "solana_wallet",
-    srcs = glob(
-        ["**/*.go"],
-    ),
+    srcs = [
+        "utils.go",
+        "wallet.go",
+    ],
     importpath = "hajime/golangp/apps/trading/dex/solana/wallet",
     visibility = ["//visibility:public"],
     deps = [
-        "hajime/golangp/apps/trading/dex/solana/config",
+        "//golangp/apps/trading/dex/solana/config:solana_config",
         "@com_github_blocto_solana_go_sdk//client",  # 其他依赖
         "@com_github_blocto_solana_go_sdk//common",
         "@com_github_blocto_solana_go_sdk//program/associated_token_account",
