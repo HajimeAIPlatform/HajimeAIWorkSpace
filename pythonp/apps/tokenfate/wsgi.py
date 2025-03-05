@@ -4,6 +4,7 @@ from gunicorn.app.base import BaseApplication
 from uvicorn.workers import UvicornWorker
 import multiprocessing
 import logging
+import asyncio
 
 # 加载环境变量
 load_dotenv()

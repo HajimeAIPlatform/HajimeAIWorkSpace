@@ -5,24 +5,11 @@ from sqlalchemy import Column, Date, DateTime,String, BigInteger, Float, Boolean
 from datetime import datetime, timezone, timedelta
 import uuid
 import logging
+from contextlib import contextmanager
+
 from functools import wraps
 
 db = SQLAlchemy()
-
-def session_manager(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            result = func(*args, **kwargs)
-            db.session.commit()
-            return result
-        except Exception as e:
-            db.session.rollback()
-            logging.error(f"Error in {func.__name__}: {e}")
-            raise e
-        finally:
-            db.session.remove()
-    return wrapper
 
 def get_current_time(time_delta=8):
     """
@@ -31,6 +18,21 @@ def get_current_time(time_delta=8):
     :return: datetime
     """
     return datetime.now(tz=timezone(timedelta(hours=time_delta)))
+
+@contextmanager
+def transaction_scope():
+    """
+    提供一个事务作用域，自动处理提交或回滚。
+    """
+    session = db.session()
+    try:
+        yield session
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
 
 class TonTransaction(db.Model):
@@ -191,14 +193,14 @@ class Paylink(db.Model):
             'trace_link': self.trace_link
         }
 
-# @session_manager
+
 def save_paylink_to_db(chat_id, amount, trace_link):
     paylink = Paylink(chat_id=chat_id, amount=amount, trace_link=trace_link)
     db.session.add(paylink)
     db.session.commit()
     return paylink.id
 
-# @session_manager
+
 def save_ton_transaction_to_db(user_id, chat_id, symbol, side, status, address,
                                amount, trace_link, fee):
     symbol = symbol.upper()
@@ -223,7 +225,7 @@ def save_ton_transaction_to_db(user_id, chat_id, symbol, side, status, address,
 
     return transaction_pair_id
 
-# @session_manager
+
 def save_binance_transaction_to_db(side, status, symbol, amount,cummulative_quote_qty, fee, type,
                                    transaction_pair_id, order_id, timestamp,
                                    full_data):
@@ -243,7 +245,7 @@ def save_binance_transaction_to_db(side, status, symbol, amount,cummulative_quot
     db.session.add(binance_transaction)
     db.session.commit()
 
-# @session_manager
+
 def save_user_asset_to_db(user_id, symbol, amount, side):
     symbol = symbol.upper()
     user_asset = UserAsset.query.filter_by(user_id=user_id,
@@ -271,7 +273,6 @@ class PointsLog(db.Model):
     description = Column(String, nullable=True)
     timestamp = Column(DateTime, default=func.now(), nullable=False)
 
-
 class InsufficientPointsError(Exception):
     """Exception raised for errors in the point deduction process."""
     
@@ -286,7 +287,6 @@ class InsufficientPointsError(Exception):
         return (f"User {self.user_id} has insufficient points. "
                 f"Attempted to deduct {self.attempted_points}, "
                 f"but only {self.current_points} available.")
-
 
 class UserPoints(db.Model):
     """
@@ -311,7 +311,6 @@ class UserPoints(db.Model):
         }
 
     @classmethod
-    # @session_manager
     def get_points_by_user_id(cls, user_id):
         user_points = db.session.query(cls).filter_by(user_id=user_id).first()
         if user_points:
@@ -319,7 +318,6 @@ class UserPoints(db.Model):
         return 0
 
     @classmethod
-    # @session_manager
     def get_daily_recommended_points(cls, user_id):
         cls.reset_daily_points_if_needed(user_id) # 检查时间（如果有需要则更新时间并重置今日推荐积分）
         user_points = db.session.query(cls).filter_by(user_id=user_id).first()
@@ -328,7 +326,6 @@ class UserPoints(db.Model):
         return 0
 
     @classmethod
-    # @session_manager
     def update_points_by_user_id(cls, user_id, points, description=""):
         try:
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
@@ -363,7 +360,6 @@ class UserPoints(db.Model):
             return False
     
     @classmethod
-    # @session_manager
     def get_language_by_user_id(cls, user_id):
         user_points = db.session.query(cls).filter_by(user_id=user_id).first()
         if user_points:
@@ -371,7 +367,6 @@ class UserPoints(db.Model):
         return ''
     
     @classmethod
-    # @session_manager
     def update_language_by_user_id(cls, user_id, language):
         try:
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
@@ -389,7 +384,6 @@ class UserPoints(db.Model):
             return False
         
     @classmethod
-    # @session_manager
     def reset_daily_points_if_needed(cls, user_id):
         try:
             user_points = db.session.query(cls).with_for_update().filter_by(user_id=user_id).first()
@@ -410,7 +404,6 @@ class UserPoints(db.Model):
             return False
     
     @classmethod
-    # @session_manager
     def update_daily_recommended_points(cls, user_id, points=10):
         try:
             cls.reset_daily_points_if_needed(user_id)
@@ -435,24 +428,157 @@ class UserPoints(db.Model):
             return False
 
 
-#     transaction_pair_id = save_ton_transaction_to_db(
-#         user_id=user_id,
-#         chat_id=chat_id,
-#         trade_type=trade_type,
-#         status=status,
-#         symbol=symbol,
-#         address=address,
-#         trace_link=trace_link,
-#         asset_id=None,
-#         transaction_id=str(uuid.uuid4()),
-#         amount=amount
-#     )
-#     save_binance_transaction_to_db(
-#         trade_type=trade_type,
-#         status=status,
-#         symbol=symbol,
-#         amount=amount,
-#         transaction_pair_id=transaction_pair_id,
-#         trace_link=trace_link
-#     )
-#     save_user_asset_to_db(user_id, symbol, amount if trade_type == 'buy' else -amount)
+class TarotUser(db.Model):
+    """
+    Tarot用户表模型，包含 id 和 chat_id 以及 amount 积分字段。
+    id: 主键，自增
+    chat_id: 用户的 chat_id, 用于唯一标识用户
+    amount: 积分，默认值 100
+    """
+    __tablename__ = 'tarot_users'
+    id = Column(String(36),
+                primary_key=True,
+                default=lambda: str(uuid.uuid4()),
+                unique=True,
+                nullable=False)
+    chat_id = Column(String(36), nullable=False)
+    amount = Column(Integer, nullable=False, default=100)
+    last_sign_in = Column(Date)
+
+
+    @classmethod
+    def _update_amount(cls, chat_id, delta):
+        """
+        使用 SELECT ... FOR UPDATE 对指定 chat_id 的用户进行行级锁定，
+        并在同一事务中完成积分加减操作，保证数据原子性。
+        """
+        # 如果积分更新后可能为负，需要在逻辑内进行校验并抛出异常
+        with transaction_scope() as session:
+            try:
+                # 1) 行级锁
+                user = session.query(TarotUser)\
+                            .filter(TarotUser.chat_id == chat_id)\
+                            .with_for_update()\
+                            .one()
+
+                # 2) 业务校验：例如不能让积分小于 0
+                if user.amount + delta < 0:
+                    raise ValueError("Insufficient amount")
+
+                # 3) 更新积分
+                user.amount += delta
+
+                # 事务结束时自动提交
+                return {
+                    "message": "amount updated successfully",
+                    "user_id": user.id,
+                    "new_amount": user.amount,
+                    "status": "success"
+                }
+            except (SQLAlchemyError, ValueError) as e:
+                # 出现任何异常都会在 transaction_scope 中触发回滚
+                return { "error": str(e), "status": "failed" }
+
+    @classmethod
+    def create_user(cls, chat_id):
+        """
+        创建一个新用户，chat_id 用于唯一标识用户。
+        默认积分为 100。
+        """
+        with transaction_scope() as session:
+            try:
+                # 检查是否已存在相同 chat_id 的用户
+                existing_user = session.query(TarotUser).filter(TarotUser.chat_id == chat_id).first()
+                if existing_user:
+                    return {"error": "User with this chat_id already exists", 
+                            "status": "failed"
+                    }
+
+                # 创建新用户
+                new_user = TarotUser(chat_id=chat_id)
+                session.add(new_user)
+
+                # 返回创建成功的信息
+                return {
+                    "message": "User created successfully",
+                    "user_id": new_user.id,
+                    "chat_id": new_user.chat_id,
+                    "amount": new_user.amount,
+                    "status": "success"
+                }
+            except SQLAlchemyError as e:
+                return {"error": str(e), 
+                        "status": "failed"
+                }
+
+    # 6. 获取用户信息函数
+    @classmethod
+    def get_user_info(cls, chat_id):
+        """
+        根据用户chat_id获取用户信息。
+        """
+        with transaction_scope() as session:
+            try:
+                user = session.query(TarotUser).filter(TarotUser.chat_id == chat_id).one_or_none()
+                if user is None:
+                    return {"error": "User not found", "status": "failed"}
+                
+                return {
+                    "user_id": user.id,
+                    "chat_id": user.chat_id,
+                    "amount": user.amount,
+                    "status": "success"
+                }
+            except SQLAlchemyError as e:
+                return {"error": str(e), "status": "failed"}
+    
+    @classmethod
+    def sign_in(cls, chat_id):
+        """
+        用户签到，奖励20分。
+        """
+        with transaction_scope() as session:
+            user = session.query(cls).filter(cls.chat_id == chat_id).one_or_none()
+            if user is None:
+                return {"error": "User not found", "status": "failed"}
+            today = datetime.today().date()
+            # 检查用户是否今日已签到
+            if user.last_sign_in == today:
+                return {
+                    "message": "User has already signed in today.",
+                    "amount": user.amount,
+                    "status": "failed"
+                }
+
+            # 更新签到日期并奖励20分
+            user.last_sign_in = today  # 更新签到日期
+            result = cls._update_amount(user.chat_id, 20)  # 奖励20分
+
+            if result.get("status") == "failed":
+                return {
+                    "message": "Sign-in failed.",
+                    "amount": user.amount,  # 返回原始积分
+                    "status": "failed"
+                }
+            
+            return {
+                "message": "Sign-in successful.",
+                "amount": result["new_amount"],  # 返回更新后的积分
+                "status": "success"
+            }
+                
+    # 抽牌函数
+    @classmethod
+    def draw_card(cls, chat_id):
+        """
+        用户抽牌，扣除20分。
+        """
+        return cls._update_amount(chat_id, -20)
+
+    # 生成图像展示函数
+    @classmethod
+    def generate_image(cls, chat_id):
+        """
+        生成塔罗牌图像展示，扣除20分。
+        """
+        return cls._update_amount(chat_id, -20)

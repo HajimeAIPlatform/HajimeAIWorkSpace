@@ -37,6 +37,7 @@ def get_command_list(i18n, commands: List[tuple]) -> List[BotCommand]:
 
 async def set_commands(bot, user_id: Optional[int] = None, lang: Optional[str] = None):
     """设置命令，支持全局命令和特定用户命令"""
+    print("starting set_commands")
     if user_id is not None:
         lang = lang or UserPoints.get_language_by_user_id(user_id) or 'zh'
         i18n = I18nHelper(lang)
