@@ -48,23 +48,11 @@ user_activity_tracker = UserActivityTracker()
 exception_storage = ExceptionStorage()
 
 
-# async def run_bot():
-#     print("Bot 1 started")
-#     await asyncio.sleep(200)  # 模拟一些异步操作
-#     print("Bot 1 finished")
-async def run_bot():
-    try:
-        logging.info("Setting commands for the bot tokenfate...")
-        await set_commands(telegram_app.bot)
-        
-        logging.info("Initializing the bot tokenfate...")
-        await telegram_app.initialize()
-        
-        logging.info("Starting the bot tokenfate...")
-        await telegram_app.start()
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
-        
+async def run_bot1():
+    await set_commands(telegram_app.bot)
+    # await set_bot_commands_handler(telegram_app)
+    await telegram_app.initialize()
+    await telegram_app.start()
 
 # 创建Flask Blueprint
 bot = Blueprint('bot', __name__)
