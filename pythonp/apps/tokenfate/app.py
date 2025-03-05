@@ -6,10 +6,7 @@ import uvicorn
 from flask import Flask
 from asgiref.wsgi import WsgiToAsgi
 from pythonp.common.logging.logger import setup_logging
-import asyncio
-# import nest_asyncio
 
-# nest_asyncio.apply()
 
 load_dotenv()
 
@@ -17,8 +14,7 @@ from pythonp.apps.tokenfate.service import blueprint as api
 from pythonp.apps.tokenfate.models import setup_db
 from pythonp.apps.tokenfate.service.binance.transaction_queue import start_transaction_processor
 from pythonp.apps.tokenfate.service.binance.schedule import start_schedule_thread
-from pythonp.apps.tokenfate.service.bot.views import run_bot
-from pythonp.apps.tokenfate.service.bot3.views import run_bot3
+
 
 
 
@@ -32,14 +28,6 @@ def create_app():
     def hello_world():
         return 'Hello, World!'
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    async def run_all_bots():
-        await asyncio.gather(run_bot(), run_bot3())
-    
-    # Run the bot asynchronously
-    loop.run_until_complete(run_all_bots())
 
     start_transaction_processor(backend_app)
     start_schedule_thread()

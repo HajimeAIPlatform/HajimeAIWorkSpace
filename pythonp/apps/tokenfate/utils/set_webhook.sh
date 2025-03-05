@@ -2,9 +2,8 @@
 ###
  # @Description: 
  # @Author: Devin
- # @Date: 2024-12-19 17:11:10
+ # @Date: 2025-03-05 15:32:22
 ### 
-
 # 检查是否提供了 URL 参数
 if [ -z "$1" ]; then
   echo "Usage: $0 <webhook_url>"
@@ -13,7 +12,7 @@ fi
 
 # 设置 URL 参数
 WEBHOOK_URL=$1
-BOT_TOKEN="7578797243:AAG4gsM1m4Gn-fj9cZJ98yvbjyO4siSkzC4"
+BOT_TOKEN="7210386089:AAEPdscUP2iZXk2ch0T3N-Ud3CbEaLnOyqc"
 #BOT_TOKEN="7317644050:AAESKpy0z3-bMZrphdKRKJK925HaquaWQk4"
 
 # BOT_TOKEN="7805651398:AAHCG40KeHJrqRqxXmlA_xDsEWwmMwOpnug"   # TokenFateFortuneCookieBot
@@ -25,6 +24,6 @@ curl -F "url=$WEBHOOK_URL" https://api.telegram.org/bot$BOT_TOKEN/setWebhook
 # Dev服务器:
 # bash utils/set_webhook.sh https://hajimedev.pointer.ai/telebot/bot/webhook
 # Prod服务器：
-# bash utils/set_webhook.sh https://tokenfate.pointer.ai/telebot/bot/webhook
+# bash utils/set_webhook.sh https://tokenfate.pointer.ai/telebot/bot_fortune_teller/webhook
 
-# bash utils/set_webhook.sh https://af65-119-136-89-174.ngrok-free.app/telebot/bot2/webhook
+# bash utils/set_webhook.sh https://tokenfate.pointer.ai/telebot/bot2/webhook
