@@ -13,7 +13,7 @@ fi
 
 # 设置 URL 参数
 WEBHOOK_URL=$1
-BOT_TOKEN="7886534816:AAF6GrZXaESSw0c7sFdWEbCrBQAd3_vJZ04"
+BOT_TOKEN="7578797243:AAG4gsM1m4Gn-fj9cZJ98yvbjyO4siSkzC4"
 #BOT_TOKEN="7317644050:AAESKpy0z3-bMZrphdKRKJK925HaquaWQk4"
 
 # BOT_TOKEN="7805651398:AAHCG40KeHJrqRqxXmlA_xDsEWwmMwOpnug"   # TokenFateFortuneCookieBot
@@ -26,7 +26,7 @@ curl -F "url=$WEBHOOK_URL" https://api.telegram.org/bot$BOT_TOKEN/setWebhook
 # bash utils/set_webhook.sh https://hajimedev.pointer.ai/telebot/bot/webhook
 
 
-# bash utils/set_webhook.sh https://af65-119-136-89-174.ngrok-free.app/telebot/bot2/webhook
+# bash utils/set_webhook.sh https://d9ef-14-153-94-63.ngrok-free.app/telebot/bot_fortune_teller/webhook
 
 # # company:
 # export http_proxy="http://10.10.100.72:7897"

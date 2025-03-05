@@ -50,14 +50,11 @@ exception_storage = ExceptionStorage()
 WEB_MINI_APP_URL = getenv('WEB_MINI_APP_URL')
 
 
-async def run_bot():
+async def run_bot1():
     await set_commands(telegram_app.bot)
     # await set_bot_commands_handler(telegram_app)
     await telegram_app.initialize()
     await telegram_app.start()
-
-loop = asyncio.get_event_loop()
-loop.run_until_complete(run_bot())
 
 # 创建Flask Blueprint
 bot = Blueprint('bot', __name__)

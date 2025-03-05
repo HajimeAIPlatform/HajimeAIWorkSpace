@@ -9,22 +9,22 @@ from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMar
 from PIL import Image
 from telegram.ext import ApplicationBuilder, DictPersistence,CommandHandler
 
-from pythonp.apps.tokenfate.service.bot2.commands import set_bot_commands_handler
-from pythonp.apps.tokenfate.service.dify.views import chat_blocking_key_2
+from pythonp.apps.tokenfate.service.bot_fortune_teller.commands import set_bot_commands_handler
+from pythonp.apps.tokenfate.service.dify.views import chat_blocking_fortune_teller
 
 
 # 获取Telegram Bot Token
-telegram_bot2_token = getenv('TELEGRAM_BOT2_TOKEN')
-if not telegram_bot2_token:
+telegram_bot_fortune_teller_token = getenv('TELEGRAM_BOT_FORTUNE_TELLER_TOKEN')
+if not telegram_bot_fortune_teller_token:
     logging.error("Telegram bot token is not set in the environment")
     raise ValueError("Telegram bot token is not set in the environment")
 
 # 创建Telegram应用
 persistence = DictPersistence()
-telegram_app = ApplicationBuilder().token(telegram_bot2_token).persistence(
+telegram_app = ApplicationBuilder().token(telegram_bot_fortune_teller_token).persistence(
     persistence).build()
 
-async def run_bot2():
+async def run_bot_fortune_teller():
     await set_bot_commands_handler(telegram_app)
     await telegram_app.initialize()
     await telegram_app.start()
@@ -33,15 +33,13 @@ TOKEN_FATE_TWITTER = getenv('TOKEN_FATE_TWITTER')
 TOKEN_FATE_GROUP = getenv('TOKEN_FATE_GROUP')
 
 
-
 # 创建Flask Blueprint
-bot2 = Blueprint('bot2', __name__)
+bot_fortune_teller = Blueprint('bot_fortune_teller', __name__)
 
 async def start(update):
-    await update.message.reply_text("Please send me your Twitter handle to get your Fortune today!")
+    await update.message.reply_text("Fortune Teller is an intelligent LLM with built-in ads system!")
 
-
-@bot2.route('/webhook', methods=['POST'])
+@bot_fortune_teller.route('/webhook', methods=['POST'])
 # @run_async
 async def webhook():
     chat_id = None
@@ -49,8 +47,6 @@ async def webhook():
         body = request.get_json()
 
         update = Update.de_json(body, telegram_app.bot)
-
-        print(update, 'update')
 
         if update.edited_message:
             return 'OK'
@@ -85,7 +81,7 @@ async def webhook():
                 "parse_mode": "MarkdownV2"
             }
         else:
-            chat_response = chat_blocking_key_2({
+            chat_response = chat_blocking_fortune_teller({
                 "query": update.message.text,
                 "user": chat_id
             })
@@ -93,18 +89,8 @@ async def webhook():
             # 将响应文本赋值给 text 变量
             text = chat_response
 
-            # 创建两个按钮
-            button1 = InlineKeyboardButton(text="TokenFate Twitter", url=TOKEN_FATE_TWITTER)
-            button2 = InlineKeyboardButton(text="Join TokenFate Group", url=TOKEN_FATE_GROUP)
-
-            # 创建键盘布局
-            keyboard = InlineKeyboardMarkup([[button1], [button2]])
-
-            more_read = f"\nFor further analysis, please follow [TokenFate Twitter]({TOKEN_FATE_TWITTER}) or join the [TokenFate group]({TOKEN_FATE_GROUP}).\n"
-            text = chat_response + '\n' + more_read
-
             # 回复用户消息，并附带键盘按钮
-            await update.message.reply_text(escape(text), parse_mode="MarkdownV2", reply_markup=keyboard)
+            await update.message.reply_text(escape(text), parse_mode="MarkdownV2")
 
         return {
             "method": "sendMessage",

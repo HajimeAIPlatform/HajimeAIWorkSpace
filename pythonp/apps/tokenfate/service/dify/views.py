@@ -13,11 +13,20 @@ from pythonp.apps.tokenfate.service.binance.schedule import get_random_dex_histo
 dify_api_key_workflow = getenv('DIFY_API_KEY_WORKFLOW')
 dify_api_key_message = getenv('DIFY_API_KEY_MESSAGE')
 dify_api_key_decode = getenv('DIFY_API_KEY_DECODE')
-dify_api_key_2 = getenv('DIFY_API_KEy_2')
+dify_api_key_2 = getenv('DIFY_API_KEY_2')
 dify_api_base = getenv('DIFY_BASE_HOST')
+
+# fortune teller
+dify_api_fortune_teller_base_host = getenv('DIFY_FORTUNE_TELLER_BASE_HOST')
+dify_fortune_teller_api_key = getenv('DIFY_API_KEY_FORTUNE_TELLER')
+
 if not dify_api_base or not dify_api_key_workflow or not dify_api_key_2 or not dify_api_key_message or not dify_api_key_decode:
     raise ValueError(
         "Dify API key and base host are not set in the environment")
+
+if not dify_api_fortune_teller_base_host or not dify_fortune_teller_api_key:
+    raise ValueError(
+        "dify_api_fortune_teller_base_host and dify_fortune_teller_api_key are not set in the environment")
 
 # Initialize the client with your API key
 client = Client(
@@ -38,6 +47,11 @@ client3 = Client(
 client4 = Client(
     api_key=dify_api_key_decode,
     api_base=dify_api_base,
+)
+
+client_fortune_teller = Client(
+    api_key=dify_fortune_teller_api_key,
+    api_base=dify_api_fortune_teller_base_host
 )
 
 dify = Blueprint('dify', __name__)
@@ -113,6 +127,40 @@ def chat_blocking_key_2(data):
     except Exception as e:
         logging.error("Error during chat_blocking_key_2: %s", e)
         return "An error occurred"
+
+def chat_blocking_fortune_teller(data):
+    try:
+        user = str(uuid.uuid4())
+        logging.info("Generated user ID: %s", user)
+
+        # Create a blocking chat request
+        blocking_chat_req = models.ChatRequest(
+            query=data.get("query"),
+            inputs=data.get("inputs", {}),
+            user=str(data.get("user", user)),
+            response_mode=models.ResponseMode.BLOCKING,
+        )
+
+        logging.info("Sending blocking chat request: %s", blocking_chat_req)
+
+        # Send the chat message
+        chat_response = client_fortune_teller.chat_messages(blocking_chat_req, timeout=60.)
+        chat_response_dict = json.loads(
+            json.dumps(chat_response,
+                       default=lambda o: o.__dict__))  # Convert to dictionary
+
+        # logging.info("Received chat response: %s", chat_response_dict)
+
+        # Extract the answer from the chat response
+        answer = chat_response_dict.get('answer', 'No answer found')
+        logging.info("Answer: %s", answer)
+        # 处理推荐结果
+        return answer
+
+    except Exception as e:
+        logging.error("Error during chat_blocking_key_2: %s", e)
+        return "An error occurred"
+
 
 def chat_workflow(data: Dict):
     try:
