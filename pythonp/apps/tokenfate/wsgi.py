@@ -65,6 +65,7 @@ def run_gunicorn():
 
 if __name__ == "__main__":
     # 创建并启动监控器
-    # monitor = EmailMonitor(smtp_config)
-    # monitor.start()
+    print(smtp_config,'smtp_config')
+    monitor = EmailMonitor(smtp_config)
+    monitor.start()
     run_gunicorn()
