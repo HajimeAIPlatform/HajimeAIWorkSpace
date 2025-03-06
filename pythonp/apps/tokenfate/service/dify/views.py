@@ -7,7 +7,7 @@ from os import getenv
 from flask import Blueprint, jsonify, request, Response
 
 from pythonp.apps.tokenfate.service.binance.utils import get_all_prices, process_recommendation
-from pythonp.apps.tokenfate.dify_client import Client, models
+from pythonp.common.dify_client import Client, models
 from pythonp.apps.tokenfate.service.binance.schedule import get_random_dex_historical_prices
 
 dify_api_key_workflow = getenv('DIFY_API_KEY_WORKFLOW')
