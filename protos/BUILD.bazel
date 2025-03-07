@@ -1,6 +1,6 @@
+# gazelle:ignore
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_proto_grpc_go//:defs.bzl", "go_grpc_library", "go_proto_library")
-load("@rules_proto_grpc_python//:defs.bzl", "python_grpc_library", "python_proto_library")
 
 proto_library(
     name = "raydium_proto",
@@ -19,6 +19,7 @@ go_proto_library(
 
 go_grpc_library(
     name = "raydium_service_go_grpc",
+    compilers = ["@io_bazel_rules_go//proto:go_grpc"],
     importpath = "hajime/protos/raydium_service_go_grpc",
     protos = [":raydium_proto"],
     visibility = ["//visibility:public"],

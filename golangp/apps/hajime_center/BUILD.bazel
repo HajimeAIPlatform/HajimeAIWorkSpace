@@ -54,7 +54,6 @@ go_library(
         "//golangp/apps/hajime_center/controllers",
         "//golangp/apps/hajime_center/proxy",
         "//golangp/apps/hajime_center/routes",
-        "//golangp/apps/hajime_center/solanaTask",
         "//golangp/common/initializers",
         "@com_github_gin_contrib_cors//:cors",
         "@com_github_gin_gonic_gin//:gin",

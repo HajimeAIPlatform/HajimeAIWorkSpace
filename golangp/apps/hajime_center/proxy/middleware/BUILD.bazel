@@ -2,13 +2,24 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "middleware",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "apps.middleware.go",
+        "chat.middleware.go",
+        "config.middleware.go",
+        "conversations.middleware.go",
+        "datasets.middleware.go",
+        "deserialize.user.go",
+        "install.apps.middleware.go",
+        "models.go",
+        "request.go",
+        "utils.go",
+    ],
     importpath = "hajime/golangp/apps/hajime_center/proxy/middleware",
     visibility = ["//visibility:public"],
     deps = [
         "//golangp/apps/hajime_center/constants",
-        "//golangp/common/dify",
         "//golangp/apps/hajime_center/models",
+        "//golangp/common/dify",
         "//golangp/common/initializers",
         "//golangp/common/logging:logger",
         "//golangp/common/utils",

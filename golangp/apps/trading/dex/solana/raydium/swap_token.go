@@ -11,11 +11,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-// server is used to implement raydium.SwapServiceServer.
-type server struct {
-	pb.UnimplementedSwapServiceServer
-}
-
 func CallSwap(tokenIn string, tokenOut string, privateKey string, amountIn int64, microLamports int64) (string, error) {
 	logging.Info("Calling Swap RPC...")
 	conn, err := grpc.Dial(GetGrpcServerHost(), grpc.WithInsecure(), grpc.WithBlock())
@@ -25,7 +20,7 @@ func CallSwap(tokenIn string, tokenOut string, privateKey string, amountIn int64
 	}
 	defer conn.Close()
 
-	client := pb.NewSwapServiceClient(conn)
+	client := pb.NewHajimeGrpcServiceClient(conn)
 
 	// ctx, cancel := context.WithCancel(context.Background())
 	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)

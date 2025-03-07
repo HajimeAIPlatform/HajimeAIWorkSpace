@@ -2,7 +2,16 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "models",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "balance-history.model.go",
+        "billing-history.model.go",
+        "conversation.model.go",
+        "dataset.model.go",
+        "hajime_apps.model.go",
+        "referral_code.model.go",
+        "user.model.go",
+        "user_assets.model.go",
+    ],
     importpath = "hajime/golangp/apps/hajime_center/models",
     visibility = ["//visibility:public"],
     deps = [

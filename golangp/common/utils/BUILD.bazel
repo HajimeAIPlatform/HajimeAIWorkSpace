@@ -2,7 +2,12 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "utils",
-    srcs = glob(["**/*.go"]),
+    srcs = [
+        "alipay.go",
+        "encode.go",
+        "password.go",
+        "token.go",
+    ],
     importpath = "hajime/golangp/common/utils",
     visibility = ["//visibility:public"],
     deps = [
