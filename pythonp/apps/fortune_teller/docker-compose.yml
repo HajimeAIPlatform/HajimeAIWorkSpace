@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: redis_server_fortune_teller
+    #    ports:
+    #      - "0.0.0.0:6379:${REDIS_PORT:-6379}"
+    restart: always
+    networks:
+      - fortune_teller
+
+  postgres:
+    image: postgres:14
+    container_name: postgres_server_fortune_teller
+    environment:
+      POSTGRES_USER: "${POSTGRESQL_USER:-fortune_teller}"
+      POSTGRES_PASSWORD: "${POSTGRESQL_PASSWORD:-fortune_teller}"
+      POSTGRES_DB: "${POSTGRESQL_DATABASE:-fortune_teller}"
+    #    ports:
+    #      - "0.0.0.0:5432:${POSTGRESQL_PORT:-5432}"
+    volumes:
+      - ./docker-data/postgres_data:/var/lib/postgresql/data
+    networks:
+      - fortune_teller
+
+  fortune_teller:
+    container_name: fortune_teller
+    build:
+      context: .
+    privileged: true
+    restart: always
+    ports:
+      - "0.0.0.0:${PORT:-5000}:${PORT:-5000}"
+    volumes:
+      - "./logs/:${LOG_DIR:-/opt/fortune_teller/logs}"
+      - "./.env/:/opt/fortune_teller/wsgi.runfiles/_main/pythonp/apps/fortune_teller/.env"
+    networks:
+      - fortune_teller
+    depends_on:
+      - postgres
+      - redis
+
+networks:
+  fortune_teller:
+    driver: bridge

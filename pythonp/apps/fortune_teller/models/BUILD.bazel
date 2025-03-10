@@ -1,0 +1,16 @@
+load("@py_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "models",
+    srcs = glob(["**/*.py"]),
+    data = [
+        "//pythonp/apps/fortune_teller/static:assets",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("flask"),
+        requirement("flask_sqlalchemy"),
+        requirement("sqlalchemy"),
+    ],
+)

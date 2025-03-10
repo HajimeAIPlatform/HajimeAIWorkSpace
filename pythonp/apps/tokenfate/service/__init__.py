@@ -25,7 +25,7 @@ async def run_bot():
     await run_bot1()
     await run_bot2()
     await run_bot3()
-    await run_bot_fortune_teller()
+    # await run_bot_fortune_teller()
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(run_bot())
