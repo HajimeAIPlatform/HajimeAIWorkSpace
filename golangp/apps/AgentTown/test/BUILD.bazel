@@ -74,6 +74,10 @@ go_test(
     name = "test_test",
     srcs = [
         "common_test.go",
+        "create_market_test.go",
+        "create_pool_test.go",
+        "create_token_test.go",
+        "revoke_mint_authority_test.go",
         "solana_swap_test.go",
         "trade_agent_test.go",
     ],
