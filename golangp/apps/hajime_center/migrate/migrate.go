@@ -106,7 +106,7 @@ func main() {
 	//if err != nil {
 	//	logger.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))
 	//}
-	err := initializers.DB.AutoMigrate(&models.User{}, &models.ReferralCode{}, &models.HajimeApps{}, &models.UserAsset{}, &models.UserWithdraw{}, models.Dataset{}, &models.BillingHistory{}, &models.BalanceHistory{}, &models.Conversation{})
+	err := initializers.DB.AutoMigrate(&models.User{}, &models.ReferralCode{}, &models.HajimeApps{}, &models.UserAsset{}, &models.UserWithdraw{}, models.Dataset{}, &models.BillingHistory{}, &models.BalanceHistory{}, &models.Conversation{}, &models.AgentLog{}, &models.AgentTask{})
 
 	if err != nil {
 		logging.Danger(fmt.Sprintf("🚀 Could not migrate User model: %v", err))

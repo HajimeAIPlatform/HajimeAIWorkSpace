@@ -1,0 +1,25 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "binance_client",
+    srcs = [
+        "binance_api_connectivity.go",
+        "binance_apis_wrapper.go",
+        "binance_client.go",
+    ],
+    importpath = "hajime/golangp/apps/trading/cex/binance_client",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_adshao_go_binance_v2//:go-binance",
+        "@com_github_adshao_go_binance_v2//futures",
+    ],
+)
+
+go_test(
+    name = "binance_client_test",
+    srcs = ["binance_test.go"],
+    deps = [
+        ":binance_client",
+        "@com_github_adshao_go_binance_v2//:go-binance",
+    ],
+)

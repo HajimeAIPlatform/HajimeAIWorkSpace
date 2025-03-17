@@ -3,6 +3,8 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "models",
     srcs = [
+        "agent_log.model.go",
+        "agent_task.model.go",
         "balance-history.model.go",
         "billing-history.model.go",
         "conversation.model.go",

@@ -18,7 +18,8 @@ bazel run //golangp/apps/hajime_center
 ### Add external dependencies
 Please regenerate BUILD file to ensure compile success.
 ```shell
-bazel run @rules_go//go get example.com/package
+bazel run @rules_go//go -- get example.com/package
+bazel run @rules_go//go -- mod tidy
 ```
 
 ### Auto (re)generate BUILD file

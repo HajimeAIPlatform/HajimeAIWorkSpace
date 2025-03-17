@@ -1,4 +1,4 @@
-package binance
+package binance_client
 
 import (
 	"context"

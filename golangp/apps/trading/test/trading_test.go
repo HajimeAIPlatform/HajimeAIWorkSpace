@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	bn "hajime/golangp/apps/trading/cex/binance"
+	bn "hajime/golangp/apps/trading/cex/binance_client"
 
 	"github.com/magiconair/properties/assert"
 )

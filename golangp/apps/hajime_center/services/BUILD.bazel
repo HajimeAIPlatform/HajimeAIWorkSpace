@@ -1,0 +1,28 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "services",
+    srcs = [
+        "agent_log.service.go",
+        "agent_task.service.go",
+    ],
+    importpath = "hajime/golangp/apps/hajime_center/services",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//golangp/apps/hajime_center/models",
+        "@io_gorm_gorm//:gorm",
+    ],
+)
+
+go_test(
+    name = "services_test",
+    srcs = ["agent_task_test.go"],
+    deps = [
+        ":services",
+        "//golangp/apps/hajime_center/models",
+        "@com_github_google_uuid//:uuid",
+        "@com_github_stretchr_testify//assert",
+        "@io_gorm_driver_sqlite//:sqlite",
+        "@io_gorm_gorm//:gorm",
+    ],
+)

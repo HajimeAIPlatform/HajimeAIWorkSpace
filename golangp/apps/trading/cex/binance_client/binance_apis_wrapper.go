@@ -1,4 +1,4 @@
-package binance
+package binance_client
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 func TestGetAccount() {
 	// Create a new Binance futures client
 	futures.UseTestnet = true
-	ApiKey := "a2a7e65b0ccf7d4355074bcb1d1e29456d9fd518abbdaac308da4191cdfe4038"
-	SecretKey := "7eed1bea32d0cb8991ab9c939f0c40c11a4bd7046fc68f750a9073941148b3c9"
+	ApiKey := ""
+	SecretKey := ""
 	fc := futures.NewClient(ApiKey, SecretKey)
 	fmt.Printf("Binance futures client created\n")
 	res, err := fc.NewGetAccountService().Do(context.Background())
@@ -25,8 +25,8 @@ func TestGetAccount() {
 func CheckMarketPrice(symbol string) {
 	// Create a new Binance futures client
 	futures.UseTestnet = true
-	ApiKey := "a2a7e65b0ccf7d4355074bcb1d1e29456d9fd518abbdaac308da4191cdfe4038"
-	SecretKey := "7eed1bea32d0cb8991ab9c939f0c40c11a4bd7046fc68f750a9073941148b3c9"
+	ApiKey := ""
+	SecretKey := ""
 	fc := futures.NewClient(ApiKey, SecretKey)
 	fmt.Printf("Binance futures client created\n")
 
@@ -45,8 +45,8 @@ func CheckMarketPrice(symbol string) {
 // ...existing code...
 func PlaceMarketOrder(symbol, side, quantity string) error {
 	futures.UseTestnet = true
-	ApiKey := "a2a7e65b0ccf7d4355074bcb1d1e29456d9fd518abbdaac308da4191cdfe4038"
-	SecretKey := "7eed1bea32d0cb8991ab9c939f0c40c11a4bd7046fc68f750a9073941148b3c9"
+	ApiKey := ""
+	SecretKey := ""
 	fc := futures.NewClient(ApiKey, SecretKey)
 
 	_, err := fc.NewCreateOrderService().

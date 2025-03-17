@@ -6,6 +6,7 @@ import (
 	"hajime/golangp/apps/hajime_center/controllers"
 	"hajime/golangp/apps/hajime_center/proxy"
 	"hajime/golangp/apps/hajime_center/routes"
+	"hajime/golangp/apps/hajime_center/services"
 	"hajime/golangp/common/initializers"
 	"log"
 	"net/http"
@@ -31,8 +32,8 @@ var (
 	ReferralCodeRouteController routes.ReferralCodeRouteController
 	TokenClaimController        controllers.TokenClaimController
 	TokenClaimRouteController   routes.TokenClaimRouteController
-
-	wg sync.WaitGroup
+	AgentLogController          *controllers.AgentLogController
+	wg                          sync.WaitGroup
 )
 
 func init() {
@@ -53,6 +54,8 @@ func init() {
 	TokenClaimController = controllers.NewTokenClaimController(csvFilePath)
 	TokenClaimRouteController = routes.NewTokenClaimRouteController(csvFilePath)
 
+	AgentLogService := services.NewAgentLogService(initializers.DB)
+	AgentLogController = controllers.NewAgentLogController(AgentLogService)
 	server = gin.Default()
 }
 
@@ -98,6 +101,7 @@ func main() {
 	AuthRouteController.AuthRoute(router)
 	ReferralCodeRouteController.ReferralCodeRoute(router)
 	TokenClaimRouteController.TokenClaimRoute(router)
+	AgentLogController.RegisterRoutes(router)
 
 	// Start the main server in a new goroutine
 	httpServer := &http.Server{
